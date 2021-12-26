@@ -49,7 +49,7 @@ The library has a very simple interface, namely only one function: `calculate`. 
 ## Example
 
 ```js
-const rosu = require('rosu-pp-js')
+const rosu = require('rosu-pp')
 
 let arg = {
 path: "./maps/1980365.osu",
@@ -68,7 +68,6 @@ combo: 1388,
 
 let results = rosu.calculate(arg)
 ```
-
 
 ## Return object structure
 

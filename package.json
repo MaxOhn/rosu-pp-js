@@ -12,7 +12,7 @@
     },
     "author": "Max Ohn",
     "license": "MIT",
-    "devDependencies": {
+    "dependencies": {
         "cargo-cp-artifact": "^0.1"
     },
     "keywords": [
