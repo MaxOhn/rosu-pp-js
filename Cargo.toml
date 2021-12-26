@@ -1,0 +1,18 @@
+[package]
+name = "rosu-pp"
+version = "0.4.0"
+description = "osu! difficulty and pp calculation for all modes"
+authors = ["Max Ohn"]
+license = "MIT"
+edition = "2018"
+exclude = ["index.node"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+neon = { version = "0.8", default-features = false, features = ["napi-6"] }
+neon-serde2 = { version = "0.8"}
+rosu-pp = { version = "0.4" }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+

@@ -1,0 +1,124 @@
+# rosu-pp-js
+
+Difficulty and performance calculation for all [osu!](https://osu.ppy.sh/) modes.
+
+This is a js binding to the rust library [rosu-pp](https://github.com/MaxOhn/rosu-pp) which was bootstrapped through [neon](https://www.npmjs.com/package/create-neon).
+Since all the heavy lifting is done by rust, rosu-pp-js comes with a very fast performance.
+Check out rosu-pp's README for more info.
+
+## How to use rosu-pp-js
+
+The library has a very simple interface, namely only one function: `calculate`. This function takes one argument which can have two forms:
+- calculate only one score on a map:
+    ```js
+    {
+    path: "/path/to/file.osu", // the only mandatory field, everything else can be omitted
+    mods: integer,             // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
+    acc: double,               // if neither acc nor hitresults are specified, acc defaults to 100.0
+    n300: integer,             // defaults to value based on acc
+    n100: integer,             // defaults to value based on acc
+    n50: integer,              // defaults to value based on acc
+    nMisses: integer,          // defaults to 0
+    nKatu: integer,            // only relevant for osu!ctb
+    combo: integer,            // defaults to full combo
+    score: integer,            // only relevant for osu!mania
+    passedObjects: integer,    // only consider this many hit objects; useful for failed scores; defaults to all objects
+    }
+    ```
+- calculate multiple scores on a map:
+    ```js
+    {
+    path: "/path/to/file.osu",
+    params: [
+    { // everything in here is optional
+    mods: integer,
+    acc: double,
+    n300: integer,
+    n100: integer,
+    n50: integer,
+    nMisses: integer,
+    nKatu: integer,
+    combo: integer,
+    score: integer,
+    passedObjects: integer,
+    }, ...
+    ]
+    }
+    ```
+
+## Example
+
+```js
+const rosu = require('rosu-pp-js')
+
+let arg = {
+path: "./maps/1980365.osu",
+params: [
+{
+mods: 8 + 16, // HDHR
+}, // everything else is put on default i.e. the best possible score on HDHR
+{
+mods: 24,
+acc: 97.89,
+nMisses: 13,
+combo: 1388,
+}
+]
+}
+
+let results = rosu.calculate(arg)
+```
+
+
+## Return object structure
+
+The `calculate` function will provide you a **list of objects**, one for each score you specified parameters for. The exact structure of the contained objects depends on the mode of the map.
+
+In the following code block fields will be denoted with O/T/C/M for osu!standard, taiko, catch the beat, and mania. If a field is denoted with a mode, that field is guaranteed to be included in the object for maps of that mode, otherwise it is omitted.
+
+```js
+{
+mode: integer,            // O/T/C/M (0=O, 1=T, 2=C, 3=M)
+stars: double,            // O/T/C/M
+pp: double,               // O/T/C/M
+ppAcc: double,            // O/T/M
+ppAim: double,            // O
+ppFlashlight: double,     // O
+ppSpeed: double,          // O
+ppStrain: double,         // T/M
+nFruits: integer,         // C
+nDroplets: integer,       // C
+nTinyDroplets: integer,   // C
+aimStrain: double,        // O
+speedStrain: double,      // O
+flashlightRating: double, // O
+sliderFactor: double,     // O
+ar: double,               // O/T/C/M
+cs: double,               // O/T/C/M
+hp: double,               // O/T/C/M
+od: double,               // O/T/C/M
+bpm: double,              // O/T/C/M
+nCircles: integer,        // O/T/M
+nSliders: integer,        // O/T/M
+nSpinners: integer,       // O/T/C
+maxCombo: integer,        // O/T/C
+}
+```
+
+## Installing rosu-pp-js
+
+Installing rosu-pp-js requires a [supported version of Node and Rust](https://github.com/neon-bindings/neon#platform-support).
+
+You can install the project with npm. In the project directory, run:
+
+```sh
+$ npm install
+```
+
+This fully installs the project, including installing any dependencies and running the build.
+
+## Learn More
+- [rosu-pp documentation](https://docs.rs/rosu-pp/0.4.0/rosu_pp/)
+- [Rust documentation](https://www.rust-lang.org).
+- [Neon documentation](https://neon-bindings.com).
+- [Node documentation](https://nodejs.org).
