@@ -10,7 +10,7 @@
         "install": "npm run build-release",
         "test": "cargo test"
     },
-    "author": "Max Ohn",
+    "author": "Max Ohn <ohn.m@hotmail.de>",
     "license": "MIT",
     "dependencies": {
         "cargo-cp-artifact": "^0.1"
