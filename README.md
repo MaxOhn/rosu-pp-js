@@ -10,8 +10,8 @@ Check out rosu-pp's README for more info.
 
 The library has a very simple interface, namely only one function: `calculate`. This function takes one argument which can have two forms:
 - calculate only one score on a map:
-    ```js
-    {
+```js
+{
     path: "/path/to/file.osu", // the only mandatory field, everything else can be omitted
     mods: integer,             // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
     acc: double,               // if neither acc nor hitresults are specified, acc defaults to 100.0
@@ -23,28 +23,28 @@ The library has a very simple interface, namely only one function: `calculate`. 
     combo: integer,            // defaults to full combo
     score: integer,            // only relevant for osu!mania
     passedObjects: integer,    // only consider this many hit objects; useful for failed scores; defaults to all objects
-    }
-    ```
+}
+```
 - calculate multiple scores on a map:
-    ```js
-    {
+```js
+{
     path: "/path/to/file.osu",
     params: [
-    { // everything in here is optional
-    mods: integer,
-    acc: double,
-    n300: integer,
-    n100: integer,
-    n50: integer,
-    nMisses: integer,
-    nKatu: integer,
-    combo: integer,
-    score: integer,
-    passedObjects: integer,
-    }, ...
+        { // everything in here is optional
+            mods: integer,
+            acc: double,
+            n300: integer,
+            n100: integer,
+            n50: integer,
+            nMisses: integer,
+            nKatu: integer,
+            combo: integer,
+            score: integer,
+            passedObjects: integer,
+        }, ...
     ]
-    }
-    ```
+}
+```
 
 ## Example
 
@@ -52,18 +52,18 @@ The library has a very simple interface, namely only one function: `calculate`. 
 const rosu = require('rosu-pp')
 
 let arg = {
-path: "./maps/1980365.osu",
-params: [
-{
-mods: 8 + 16, // HDHR
-}, // everything else is put on default i.e. the best possible score on HDHR
-{
-mods: 24,
-acc: 97.89,
-nMisses: 13,
-combo: 1388,
-}
-]
+    path: "./maps/1980365.osu",
+    params: [
+        {
+            mods: 8 + 16, // HDHR
+        }, // everything else is put on default i.e. the best possible score on HDHR
+        {
+            mods: 24,
+            acc: 97.89,
+            nMisses: 13,
+            combo: 1388,
+        }
+    ]
 }
 
 let results = rosu.calculate(arg)
@@ -77,30 +77,30 @@ In the following code block fields will be denoted with O/T/C/M for osu!standard
 
 ```js
 {
-mode: integer,            // O/T/C/M (0=O, 1=T, 2=C, 3=M)
-stars: double,            // O/T/C/M
-pp: double,               // O/T/C/M
-ppAcc: double,            // O/T/M
-ppAim: double,            // O
-ppFlashlight: double,     // O
-ppSpeed: double,          // O
-ppStrain: double,         // T/M
-nFruits: integer,         // C
-nDroplets: integer,       // C
-nTinyDroplets: integer,   // C
-aimStrain: double,        // O
-speedStrain: double,      // O
-flashlightRating: double, // O
-sliderFactor: double,     // O
-ar: double,               // O/T/C/M
-cs: double,               // O/T/C/M
-hp: double,               // O/T/C/M
-od: double,               // O/T/C/M
-bpm: double,              // O/T/C/M
-nCircles: integer,        // O/T/M
-nSliders: integer,        // O/T/M
-nSpinners: integer,       // O/T/C
-maxCombo: integer,        // O/T/C
+    mode: integer,            // O/T/C/M (0=O, 1=T, 2=C, 3=M)
+    stars: double,            // O/T/C/M
+    pp: double,               // O/T/C/M
+    ppAcc: double,            // O/T/M
+    ppAim: double,            // O
+    ppFlashlight: double,     // O
+    ppSpeed: double,          // O
+    ppStrain: double,         // T/M
+    nFruits: integer,         // C
+    nDroplets: integer,       // C
+    nTinyDroplets: integer,   // C
+    aimStrain: double,        // O
+    speedStrain: double,      // O
+    flashlightRating: double, // O
+    sliderFactor: double,     // O
+    ar: double,               // O/T/C/M
+    cs: double,               // O/T/C/M
+    hp: double,               // O/T/C/M
+    od: double,               // O/T/C/M
+    bpm: double,              // O/T/C/M
+    nCircles: integer,        // O/T/M
+    nSliders: integer,        // O/T/M
+    nSpinners: integer,       // O/T/C
+    maxCombo: integer,        // O/T/C
 }
 ```
 
