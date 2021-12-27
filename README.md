@@ -2,8 +2,8 @@
 
 Difficulty and performance calculation for all [osu!](https://osu.ppy.sh/) modes.
 
-This is a js binding to the rust library [rosu-pp](https://github.com/MaxOhn/rosu-pp) which was bootstrapped through [neon](https://www.npmjs.com/package/create-neon).
-Since all the heavy lifting is done by rust, rosu-pp-js comes with a very fast performance.
+This is a js binding to the Rust library [rosu-pp](https://github.com/MaxOhn/rosu-pp) which was bootstrapped through [neon](https://www.npmjs.com/package/create-neon).
+Since all the heavy lifting is done by Rust, rosu-pp-js comes with a very fast performance.
 Check out rosu-pp's README for more info.
 
 ## How to use rosu-pp-js
@@ -73,7 +73,7 @@ let results = rosu.calculate(arg)
 
 The `calculate` function will provide you a **list of objects**, one for each score you specified parameters for. The exact structure of the contained objects depends on the mode of the map.
 
-In the following code block fields will be denoted with O/T/C/M for osu!standard, taiko, catch the beat, and mania. If a field is denoted with a mode, that field is guaranteed to be included in the object for maps of that mode, otherwise it is omitted.
+In the following code block, fields will be denoted with O/T/C/M for osu!standard, taiko, catch the beat, and mania. If a field is denoted with a mode, that field is guaranteed to be included in the object for maps of that mode, otherwise it is omitted.
 
 ```js
 {
@@ -108,10 +108,16 @@ In the following code block fields will be denoted with O/T/C/M for osu!standard
 
 Installing rosu-pp-js requires a [supported version of Node and Rust](https://github.com/neon-bindings/neon#platform-support).
 
-You can install the project with npm. In the project directory, run:
+Once [node](https://nodejs.org) and [Rust](https://www.rust-lang.org/learn/get-started) are ready to go, you can install the project with npm. In your project directory, run:
 
 ```sh
-$ npm install
+$ npm install rosu-pp
+```
+
+or
+
+```sh
+$ npm install https://github.com/MaxOhn/rosu-pp-js
 ```
 
 This fully installs the project, including installing any dependencies and running the build.
