@@ -1,6 +1,6 @@
 {
     "name": "rosu-pp",
-    "version": "0.4.0",
+    "version": "0.5.1",
     "description": "osu! difficulty and pp calculation for all modes",
     "main": "index.node",
     "scripts": {
