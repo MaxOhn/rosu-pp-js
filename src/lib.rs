@@ -1,12 +1,14 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     error::Error as StdError,
     fmt::{Formatter, Result as FmtResult, Write},
+    hash::{Hash, Hasher},
+    mem,
 };
 
 use neon::prelude::*;
 use rosu_pp::{
-    fruits::FruitsPerformanceAttributes, mania::ManiaPerformanceAttributes,
+    catch::CatchPerformanceAttributes, mania::ManiaPerformanceAttributes,
     osu::OsuPerformanceAttributes, taiko::TaikoPerformanceAttributes, AnyPP, Beatmap,
     BeatmapAttributes, BeatmapExt, PerformanceAttributes,
 };
@@ -184,7 +186,7 @@ impl CalculateResult {
         let bpm = map.bpm() * clock_rate;
 
         match attrs {
-            PerformanceAttributes::Fruits(FruitsPerformanceAttributes { pp, difficulty }) => Self {
+            PerformanceAttributes::Catch(CatchPerformanceAttributes { pp, difficulty }) => Self {
                 mode: 2,
                 pp,
                 stars: difficulty.stars,
