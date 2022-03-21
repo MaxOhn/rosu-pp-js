@@ -47,6 +47,7 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
                 let difficulty = attrs_seen
                     .entry(attr_key)
                     .or_insert_with(|| {
+                        attr_switcher.apply(&mut map);
                         let mut calculator = map.stars().mods(mods);
 
                         if let Some(passed_objects) = params.passed_objects {
@@ -57,7 +58,10 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
                             calculator = calculator.clock_rate(clock_rate);
                         }
 
-                        calculator.calculate()
+                        let attrs = calculator.calculate();
+                        attr_switcher.reset(&mut map);
+
+                        attrs
                     })
                     .to_owned();
 
@@ -75,9 +79,14 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
             .map(|params| {
                 let mods = params.mods;
                 let clock_rate = params.clock_rate.map(|rate| rate as f64);
-                let attrs = params.apply(AnyPP::new(&map));
+                let mut attr_switcher = params.as_attr_switcher();
 
-                CalculateResult::new(attrs, &map, mods, clock_rate)
+                attr_switcher.apply(&mut map);
+                let attrs = params.apply(AnyPP::new(&map));
+                let result = CalculateResult::new(attrs, &map, mods, clock_rate);
+                attr_switcher.reset(&mut map);
+
+                result
             })
             .collect()
     };
@@ -141,17 +150,15 @@ struct AttributeKey {
 }
 
 impl ScoreParams {
+    fn as_attr_switcher(&self) -> AttributeSwitcher {
+        AttributeSwitcher::new(self.ar, self.cs, self.hp, self.od, self.clock_rate)
+    }
+
     fn as_attr_key(&self) -> AttributeKey {
         AttributeKey {
             mods: self.mods,
             passed_objects: self.passed_objects,
-            attr_switcher: AttributeSwitcher::new(
-                self.ar,
-                self.cs,
-                self.hp,
-                self.od,
-                self.clock_rate,
-            ),
+            attr_switcher: self.as_attr_switcher(),
         }
     }
 
@@ -510,7 +517,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 struct AttributeSwitcher {
     ar: Option<f32>,
     cs: Option<f32>,
