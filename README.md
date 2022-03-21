@@ -23,6 +23,11 @@ The library has a very simple interface, namely only one function: `calculate`. 
     combo: integer,            // defaults to full combo
     score: integer,            // only relevant for osu!mania
     passedObjects: integer,    // only consider this many hit objects; useful for failed scores; defaults to all objects
+    clockRate: double,         // defaults to value based on mods i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM
+    ar: double,                // defaults to beatmap's value
+    cs: double,                // defaults to beatmap's value
+    hp: double,                // defaults to beatmap's value
+    od: double,                // defaults to beatmap's value
 }
 ```
 - calculate multiple scores on a map:
@@ -41,6 +46,11 @@ The library has a very simple interface, namely only one function: `calculate`. 
             combo: integer,
             score: integer,
             passedObjects: integer,
+            clockRate: double,
+            ar: double,
+            cs: double,
+            hp: double,
+            od: double,
         }, ...
     ]
 }
@@ -97,6 +107,7 @@ In the following code block, fields will be denoted with O/T/C/M for osu!standar
     hp: double,               // O/T/C/M
     od: double,               // O/T/C/M
     bpm: double,              // O/T/C/M
+    clockRate: double,        // O/T/C/M
     nCircles: integer,        // O/T/M
     nSliders: integer,        // O/T/M
     nSpinners: integer,       // O/T/C

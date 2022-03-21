@@ -28,78 +28,79 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
         return Ok(JsArray::new(&mut cx, 0).as_value(&mut cx));
     }
 
-    let map = Beatmap::from_path(path)
+    let mut map = Beatmap::from_path(path)
         .map_err(|e| unwind_error("Failed to parse beatmap", &e))
         .or_else(|e| cx.throw_error(e))?;
 
-    let mut mod_diffs = HashMap::new();
+    // Avoid caching if it's not necessary
+    let results: Vec<_> = if multiple_same_attributes(&params) {
+        let mut attrs_seen = HashMap::new();
 
-    let results: Vec<_> = params
-        .into_iter()
-        .map(|params| {
-            let ScoreParams {
-                mods,
-                n300,
-                n100,
-                n50,
-                n_misses,
-                n_katu,
-                acc,
-                combo,
-                score,
-                passed_objects,
-            } = params;
+        params
+            .into_iter()
+            .map(|params| {
+                let attr_key = params.as_attr_key();
+                let mut attr_switcher = attr_key.attr_switcher;
+                let mods = params.mods;
+                let clock_rate = params.clock_rate.map(|rate| rate as f64);
 
-            let difficulty = mod_diffs
-                .entry((mods, passed_objects))
-                .or_insert_with(|| map.stars(mods, passed_objects))
-                .to_owned();
+                let difficulty = attrs_seen
+                    .entry(attr_key)
+                    .or_insert_with(|| {
+                        let mut calculator = map.stars().mods(mods);
 
-            let mut calculator = AnyPP::new(&map).mods(mods).attributes(difficulty);
+                        if let Some(passed_objects) = params.passed_objects {
+                            calculator = calculator.passed_objects(passed_objects);
+                        }
 
-            if let Some(n300) = n300 {
-                calculator = calculator.n300(n300);
-            }
+                        if let Some(clock_rate) = clock_rate {
+                            calculator = calculator.clock_rate(clock_rate);
+                        }
 
-            if let Some(n100) = n100 {
-                calculator = calculator.n100(n100);
-            }
+                        calculator.calculate()
+                    })
+                    .to_owned();
 
-            if let Some(n50) = n50 {
-                calculator = calculator.n50(n50);
-            }
+                attr_switcher.apply(&mut map);
+                let attrs = params.apply(AnyPP::new(&map).attributes(difficulty));
+                let result = CalculateResult::new(attrs, &map, mods, clock_rate);
+                attr_switcher.reset(&mut map);
 
-            if let Some(n_misses) = n_misses {
-                calculator = calculator.misses(n_misses);
-            }
+                result
+            })
+            .collect()
+    } else {
+        params
+            .into_iter()
+            .map(|params| {
+                let mods = params.mods;
+                let clock_rate = params.clock_rate.map(|rate| rate as f64);
+                let attrs = params.apply(AnyPP::new(&map));
 
-            if let Some(n_katu) = n_katu {
-                calculator = calculator.n_katu(n_katu);
-            }
-
-            if let Some(combo) = combo {
-                calculator = calculator.combo(combo);
-            }
-
-            if let Some(passed_objects) = passed_objects {
-                calculator = calculator.passed_objects(passed_objects);
-            }
-
-            if let Some(acc) = acc {
-                calculator = calculator.accuracy(acc);
-            }
-
-            if let Some(score) = score {
-                calculator = calculator.score(score);
-            }
-
-            CalculateResult::new(calculator.calculate(), &map, mods)
-        })
-        .collect();
+                CalculateResult::new(attrs, &map, mods, clock_rate)
+            })
+            .collect()
+    };
 
     neon_serde2::to_value(&mut cx, &results)
         .map_err(|e| unwind_error("Failed to serialize results", &e))
         .or_else(|e| cx.throw_error(e))
+}
+
+fn multiple_same_attributes(params: &[ScoreParams]) -> bool {
+    if params.len() <= 1 {
+        return false;
+    }
+
+    let mut attrs_seen = HashSet::with_capacity(params.len());
+
+    for param in params {
+        if !attrs_seen.insert(param.as_attr_key()) {
+            return true;
+        }
+    }
+
+    false
 }
 
 struct CalculateArg {
@@ -124,6 +125,96 @@ struct ScoreParams {
     score: Option<u32>,
     #[serde(rename = "passedObjects")]
     passed_objects: Option<usize>,
+    #[serde(rename = "clockRate")]
+    clock_rate: Option<f32>,
+    ar: Option<f32>,
+    cs: Option<f32>,
+    hp: Option<f32>,
+    od: Option<f32>,
+}
+
+#[derive(Eq, Hash, PartialEq)]
+struct AttributeKey {
+    mods: u32,
+    passed_objects: Option<usize>,
+    attr_switcher: AttributeSwitcher,
+}
+
+impl ScoreParams {
+    fn as_attr_key(&self) -> AttributeKey {
+        AttributeKey {
+            mods: self.mods,
+            passed_objects: self.passed_objects,
+            attr_switcher: AttributeSwitcher::new(
+                self.ar,
+                self.cs,
+                self.hp,
+                self.od,
+                self.clock_rate,
+            ),
+        }
+    }
+
+    fn apply(self, mut calculator: AnyPP<'_>) -> PerformanceAttributes {
+        let Self {
+            mods,
+            n300,
+            n100,
+            n50,
+            n_misses,
+            n_katu,
+            acc,
+            combo,
+            score,
+            passed_objects,
+            clock_rate,
+            ..
+        } = self;
+
+        calculator = calculator.mods(mods);
+
+        if let Some(n300) = n300 {
+            calculator = calculator.n300(n300);
+        }
+
+        if let Some(n100) = n100 {
+            calculator = calculator.n100(n100);
+        }
+
+        if let Some(n50) = n50 {
+            calculator = calculator.n50(n50);
+        }
+
+        if let Some(n_misses) = n_misses {
+            calculator = calculator.misses(n_misses);
+        }
+
+        if let Some(n_katu) = n_katu {
+            calculator = calculator.n_katu(n_katu);
+        }
+
+        if let Some(combo) = combo {
+            calculator = calculator.combo(combo);
+        }
+
+        if let Some(passed_objects) = passed_objects {
+            calculator = calculator.passed_objects(passed_objects);
+        }
+
+        if let Some(acc) = acc {
+            calculator = calculator.accuracy(acc);
+        }
+
+        if let Some(score) = score {
+            calculator = calculator.score(score);
+        }
+
+        if let Some(clock_rate) = clock_rate {
+            calculator = calculator.clock_rate(clock_rate as f64);
+        }
+
+        calculator.calculate()
+    }
 }
 
 #[derive(Default, Serialize)]
@@ -163,6 +254,8 @@ struct CalculateResult {
     hp: f64,
     od: f64,
     bpm: f64,
+    #[serde(rename = "clockRate")]
+    clock_rate: f64,
     #[serde(rename = "nCircles", skip_serializing_if = "Option::is_none")]
     n_circles: Option<usize>,
     #[serde(rename = "nSliders", skip_serializing_if = "Option::is_none")]
@@ -174,15 +267,21 @@ struct CalculateResult {
 }
 
 impl CalculateResult {
-    fn new(attrs: PerformanceAttributes, map: &Beatmap, mods: u32) -> Self {
+    fn new(
+        attrs: PerformanceAttributes,
+        map: &Beatmap,
+        mods: u32,
+        clock_rate: Option<f64>,
+    ) -> Self {
         let BeatmapAttributes {
             ar,
             cs,
             hp,
             od,
-            clock_rate,
+            clock_rate: clock_rate_,
         } = map.attributes().mods(mods);
 
+        let clock_rate = clock_rate.unwrap_or(clock_rate_);
         let bpm = map.bpm() * clock_rate;
 
         match attrs {
@@ -200,6 +299,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clock_rate,
                 ..Default::default()
             },
             PerformanceAttributes::Mania(ManiaPerformanceAttributes {
@@ -220,6 +320,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clock_rate,
                 ..Default::default()
             },
             PerformanceAttributes::Osu(OsuPerformanceAttributes {
@@ -250,6 +351,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clock_rate,
                 ..Default::default()
             },
             PerformanceAttributes::Taiko(TaikoPerformanceAttributes {
@@ -272,6 +374,7 @@ impl CalculateResult {
                 hp,
                 od,
                 bpm,
+                clock_rate,
                 ..Default::default()
             },
         }
@@ -324,6 +427,11 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
         let mut combo = None;
         let mut score = None;
         let mut passed_objects = None;
+        let mut clock_rate = None;
+        let mut ar = None;
+        let mut cs = None;
+        let mut hp = None;
+        let mut od = None;
 
         while let Some(key) = map.next_key::<String>()? {
             match key.as_str() {
@@ -339,6 +447,11 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                 "combo" => combo = Some(map.next_value()?),
                 "score" => score = Some(map.next_value()?),
                 "passedObjects" => passed_objects = Some(map.next_value()?),
+                "clockRate" => clock_rate = Some(map.next_value()?),
+                "ar" => ar = Some(map.next_value()?),
+                "cs" => cs = Some(map.next_value()?),
+                "hp" => hp = Some(map.next_value()?),
+                "od" => od = Some(map.next_value()?),
                 _ => {
                     return Err(DeError::unknown_field(
                         key.as_str(),
@@ -355,6 +468,11 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                             "combo",
                             "score",
                             "passedObjects",
+                            "clockRate",
+                            "ar",
+                            "cs",
+                            "hp",
+                            "od",
                         ],
                     ))
                 }
@@ -377,6 +495,11 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                     combo,
                     score,
                     passed_objects,
+                    clock_rate,
+                    ar,
+                    cs,
+                    hp,
+                    od,
                 };
 
                 vec![params]
@@ -386,3 +509,71 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
         Ok(CalculateArg { path, params })
     }
 }
+
+#[derive(Copy, Clone)]
+struct AttributeSwitcher {
+    ar: Option<f32>,
+    cs: Option<f32>,
+    hp: Option<f32>,
+    od: Option<f32>,
+    clock_rate: Option<f32>,
+}
+
+impl AttributeSwitcher {
+    fn new(
+        ar: Option<f32>,
+        cs: Option<f32>,
+        hp: Option<f32>,
+        od: Option<f32>,
+        clock_rate: Option<f32>,
+    ) -> Self {
+        Self {
+            ar,
+            cs,
+            hp,
+            od,
+            clock_rate,
+        }
+    }
+
+    fn apply(&mut self, map: &mut Beatmap) {
+        if let Some(ref mut ar) = self.ar {
+            mem::swap(ar, &mut map.ar);
+        }
+        if let Some(ref mut cs) = self.cs {
+            mem::swap(cs, &mut map.cs);
+        }
+        if let Some(ref mut hp) = self.hp {
+            mem::swap(hp, &mut map.hp);
+        }
+        if let Some(ref mut od) = self.od {
+            mem::swap(od, &mut map.od);
+        }
+    }
+
+    fn reset(&mut self, map: &mut Beatmap) {
+        self.apply(map);
+    }
+}
+
+impl Hash for AttributeSwitcher {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        (&self.ar as *const _ as *const Option<u32>).hash(state);
+        (&self.cs as *const _ as *const Option<u32>).hash(state);
+        (&self.hp as *const _ as *const Option<u32>).hash(state);
+        (&self.od as *const _ as *const Option<u32>).hash(state);
+        (&self.clock_rate as *const _ as *const Option<u32>).hash(state);
+    }
+}
+
+impl PartialEq for AttributeSwitcher {
+    fn eq(&self, other: &Self) -> bool {
+        self.ar == other.ar
+            && self.cs == other.cs
+            && self.hp == other.hp
+            && self.od == other.od
+            && self.clock_rate == other.clock_rate
+    }
+}
+
+impl Eq for AttributeSwitcher {}
