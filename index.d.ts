@@ -96,4 +96,4 @@ export interface ManiaData extends GeneralData {
     nSliders: number;
 }
 
-export declare function calculate(args: SingleScoreQuery | MultipleScoreQuery): (OsuData | ManiaData | TaikoData | CatchData)[];
+export declare function calculate(query: SingleScoreQuery | MultipleScoreQuery): (OsuData | ManiaData | TaikoData | CatchData)[];
