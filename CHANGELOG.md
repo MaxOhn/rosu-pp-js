@@ -1,4 +1,7 @@
-# v0.5.2 (2022-03-21)
+# v0.5.3 (2022-04-21)
+- Added typings for TypeScript ([#1] - [@minidomo])
+
+## v0.5.2 (2022-03-21)
 - Now considering custom map attributes properly
 
 ## v0.5.1 (2022-03-21)
@@ -8,3 +11,7 @@
 
 ## v0.4.0 (2021-12-26)
 - Initial release with rosu-pp v0.4.0
+
+[@minidomo]: https://github.com/minidomo
+
+[#1]: https://github.com/MaxOhn/rosu-pp-js/pull/1
