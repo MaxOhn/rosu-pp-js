@@ -3,6 +3,7 @@
     "version": "0.5.2",
     "description": "osu! difficulty and pp calculation for all modes",
     "main": "index.node",
+    "types": "index.d.ts",
     "scripts": {
         "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
         "build-debug": "npm run build --",
