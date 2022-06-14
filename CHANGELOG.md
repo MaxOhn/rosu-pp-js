@@ -1,4 +1,7 @@
-# v0.5.3 (2022-04-21)
+# v0.5.4 (2022-06-14)
+- Bumped patch version of dependencies, including a [rosu-pp](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v052-2022-06-14) update
+
+## v0.5.3 (2022-04-21)
 - Added typings for TypeScript ([#1] - [@minidomo])
 
 ## v0.5.2 (2022-03-21)
