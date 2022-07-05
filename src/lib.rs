@@ -419,12 +419,14 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
 struct GameModeWrapper(Option<GameMode>);
 
 impl<'de> Deserialize<'de> for GameModeWrapper {
+    #[inline]
     fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         deserialize_mode(d).map(Self)
     }
 }
 
 impl From<GameModeWrapper> for Option<GameMode> {
+    #[inline]
     fn from(wrapper: GameModeWrapper) -> Self {
         wrapper.0
     }
@@ -442,14 +444,17 @@ static GAMEMODE_VISITOR_EXPECTS: &str =
 impl<'de> Visitor<'de> for GameModeVisitor {
     type Value = GameMode;
 
+    #[inline]
     fn expecting(&self, f: &mut Formatter) -> FmtResult {
         f.write_str(GAMEMODE_VISITOR_EXPECTS)
     }
 
+    #[inline]
     fn visit_u64<E: DeError>(self, v: u64) -> Result<Self::Value, E> {
         self.visit_i64(v.try_into().unwrap_or_default())
     }
 
+    #[inline]
     fn visit_i64<E: DeError>(self, v: i64) -> Result<Self::Value, E> {
         let mode = match v {
             0 => GameMode::STD,
@@ -467,6 +472,7 @@ impl<'de> Visitor<'de> for GameModeVisitor {
         Ok(mode)
     }
 
+    #[inline]
     fn visit_str<E: DeError>(self, v: &str) -> Result<Self::Value, E> {
         let mode = match v {
             "0" | "o" | "osu" | "osu!" | "std" | "standard" => GameMode::STD,
@@ -486,6 +492,7 @@ impl<'de> Visitor<'de> for GameModeVisitor {
 }
 
 impl<'de> Deserialize<'de> for CalculateArg {
+    #[inline]
     fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         d.deserialize_map(CalculateArgVisitor)
     }
@@ -496,6 +503,7 @@ struct CalculateArgVisitor;
 impl<'de> Visitor<'de> for CalculateArgVisitor {
     type Value = CalculateArg;
 
+    #[inline]
     fn expecting(&self, f: &mut Formatter) -> FmtResult {
         f.write_str("a PerformanceArg struct")
     }
@@ -646,6 +654,7 @@ impl AttributeSwitcher {
 }
 
 impl Hash for AttributeSwitcher {
+    #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         (&self.ar as *const _ as *const Option<u32>).hash(state);
         (&self.cs as *const _ as *const Option<u32>).hash(state);
@@ -656,6 +665,7 @@ impl Hash for AttributeSwitcher {
 }
 
 impl PartialEq for AttributeSwitcher {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         self.ar == other.ar
             && self.cs == other.cs
