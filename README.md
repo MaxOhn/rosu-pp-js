@@ -13,6 +13,7 @@ The library has a very simple interface, namely only one function: `calculate`. 
 ```js
 {
     path: "/path/to/file.osu", // the only mandatory field, everything else can be omitted
+    mode: integer or string,   // convert the map to a specific mode; accepts 0/1/2/3 or "o"/"t"/"c"/"m"/various variations
     mods: integer,             // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
     acc: double,               // if neither acc nor hitresults are specified, acc defaults to 100.0
     n300: integer,             // defaults to value based on acc
@@ -36,6 +37,7 @@ The library has a very simple interface, namely only one function: `calculate`. 
     path: "/path/to/file.osu",
     params: [
         { // everything in here is optional
+            mode: integer or string,
             mods: integer,
             acc: double,
             n300: integer,

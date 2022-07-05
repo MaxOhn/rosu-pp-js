@@ -1,4 +1,9 @@
-# v0.5.4 (2022-06-14)
+# v0.6.0 (2022-07-05)
+- Updated to [rosu-pp v0.6.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v060-2022-07-05)
+- The field `mode` can now be specified to convert maps to different modes
+- Added the typescript type `enum GameMode { Osu, Taiko, Catch, Mania }`
+
+## v0.5.4 (2022-06-14)
 - Bumped patch version of dependencies, including a [rosu-pp](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v052-2022-06-14) update
 
 ## v0.5.3 (2022-04-21)
@@ -8,7 +13,7 @@
 - Now considering custom map attributes properly
 
 ## v0.5.1 (2022-03-21)
-- Updated to [rosu-pp v0.5.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md)
+- Updated to [rosu-pp v0.5.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v051-2022-03-21)
 - `ScoreParams` may now include additional fields: `clockRate`, `ar`, `cs`, `hp`, and `od`
 - The return object of a calculation now also includes a `clockRate` field
 

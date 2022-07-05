@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    convert::TryInto,
     error::Error as StdError,
     fmt::{Formatter, Result as FmtResult, Write},
     hash::{Hash, Hasher},
@@ -8,12 +9,12 @@ use std::{
 
 use neon::prelude::*;
 use rosu_pp::{
-    catch::CatchPerformanceAttributes, mania::ManiaPerformanceAttributes,
-    osu::OsuPerformanceAttributes, taiko::TaikoPerformanceAttributes, AnyPP, Beatmap,
-    BeatmapAttributes, BeatmapExt, PerformanceAttributes,
+    beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
+    mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
+    taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode, PerformanceAttributes,
 };
 use serde::{
-    de::{Error as DeError, MapAccess, Visitor},
+    de::{Error as DeError, MapAccess, Unexpected, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 
@@ -120,6 +121,8 @@ struct CalculateArg {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ScoreParams {
+    #[serde(default, deserialize_with = "deserialize_mode")]
+    mode: Option<GameMode>,
     #[serde(default)]
     mods: u32,
     n300: Option<usize>,
@@ -144,6 +147,7 @@ struct ScoreParams {
 
 #[derive(Eq, Hash, PartialEq)]
 struct AttributeKey {
+    mode: Option<GameMode>,
     mods: u32,
     passed_objects: Option<usize>,
     attr_switcher: AttributeSwitcher,
@@ -156,6 +160,7 @@ impl ScoreParams {
 
     fn as_attr_key(&self) -> AttributeKey {
         AttributeKey {
+            mode: self.mode,
             mods: self.mods,
             passed_objects: self.passed_objects,
             attr_switcher: self.as_attr_switcher(),
@@ -164,6 +169,7 @@ impl ScoreParams {
 
     fn apply(self, mut calculator: AnyPP<'_>) -> PerformanceAttributes {
         let Self {
+            mode,
             mods,
             n300,
             n100,
@@ -177,6 +183,10 @@ impl ScoreParams {
             clock_rate,
             ..
         } = self;
+
+        if let Some(mode) = mode {
+            calculator = calculator.mode(mode);
+        }
 
         calculator = calculator.mods(mods);
 
@@ -406,6 +416,75 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     Ok(())
 }
 
+struct GameModeWrapper(Option<GameMode>);
+
+impl<'de> Deserialize<'de> for GameModeWrapper {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        deserialize_mode(d).map(Self)
+    }
+}
+
+impl From<GameModeWrapper> for Option<GameMode> {
+    fn from(wrapper: GameModeWrapper) -> Self {
+        wrapper.0
+    }
+}
+
+fn deserialize_mode<'de, D: Deserializer<'de>>(d: D) -> Result<Option<GameMode>, D::Error> {
+    d.deserialize_any(GameModeVisitor).map(Some)
+}
+
+struct GameModeVisitor;
+
+static GAMEMODE_VISITOR_EXPECTS: &str =
+    r#"integer 0, 1, 2, 3 or string "o", "t", "c", "m", "osu", "taiko", "ctb", "catch", "mania""#;
+
+impl<'de> Visitor<'de> for GameModeVisitor {
+    type Value = GameMode;
+
+    fn expecting(&self, f: &mut Formatter) -> FmtResult {
+        f.write_str(GAMEMODE_VISITOR_EXPECTS)
+    }
+
+    fn visit_u64<E: DeError>(self, v: u64) -> Result<Self::Value, E> {
+        self.visit_i64(v.try_into().unwrap_or_default())
+    }
+
+    fn visit_i64<E: DeError>(self, v: i64) -> Result<Self::Value, E> {
+        let mode = match v {
+            0 => GameMode::STD,
+            1 => GameMode::TKO,
+            2 => GameMode::CTB,
+            3 => GameMode::MNA,
+            _ => {
+                return Err(DeError::invalid_value(
+                    Unexpected::Signed(v),
+                    &GAMEMODE_VISITOR_EXPECTS,
+                ))
+            }
+        };
+
+        Ok(mode)
+    }
+
+    fn visit_str<E: DeError>(self, v: &str) -> Result<Self::Value, E> {
+        let mode = match v {
+            "0" | "o" | "osu" | "osu!" | "std" | "standard" => GameMode::STD,
+            "1" | "t" | "taiko" | "tko" => GameMode::TKO,
+            "2" | "c" | "ctb" | "catch" | "catch the beat" => GameMode::CTB,
+            "3" | "m" | "mania" | "mna" => GameMode::MNA,
+            _ => {
+                return Err(DeError::invalid_value(
+                    Unexpected::Str(v),
+                    &GAMEMODE_VISITOR_EXPECTS,
+                ))
+            }
+        };
+
+        Ok(mode)
+    }
+}
+
 impl<'de> Deserialize<'de> for CalculateArg {
     fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         d.deserialize_map(CalculateArgVisitor)
@@ -424,6 +503,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
     fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
         let mut path = None;
         let mut params = None;
+        let mut mode = None;
         let mut mods = None;
         let mut n300 = None;
         let mut n100 = None;
@@ -444,6 +524,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
             match key.as_str() {
                 "path" => path = Some(map.next_value()?),
                 "params" => params = Some(map.next_value()?),
+                "mode" => mode = Some(map.next_value()?),
                 "mods" => mods = Some(map.next_value()?),
                 "n300" => n300 = Some(map.next_value()?),
                 "n100" => n100 = Some(map.next_value()?),
@@ -492,6 +573,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
             Some(p) => p,
             None => {
                 let params = ScoreParams {
+                    mode: mode.and_then(GameModeWrapper::into),
                     mods: mods.unwrap_or(0),
                     n300,
                     n100,

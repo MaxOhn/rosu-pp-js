@@ -1,5 +1,6 @@
 export interface SingleScoreQuery {
     path: string;
+    mode?: GameMode;
     mods?: number;
     acc?: number;
     n300?: number;
@@ -17,12 +18,20 @@ export interface SingleScoreQuery {
     od?: number;
 }
 
+export const enum GameMode {
+    Osu = 0,
+    Taiko = 1,
+    Catch = 2,
+    Mania = 3,
+}
+
 export interface MultipleScoreQuery {
     path: string;
     params: MultipleScoreQueryOptions[];
 }
 
 export interface MultipleScoreQueryOptions {
+    mode?: GameMode;
     mods?: number;
     acc?: number;
     n300?: number;
@@ -52,7 +61,7 @@ export interface GeneralData {
 }
 
 export interface OsuData extends GeneralData {
-    mode: 0;
+    mode: GameMode.Osu;
     ppAcc: number;
     ppAim: number;
     ppFlashlight: number;
@@ -69,7 +78,7 @@ export interface OsuData extends GeneralData {
 }
 
 export interface TaikoData extends GeneralData {
-    mode: 1;
+    mode: GameMode.Taiko;
     ppAcc: number;
     ppStrain: number;
     nCircles: number;
@@ -79,7 +88,7 @@ export interface TaikoData extends GeneralData {
 }
 
 export interface CatchData extends GeneralData {
-    mode: 2;
+    mode: GameMode.Catch;
     nFruits: number;
     nDroplets: number;
     nTinyDroplets: number;
@@ -88,7 +97,7 @@ export interface CatchData extends GeneralData {
 }
 
 export interface ManiaData extends GeneralData {
-    mode: 3;
+    mode: GameMode.Mania;
     ppAcc: number;
     ppStrain: number;
     clockRate: number;

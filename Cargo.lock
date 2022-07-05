@@ -248,19 +248,19 @@ dependencies = [
 
 [[package]]
 name = "rosu-pp"
-version = "0.5.1"
+version = "0.6.0"
 dependencies = [
  "neon",
  "neon-serde2",
- "rosu-pp 0.5.2",
+ "rosu-pp 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
 ]
 
 [[package]]
 name = "rosu-pp"
-version = "0.5.2"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5c816e053b2305929c9416953b2a0c42e01a98072a2e06334ab4209826b6c62"
+checksum = "92439367271f2657f29f9e2bd1dc08d413a7d820139840001fe57a1b21500bfb"
 
 [[package]]
 name = "rustc-demangle"
