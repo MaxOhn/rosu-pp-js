@@ -457,10 +457,10 @@ impl<'de> Visitor<'de> for GameModeVisitor {
     #[inline]
     fn visit_i64<E: DeError>(self, v: i64) -> Result<Self::Value, E> {
         let mode = match v {
-            0 => GameMode::STD,
-            1 => GameMode::TKO,
-            2 => GameMode::CTB,
-            3 => GameMode::MNA,
+            0 => GameMode::Osu,
+            1 => GameMode::Taiko,
+            2 => GameMode::Catch,
+            3 => GameMode::Mania,
             _ => {
                 return Err(DeError::invalid_value(
                     Unexpected::Signed(v),
@@ -475,10 +475,10 @@ impl<'de> Visitor<'de> for GameModeVisitor {
     #[inline]
     fn visit_str<E: DeError>(self, v: &str) -> Result<Self::Value, E> {
         let mode = match v {
-            "0" | "o" | "osu" | "osu!" | "std" | "standard" => GameMode::STD,
-            "1" | "t" | "taiko" | "tko" => GameMode::TKO,
-            "2" | "c" | "ctb" | "catch" | "catch the beat" => GameMode::CTB,
-            "3" | "m" | "mania" | "mna" => GameMode::MNA,
+            "0" | "o" | "osu" | "osu!" | "std" | "standard" => GameMode::Osu,
+            "1" | "t" | "taiko" | "tko" => GameMode::Taiko,
+            "2" | "c" | "ctb" | "catch" | "catch the beat" => GameMode::Catch,
+            "3" | "m" | "mania" | "mna" => GameMode::Mania,
             _ => {
                 return Err(DeError::invalid_value(
                     Unexpected::Str(v),
