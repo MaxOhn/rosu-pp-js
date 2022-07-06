@@ -136,7 +136,7 @@ $ npm install https://github.com/MaxOhn/rosu-pp-js
 This fully installs the project, including installing any dependencies and running the build.
 
 ## Learn More
-- [rosu-pp documentation](https://docs.rs/rosu-pp/0.4.0/rosu_pp/)
+- [rosu-pp documentation](https://docs.rs/rosu-pp)
 - [Rust documentation](https://www.rust-lang.org).
 - [Neon documentation](https://neon-bindings.com).
 - [Node documentation](https://nodejs.org).
