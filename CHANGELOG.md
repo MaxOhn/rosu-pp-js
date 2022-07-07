@@ -1,4 +1,8 @@
-# v0.6.0 (2022-07-05)
+# v0.7.0 (2022-07-07)
+- Updated to [rosu-pp v0.7.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v070-2022-07-06)
+- Added `strains` method to calculate the strain values for all skills of the map's game mode
+
+## v0.6.0 (2022-07-05)
 - Updated to [rosu-pp v0.6.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v060-2022-07-05)
 - The field `mode` can now be specified to convert maps to different modes
 - Added the typescript type `enum GameMode { Osu, Taiko, Catch, Mania }`
