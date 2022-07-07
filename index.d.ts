@@ -106,3 +106,35 @@ export interface ManiaData extends GeneralData {
 }
 
 export declare function calculate(query: SingleScoreQuery | MultipleScoreQuery): (OsuData | ManiaData | TaikoData | CatchData)[];
+
+export interface GeneralStrains {
+    sectionLength: number;
+}
+
+export interface OsuStrains extends GeneralStrains {
+    mode: GameMode.Osu;
+    aim: Array<number>;
+    aimNoSliders: Array<number>;
+    speed: Array<number>;
+    flashlight: Array<number>;
+}
+
+export interface TaikoStrains extends GeneralStrains {
+    mode: GameMode.Taiko;
+    color: Array<number>;
+    rhythm: Array<number>;
+    staminaLeft: Array<number>;
+    staminaRight: Array<number>;
+}
+
+export interface CatchStrains extends GeneralStrains {
+    mode: GameMode.Catch;
+    movement: Array<number>;
+}
+
+export interface ManiaStrains extends GeneralStrains {
+    mode: GameMode.Mania;
+    strains: Array<number>;
+}
+
+export declare function strains(path: string, mods?: number): OsuStrains | TaikoStrains | CatchStrains | ManiaStrains;

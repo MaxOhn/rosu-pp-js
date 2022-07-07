@@ -8,14 +8,14 @@ Check out rosu-pp's README for more info.
 
 ## How to use rosu-pp-js
 
-The library has a very simple interface, namely only one function: `calculate`. This function takes one argument which can have two forms:
+The library has a very simple interface, namely only two function: `calculate` and `strains`. The `calculate` function takes one argument which can have two forms:
 - calculate only one score on a map:
 ```js
 {
     path: "/path/to/file.osu", // the only mandatory field, everything else can be omitted
     mode: integer or string,   // convert the map to a specific mode; accepts 0/1/2/3 or "o"/"t"/"c"/"m"/various variations
     mods: integer,             // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
-    acc: double,               // if neither acc nor hitresults are specified, acc defaults to 100.0
+    acc: number,               // if neither acc nor hitresults are specified, acc defaults to 100.0
     n300: integer,             // defaults to value based on acc
     n100: integer,             // defaults to value based on acc
     n50: integer,              // defaults to value based on acc
@@ -24,11 +24,11 @@ The library has a very simple interface, namely only one function: `calculate`. 
     combo: integer,            // defaults to full combo
     score: integer,            // only relevant for osu!mania
     passedObjects: integer,    // only consider this many hit objects; useful for failed scores; defaults to all objects
-    clockRate: double,         // defaults to value based on mods i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM
-    ar: double,                // defaults to beatmap's value
-    cs: double,                // defaults to beatmap's value
-    hp: double,                // defaults to beatmap's value
-    od: double,                // defaults to beatmap's value
+    clockRate: number,         // defaults to value based on mods i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM
+    ar: number,                // defaults to beatmap's value
+    cs: number,                // defaults to beatmap's value
+    hp: number,                // defaults to beatmap's value
+    od: number,                // defaults to beatmap's value
 }
 ```
 - calculate multiple scores on a map:
@@ -39,7 +39,7 @@ The library has a very simple interface, namely only one function: `calculate`. 
         { // everything in here is optional
             mode: integer or string,
             mods: integer,
-            acc: double,
+            acc: number,
             n300: integer,
             n100: integer,
             n50: integer,
@@ -48,11 +48,11 @@ The library has a very simple interface, namely only one function: `calculate`. 
             combo: integer,
             score: integer,
             passedObjects: integer,
-            clockRate: double,
-            ar: double,
-            cs: double,
-            hp: double,
-            od: double,
+            clockRate: number,
+            ar: number,
+            cs: number,
+            hp: number,
+            od: number,
         }, ...
     ]
 }
@@ -90,31 +90,65 @@ In the following code block, fields will be denoted with O/T/C/M for osu!standar
 ```js
 {
     mode: integer,            // O/T/C/M (0=O, 1=T, 2=C, 3=M)
-    stars: double,            // O/T/C/M
-    pp: double,               // O/T/C/M
-    ppAcc: double,            // O/T/M
-    ppAim: double,            // O
-    ppFlashlight: double,     // O
-    ppSpeed: double,          // O
-    ppStrain: double,         // T/M
+    stars: number,            // O/T/C/M
+    pp: number,               // O/T/C/M
+    ppAcc: number,            // O/T/M
+    ppAim: number,            // O
+    ppFlashlight: number,     // O
+    ppSpeed: number,          // O
+    ppStrain: number,         // T/M
     nFruits: integer,         // C
     nDroplets: integer,       // C
     nTinyDroplets: integer,   // C
-    aimStrain: double,        // O
-    speedStrain: double,      // O
-    flashlightRating: double, // O
-    sliderFactor: double,     // O
-    ar: double,               // O/T/C/M
-    cs: double,               // O/T/C/M
-    hp: double,               // O/T/C/M
-    od: double,               // O/T/C/M
-    bpm: double,              // O/T/C/M
-    clockRate: double,        // O/T/C/M
+    aimStrain: number,        // O
+    speedStrain: number,      // O
+    flashlightRating: number, // O
+    sliderFactor: number,     // O
+    ar: number,               // O/T/C/M
+    cs: number,               // O/T/C/M
+    hp: number,               // O/T/C/M
+    od: number,               // O/T/C/M
+    bpm: number,              // O/T/C/M
+    clockRate: number,        // O/T/C/M
     nCircles: integer,        // O/T/M
     nSliders: integer,        // O/T/M
     nSpinners: integer,       // O/T/C
     maxCombo: integer,        // O/T/C
 }
+```
+
+## Calculating strains
+
+If you want to plot the difficulty of a map over time, you can calculate the strain values through the `strains` function.
+This function requires at least one argument, namely the path to a `.osu` file,
+and an optional second argument, namely the mods.
+
+The returned object's attributes depend on the map's game mode again and look as follows:
+```js
+{
+    mode: number,               // O/T/C/M (0=O, 1=T, 2=C, 3=M)
+    sectionLength: number,      // O/T/C/M
+    aim: Array<number>          // O
+    aimNoSliders: Array<number> // O
+    speed: Array<number>        // O
+    flashlight: Array<number>   // O
+    color: Array<number>        // T
+    rhythm: Array<number>       // T
+    staminaLeft: Array<number>  // T
+    staminaRight: Array<number> // T
+    strains: Array<number>      // M
+    movement: Array<number>     // C
+}
+```
+`sectionLength` is the amount of milliseconds between two strain values
+and all other fields are lists with one strain value per section.
+
+Here's a small example
+```js
+const rosu = require('rosu-pp')
+
+let strains = rosu.strains("./maps/1980365.osu", 8 + 16); // HDHR
+let highest_aim_strain = Math.max(...strains.aim);
 ```
 
 ## Installing rosu-pp-js

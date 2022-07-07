@@ -12,11 +12,33 @@ use rosu_pp::{
     beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
     mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
     taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode, PerformanceAttributes,
+    Strains as RosuStrains,
 };
 use serde::{
     de::{Error as DeError, MapAccess, Unexpected, Visitor},
     Deserialize, Deserializer, Serialize,
 };
+
+fn strains(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let path = cx.argument::<JsString>(0)?.value(&mut cx);
+
+    let map = Beatmap::from_path(path)
+        .map_err(|e| unwind_error("Failed to parse beatmap", &e))
+        .or_else(|e| cx.throw_error(e))?;
+
+    let mods: u32 = match cx.argument_opt(1) {
+        Some(arg) => neon_serde2::from_value(&mut cx, arg).or_else(|_| {
+            cx.throw_error("The optional second argument must be an integer for mods")
+        })?,
+        None => 0,
+    };
+
+    let strains = Strains::from(map.strains(mods));
+
+    neon_serde2::to_value(&mut cx, &strains)
+        .map_err(|e| unwind_error("Failed to serialize results", &e))
+        .or_else(|e| cx.throw_error(e))
+}
 
 fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg = cx.argument::<JsValue>(0)?;
@@ -111,6 +133,67 @@ fn multiple_same_attributes(params: &[ScoreParams]) -> bool {
     }
 
     false
+}
+
+#[derive(Clone, Default, PartialEq, Serialize)]
+struct Strains {
+    mode: u8,
+    section_length: f64,
+
+    color: Option<Vec<f64>>,
+    rhythm: Option<Vec<f64>>,
+    #[serde(rename = "staminaLeft")]
+    stamina_left: Option<Vec<f64>>,
+    #[serde(rename = "staminaRight")]
+    stamina_right: Option<Vec<f64>>,
+
+    aim: Option<Vec<f64>>,
+    #[serde(rename = "aimNoSliders")]
+    aim_no_sliders: Option<Vec<f64>>,
+    speed: Option<Vec<f64>>,
+    flashlight: Option<Vec<f64>>,
+
+    strains: Option<Vec<f64>>,
+
+    movement: Option<Vec<f64>>,
+}
+
+impl From<RosuStrains> for Strains {
+    #[inline]
+    fn from(strains: RosuStrains) -> Self {
+        match strains {
+            RosuStrains::Catch(strains) => Self {
+                mode: 2,
+                section_length: strains.section_len,
+                movement: Some(strains.movement),
+                ..Default::default()
+            },
+            RosuStrains::Mania(strains) => Self {
+                mode: 3,
+                section_length: strains.section_len,
+                strains: Some(strains.strains),
+                ..Default::default()
+            },
+            RosuStrains::Osu(strains) => Self {
+                mode: 0,
+                section_length: strains.section_len,
+                aim: Some(strains.aim),
+                aim_no_sliders: Some(strains.aim_no_sliders),
+                speed: Some(strains.speed),
+                flashlight: Some(strains.flashlight),
+                ..Default::default()
+            },
+            RosuStrains::Taiko(strains) => Self {
+                mode: 1,
+                section_length: strains.section_len,
+                color: Some(strains.color),
+                rhythm: Some(strains.rhythm),
+                stamina_left: Some(strains.stamina_left),
+                stamina_right: Some(strains.stamina_right),
+                ..Default::default()
+            },
+        }
+    }
 }
 
 struct CalculateArg {
@@ -412,6 +495,7 @@ fn unwind_error(cause: &str, mut e: &dyn StdError) -> String {
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("calculate", calculate)?;
+    cx.export_function("strains", strains)?;
 
     Ok(())
 }
