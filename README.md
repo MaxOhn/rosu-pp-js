@@ -126,18 +126,18 @@ and an optional second argument, namely the mods.
 The returned object's attributes depend on the map's game mode again and look as follows:
 ```js
 {
-    mode: number,               // O/T/C/M (0=O, 1=T, 2=C, 3=M)
-    sectionLength: number,      // O/T/C/M
-    aim: Array<number>          // O
-    aimNoSliders: Array<number> // O
-    speed: Array<number>        // O
-    flashlight: Array<number>   // O
-    color: Array<number>        // T
-    rhythm: Array<number>       // T
-    staminaLeft: Array<number>  // T
-    staminaRight: Array<number> // T
-    strains: Array<number>      // M
-    movement: Array<number>     // C
+    mode: number,                // O/T/C/M (0=O, 1=T, 2=C, 3=M)
+    sectionLength: number,       // O/T/C/M
+    aim: Array<number>,          // O
+    aimNoSliders: Array<number>, // O
+    speed: Array<number>,        // O
+    flashlight: Array<number>,   // O
+    color: Array<number>,        // T
+    rhythm: Array<number>,       // T
+    staminaLeft: Array<number>,  // T
+    staminaRight: Array<number>, // T
+    strains: Array<number>,      // M
+    movement: Array<number>,     // C
 }
 ```
 `sectionLength` is the amount of milliseconds between two strain values
