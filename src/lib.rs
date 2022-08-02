@@ -356,6 +356,10 @@ struct CalculateResult {
     bpm: f64,
     #[serde(rename = "clockRate")]
     clock_rate: f64,
+    #[serde(rename = "timePreempt")]
+    time_preempt: Option<f64>,
+    #[serde(rename = "greatHitWindow")]
+    great_hitwindow: Option<f64>,
     #[serde(rename = "nCircles", skip_serializing_if = "Option::is_none")]
     n_circles: Option<usize>,
     #[serde(rename = "nSliders", skip_serializing_if = "Option::is_none")]
@@ -373,15 +377,32 @@ impl CalculateResult {
         mods: u32,
         clock_rate: Option<f64>,
     ) -> Self {
+        let mut attr_builder = map.attributes();
+
+        if let Some(clock_rate) = clock_rate {
+            attr_builder.clock_rate(clock_rate);
+        }
+
+        let mode = match &attrs {
+            PerformanceAttributes::Catch(_) => GameMode::Catch,
+            PerformanceAttributes::Mania(_) => GameMode::Mania,
+            PerformanceAttributes::Osu(_) => GameMode::Osu,
+            PerformanceAttributes::Taiko(_) => GameMode::Taiko,
+        };
+
+        if map.mode == GameMode::Osu && mode != GameMode::Osu {
+            attr_builder.converted(true);
+        }
+
         let BeatmapAttributes {
             ar,
             cs,
             hp,
             od,
-            clock_rate: clock_rate_,
-        } = map.attributes().mods(mods);
+            clock_rate,
+            hit_windows,
+        } = attr_builder.mods(mods).mode(mode).build();
 
-        let clock_rate = clock_rate.unwrap_or(clock_rate_);
         let bpm = map.bpm() * clock_rate;
 
         match attrs {
@@ -421,6 +442,7 @@ impl CalculateResult {
                 od,
                 bpm,
                 clock_rate,
+                great_hitwindow: Some(hit_windows.od),
                 ..Default::default()
             },
             PerformanceAttributes::Osu(OsuPerformanceAttributes {
@@ -452,6 +474,8 @@ impl CalculateResult {
                 od,
                 bpm,
                 clock_rate,
+                time_preempt: Some(hit_windows.ar),
+                great_hitwindow: Some(hit_windows.od),
                 ..Default::default()
             },
             PerformanceAttributes::Taiko(TaikoPerformanceAttributes {
@@ -475,6 +499,7 @@ impl CalculateResult {
                 od,
                 bpm,
                 clock_rate,
+                great_hitwindow: Some(hit_windows.od),
                 ..Default::default()
             },
         }

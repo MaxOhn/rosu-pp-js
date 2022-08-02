@@ -110,6 +110,8 @@ In the following code block, fields will be denoted with O/T/C/M for osu!standar
     od: number,               // O/T/C/M
     bpm: number,              // O/T/C/M
     clockRate: number,        // O/T/C/M
+    timePreempt: number,      // O
+    greatHitWindow: number,   // O/T/M
     nCircles: integer,        // O/T/M
     nSliders: integer,        // O/T/M
     nSpinners: integer,       // O/T/C
@@ -126,7 +128,7 @@ and an optional second argument, namely the mods.
 The returned object's attributes depend on the map's game mode again and look as follows:
 ```js
 {
-    mode: number,                // O/T/C/M (0=O, 1=T, 2=C, 3=M)
+    mode: integer,               // O/T/C/M (0=O, 1=T, 2=C, 3=M)
     sectionLength: number,       // O/T/C/M
     aim: Array<number>,          // O
     aimNoSliders: Array<number>, // O

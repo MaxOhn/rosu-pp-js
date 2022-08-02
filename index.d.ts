@@ -75,6 +75,8 @@ export interface OsuData extends GeneralData {
     nSliders: number;
     nSpinners: number;
     maxCombo: number;
+    timePreempt: number;
+    greatHitwindow: number;
 }
 
 export interface TaikoData extends GeneralData {
@@ -85,6 +87,7 @@ export interface TaikoData extends GeneralData {
     nSliders: number;
     nSpinners: number;
     maxCombo: number;
+    greatHitwindow: number;
 }
 
 export interface CatchData extends GeneralData {
@@ -103,6 +106,7 @@ export interface ManiaData extends GeneralData {
     clockRate: number;
     nCircles: number;
     nSliders: number;
+    greatHitwindow: number;
 }
 
 export declare function calculate(query: SingleScoreQuery | MultipleScoreQuery): (OsuData | ManiaData | TaikoData | CatchData)[];
