@@ -27,7 +27,7 @@ fn strains(mut cx: FunctionContext) -> JsResult<JsValue> {
         .or_else(|e| cx.throw_error(e))?;
 
     let mods: u32 = match cx.argument_opt(1) {
-        Some(arg) => neon_serde2::from_value(&mut cx, arg).or_else(|_| {
+        Some(arg) => neon_serde3::from_value(&mut cx, arg).or_else(|_| {
             cx.throw_error("The optional second argument must be an integer for mods")
         })?,
         None => 0,
@@ -35,7 +35,7 @@ fn strains(mut cx: FunctionContext) -> JsResult<JsValue> {
 
     let strains = Strains::from(map.strains(mods));
 
-    neon_serde2::to_value(&mut cx, &strains)
+    neon_serde3::to_value(&mut cx, &strains)
         .map_err(|e| unwind_error("Failed to serialize results", &e))
         .or_else(|e| cx.throw_error(e))
 }
@@ -43,7 +43,7 @@ fn strains(mut cx: FunctionContext) -> JsResult<JsValue> {
 fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg = cx.argument::<JsValue>(0)?;
 
-    let CalculateArg { path, params } = neon_serde2::from_value(&mut cx, arg)
+    let CalculateArg { path, params } = neon_serde3::from_value(&mut cx, arg)
         .map_err(|e| unwind_error("Failed to deserialize argument", &e))
         .or_else(|e| cx.throw_error(e))?;
 
@@ -114,7 +114,7 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
             .collect()
     };
 
-    neon_serde2::to_value(&mut cx, &results)
+    neon_serde3::to_value(&mut cx, &results)
         .map_err(|e| unwind_error("Failed to serialize results", &e))
         .or_else(|e| cx.throw_error(e))
 }
