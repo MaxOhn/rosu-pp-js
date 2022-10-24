@@ -5,6 +5,7 @@ use std::{
     fmt::{Formatter, Result as FmtResult, Write},
     hash::{Hash, Hasher},
     mem,
+    path::PathBuf,
 };
 
 use neon::prelude::*;
@@ -15,7 +16,7 @@ use rosu_pp::{
     Strains as RosuStrains,
 };
 use serde::{
-    de::{Error as DeError, MapAccess, Unexpected, Visitor},
+    de::{DeserializeSeed, Error as DeError, MapAccess, SeqAccess, Unexpected, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 
@@ -43,7 +44,7 @@ fn strains(mut cx: FunctionContext) -> JsResult<JsValue> {
 fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
     let arg = cx.argument::<JsValue>(0)?;
 
-    let CalculateArg { path, params } = neon_serde3::from_value(&mut cx, arg)
+    let CalculateArg { map_input, params } = neon_serde3::from_value(&mut cx, arg)
         .map_err(|e| unwind_error("Failed to deserialize argument", &e))
         .or_else(|e| cx.throw_error(e))?;
 
@@ -51,7 +52,12 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
         return Ok(JsArray::new(&mut cx, 0).as_value(&mut cx));
     }
 
-    let mut map = Beatmap::from_path(path)
+    let map_res = match map_input {
+        MapInput::Path(path) => Beatmap::from_path(path),
+        MapInput::Bytes(bytes) => Beatmap::from_bytes(&bytes),
+    };
+
+    let mut map = map_res
         .map_err(|e| unwind_error("Failed to parse beatmap", &e))
         .or_else(|e| cx.throw_error(e))?;
 
@@ -200,8 +206,13 @@ impl From<RosuStrains> for Strains {
     }
 }
 
+enum MapInput {
+    Path(PathBuf),
+    Bytes(Vec<u8>),
+}
+
 struct CalculateArg {
-    path: String,
+    map_input: MapInput,
     params: Vec<ScoreParams>,
 }
 
@@ -631,6 +642,58 @@ impl<'de> Deserialize<'de> for CalculateArg {
     }
 }
 
+struct BytesSeed;
+
+impl<'de> DeserializeSeed<'de> for BytesSeed {
+    type Value = Vec<u8>;
+
+    #[inline]
+    fn deserialize<D: Deserializer<'de>>(self, d: D) -> Result<Self::Value, D::Error> {
+        struct BytesVisitor;
+
+        impl<'de> Visitor<'de> for BytesVisitor {
+            type Value = Vec<u8>;
+
+            fn expecting(&self, f: &mut Formatter<'_>) -> FmtResult {
+                f.write_str("a byte array")
+            }
+
+            #[inline]
+            fn visit_byte_buf<E: DeError>(self, bytes: Vec<u8>) -> Result<Self::Value, E> {
+                Ok(bytes)
+            }
+
+            #[inline]
+            fn visit_bytes<E: DeError>(self, bytes: &[u8]) -> Result<Self::Value, E> {
+                Ok(bytes.to_vec())
+            }
+
+            #[inline]
+            fn visit_string<E: DeError>(self, content: String) -> Result<Self::Value, E> {
+                self.visit_byte_buf(content.into_bytes())
+            }
+
+            #[inline]
+            fn visit_str<E: DeError>(self, content: &str) -> Result<Self::Value, E> {
+                self.visit_bytes(content.as_bytes())
+            }
+
+            #[inline]
+            fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+                let mut bytes = Vec::with_capacity(seq.size_hint().unwrap_or(4));
+
+                while let Some(byte) = seq.next_element()? {
+                    bytes.push(byte);
+                }
+
+                Ok(bytes)
+            }
+        }
+
+        d.deserialize_any(BytesVisitor)
+    }
+}
+
 struct CalculateArgVisitor;
 
 impl<'de> Visitor<'de> for CalculateArgVisitor {
@@ -642,6 +705,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
 
     fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
         let mut path = None;
+        let mut bytes = None;
         let mut params = None;
         let mut mode = None;
         let mut mods = None;
@@ -663,6 +727,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
         while let Some(key) = map.next_key::<String>()? {
             match key.as_str() {
                 "path" => path = Some(map.next_value()?),
+                "content" => bytes = Some(map.next_value_seed(BytesSeed)?),
                 "params" => params = Some(map.next_value()?),
                 "mode" => mode = Some(map.next_value()?),
                 "mods" => mods = Some(map.next_value()?),
@@ -685,6 +750,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                         key.as_str(),
                         &[
                             "path",
+                            "bytes",
                             "params",
                             "mods",
                             "n300",
@@ -708,7 +774,11 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
             }
         }
 
-        let path = path.ok_or_else(|| DeError::missing_field("path"))?;
+        let map_input = match (path, bytes) {
+            (_, Some(bytes)) => MapInput::Bytes(bytes),
+            (Some(path), _) => MapInput::Path(path),
+            (None, None) => return Err(DeError::custom("missing field `path` or `content`")),
+        };
 
         let params = match params {
             Some(p) => p,
@@ -736,7 +806,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
             }
         };
 
-        Ok(CalculateArg { path, params })
+        Ok(CalculateArg { map_input, params })
     }
 }
 

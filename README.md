@@ -12,29 +12,31 @@ The library has a very simple interface, namely only two function: `calculate` a
 - calculate only one score on a map:
 ```js
 {
-    path: "/path/to/file.osu", // the only mandatory field, everything else can be omitted
-    mode: integer or string,   // convert the map to a specific mode; accepts 0/1/2/3 or "o"/"t"/"c"/"m"/various variations
-    mods: integer,             // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
-    acc: number,               // if neither acc nor hitresults are specified, acc defaults to 100.0
-    n300: integer,             // defaults to value based on acc
-    n100: integer,             // defaults to value based on acc
-    n50: integer,              // defaults to value based on acc
-    nMisses: integer,          // defaults to 0
-    nKatu: integer,            // only relevant for mania and ctb
-    nGeki: integer,            // only relevant for mania
-    combo: integer,            // defaults to full combo
-    passedObjects: integer,    // only consider this many hit objects; useful for failed scores; defaults to all objects
-    clockRate: number,         // defaults to value based on mods i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM
-    ar: number,                // defaults to beatmap's value
-    cs: number,                // defaults to beatmap's value
-    hp: number,                // defaults to beatmap's value
-    od: number,                // defaults to beatmap's value
+    path: "/path/to/file.osu",     // either this or bytes _must_ be given, everything else is optional
+    content: string or byte array, // provide the content of a .osu file directly
+    mode: integer or string,       // convert the map to a specific mode; accepts 0/1/2/3 or "o"/"t"/"c"/"m"/various variations
+    mods: integer,                 // bit value for mods, defaults to 0 (NM) see https://github.com/ppy/osu-api/wiki#mods
+    acc: number,                   // if neither acc nor hitresults are specified, acc defaults to 100.0
+    n300: integer,                 // defaults to value based on acc
+    n100: integer,                 // defaults to value based on acc
+    n50: integer,                  // defaults to value based on acc
+    nMisses: integer,              // defaults to 0
+    nKatu: integer,                // only relevant for mania and ctb
+    nGeki: integer,                // only relevant for mania
+    combo: integer,                // defaults to full combo
+    passedObjects: integer,        // only consider this many hit objects; useful for failed scores; defaults to all objects
+    clockRate: number,             // defaults to value based on mods i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM
+    ar: number,                    // defaults to beatmap's value
+    cs: number,                    // defaults to beatmap's value
+    hp: number,                    // defaults to beatmap's value
+    od: number,                    // defaults to beatmap's value
 }
 ```
 - calculate multiple scores on a map:
 ```js
 {
     path: "/path/to/file.osu",
+    content: string or byte array,
     params: [
         { // everything in here is optional
             mode: integer or string,
