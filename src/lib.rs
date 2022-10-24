@@ -140,21 +140,26 @@ struct Strains {
     mode: u8,
     section_length: f64,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     color: Option<Vec<f64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     rhythm: Option<Vec<f64>>,
-    #[serde(rename = "staminaLeft")]
-    stamina_left: Option<Vec<f64>>,
-    #[serde(rename = "staminaRight")]
-    stamina_right: Option<Vec<f64>>,
+    #[serde(rename = "stamina", skip_serializing_if = "Option::is_none")]
+    stamina: Option<Vec<f64>>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     aim: Option<Vec<f64>>,
-    #[serde(rename = "aimNoSliders")]
+    #[serde(rename = "aimNoSliders", skip_serializing_if = "Option::is_none")]
     aim_no_sliders: Option<Vec<f64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     speed: Option<Vec<f64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     flashlight: Option<Vec<f64>>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     strains: Option<Vec<f64>>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     movement: Option<Vec<f64>>,
 }
 
@@ -188,7 +193,7 @@ impl From<RosuStrains> for Strains {
                 section_length: strains.section_len,
                 color: Some(strains.color),
                 rhythm: Some(strains.rhythm),
-                stamina_left: Some(strains.stamina),
+                stamina: Some(strains.stamina),
                 ..Default::default()
             },
         }
@@ -350,7 +355,7 @@ struct CalculateResult {
     slider_factor: Option<f64>,
     #[serde(rename = "effectiveMissCount", skip_serializing_if = "Option::is_none")]
     effective_miss_count: Option<f64>,
-    #[serde(rename = "speedNoteCount")]
+    #[serde(rename = "speedNoteCount", skip_serializing_if = "Option::is_none")]
     speed_note_count: Option<f64>,
     #[serde(rename = "staminaStrain", skip_serializing_if = "Option::is_none")]
     stamina_strain: Option<f64>,
@@ -368,9 +373,9 @@ struct CalculateResult {
     bpm: f64,
     #[serde(rename = "clockRate")]
     clock_rate: f64,
-    #[serde(rename = "timePreempt")]
+    #[serde(rename = "timePreempt", skip_serializing_if = "Option::is_none")]
     time_preempt: Option<f64>,
-    #[serde(rename = "greatHitWindow")]
+    #[serde(rename = "greatHitWindow", skip_serializing_if = "Option::is_none")]
     great_hitwindow: Option<f64>,
     #[serde(rename = "nCircles", skip_serializing_if = "Option::is_none")]
     n_circles: Option<usize>,
