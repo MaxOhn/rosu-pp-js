@@ -188,8 +188,7 @@ impl From<RosuStrains> for Strains {
                 section_length: strains.section_len,
                 color: Some(strains.color),
                 rhythm: Some(strains.rhythm),
-                stamina_left: Some(strains.stamina_left),
-                stamina_right: Some(strains.stamina_right),
+                stamina_left: Some(strains.stamina),
                 ..Default::default()
             },
         }
@@ -215,9 +214,10 @@ struct ScoreParams {
     n_misses: Option<usize>,
     #[serde(rename = "nKatu")]
     n_katu: Option<usize>,
+    #[serde(rename = "nGeki")]
+    n_geki: Option<usize>,
     acc: Option<f64>,
     combo: Option<usize>,
-    score: Option<u32>,
     #[serde(rename = "passedObjects")]
     passed_objects: Option<usize>,
     #[serde(rename = "clockRate")]
@@ -259,9 +259,9 @@ impl ScoreParams {
             n50,
             n_misses,
             n_katu,
+            n_geki,
             acc,
             combo,
-            score,
             passed_objects,
             clock_rate,
             ..
@@ -286,11 +286,15 @@ impl ScoreParams {
         }
 
         if let Some(n_misses) = n_misses {
-            calculator = calculator.misses(n_misses);
+            calculator = calculator.n_misses(n_misses);
         }
 
         if let Some(n_katu) = n_katu {
             calculator = calculator.n_katu(n_katu);
+        }
+
+        if let Some(n_geki) = n_geki {
+            calculator = calculator.n_geki(n_geki);
         }
 
         if let Some(combo) = combo {
@@ -303,10 +307,6 @@ impl ScoreParams {
 
         if let Some(acc) = acc {
             calculator = calculator.accuracy(acc);
-        }
-
-        if let Some(score) = score {
-            calculator = calculator.score(score);
         }
 
         if let Some(clock_rate) = clock_rate {
@@ -330,8 +330,8 @@ struct CalculateResult {
     pp_flashlight: Option<f64>,
     #[serde(rename = "ppSpeed", skip_serializing_if = "Option::is_none")]
     pp_speed: Option<f64>,
-    #[serde(rename = "ppStrain", skip_serializing_if = "Option::is_none")]
-    pp_strain: Option<f64>,
+    #[serde(rename = "ppDifficulty", skip_serializing_if = "Option::is_none")]
+    pp_difficulty: Option<f64>,
 
     #[serde(rename = "nFruits", skip_serializing_if = "Option::is_none")]
     n_fruits: Option<usize>,
@@ -345,9 +345,21 @@ struct CalculateResult {
     #[serde(rename = "speedStrain", skip_serializing_if = "Option::is_none")]
     speed_strain: Option<f64>,
     #[serde(rename = "flashlightRating", skip_serializing_if = "Option::is_none")]
-    flashlight_rating: Option<f64>,
+    flashlight_strain: Option<f64>,
     #[serde(rename = "sliderFactor", skip_serializing_if = "Option::is_none")]
     slider_factor: Option<f64>,
+    #[serde(rename = "effectiveMissCount", skip_serializing_if = "Option::is_none")]
+    effective_miss_count: Option<f64>,
+    #[serde(rename = "speedNoteCount")]
+    speed_note_count: Option<f64>,
+    #[serde(rename = "staminaStrain", skip_serializing_if = "Option::is_none")]
+    stamina_strain: Option<f64>,
+    #[serde(rename = "rhythmStrain", skip_serializing_if = "Option::is_none")]
+    rhythm_strain: Option<f64>,
+    #[serde(rename = "colorStrain", skip_serializing_if = "Option::is_none")]
+    color_strain: Option<f64>,
+    #[serde(rename = "peakStrain", skip_serializing_if = "Option::is_none")]
+    peak_strain: Option<f64>,
 
     ar: f64,
     cs: f64,
@@ -425,15 +437,14 @@ impl CalculateResult {
             },
             PerformanceAttributes::Mania(ManiaPerformanceAttributes {
                 pp,
-                pp_acc,
-                pp_strain,
+                pp_difficulty,
                 difficulty,
             }) => Self {
                 mode: 3,
                 pp,
-                pp_acc: Some(pp_acc),
-                pp_strain: Some(pp_strain),
+                pp_difficulty: Some(pp_difficulty),
                 stars: difficulty.stars,
+                max_combo: Some(difficulty.max_combo),
                 n_circles: Some(map.n_circles as usize),
                 n_sliders: Some(map.n_sliders as usize),
                 ar,
@@ -442,16 +453,17 @@ impl CalculateResult {
                 od,
                 bpm,
                 clock_rate,
-                great_hitwindow: Some(hit_windows.od),
+                great_hitwindow: Some(difficulty.hit_window),
                 ..Default::default()
             },
             PerformanceAttributes::Osu(OsuPerformanceAttributes {
+                difficulty,
                 pp,
                 pp_acc,
                 pp_aim,
                 pp_flashlight,
                 pp_speed,
-                difficulty,
+                effective_miss_count,
             }) => Self {
                 mode: 0,
                 pp,
@@ -461,13 +473,15 @@ impl CalculateResult {
                 pp_speed: Some(pp_speed),
                 stars: difficulty.stars,
                 max_combo: Some(difficulty.max_combo),
-                aim_strain: Some(difficulty.aim_strain),
-                speed_strain: Some(difficulty.speed_strain),
-                flashlight_rating: Some(difficulty.flashlight_rating),
+                aim_strain: Some(difficulty.aim),
+                speed_strain: Some(difficulty.speed),
+                flashlight_strain: Some(difficulty.flashlight),
                 slider_factor: Some(difficulty.slider_factor),
                 n_circles: Some(difficulty.n_circles),
                 n_sliders: Some(difficulty.n_sliders),
                 n_spinners: Some(difficulty.n_spinners),
+                effective_miss_count: Some(effective_miss_count),
+                speed_note_count: Some(difficulty.speed_note_count),
                 ar,
                 cs,
                 hp,
@@ -479,20 +493,26 @@ impl CalculateResult {
                 ..Default::default()
             },
             PerformanceAttributes::Taiko(TaikoPerformanceAttributes {
+                difficulty,
                 pp,
                 pp_acc,
-                pp_strain,
-                difficulty,
+                pp_difficulty,
+                effective_miss_count,
             }) => Self {
                 mode: 1,
                 pp,
                 pp_acc: Some(pp_acc),
-                pp_strain: Some(pp_strain),
+                pp_difficulty: Some(pp_difficulty),
                 stars: difficulty.stars,
                 max_combo: Some(difficulty.max_combo),
+                stamina_strain: Some(difficulty.stamina),
+                rhythm_strain: Some(difficulty.rhythm),
+                color_strain: Some(difficulty.colour),
+                peak_strain: Some(difficulty.peak),
                 n_circles: Some(map.n_circles as usize),
                 n_sliders: Some(map.n_sliders as usize),
                 n_spinners: Some(map.n_spinners as usize),
+                effective_miss_count: Some(effective_miss_count),
                 ar,
                 cs,
                 hp,
@@ -553,7 +573,6 @@ static GAMEMODE_VISITOR_EXPECTS: &str =
 impl<'de> Visitor<'de> for GameModeVisitor {
     type Value = GameMode;
 
-    #[inline]
     fn expecting(&self, f: &mut Formatter) -> FmtResult {
         f.write_str(GAMEMODE_VISITOR_EXPECTS)
     }
@@ -612,7 +631,6 @@ struct CalculateArgVisitor;
 impl<'de> Visitor<'de> for CalculateArgVisitor {
     type Value = CalculateArg;
 
-    #[inline]
     fn expecting(&self, f: &mut Formatter) -> FmtResult {
         f.write_str("a PerformanceArg struct")
     }
@@ -627,9 +645,9 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
         let mut n50 = None;
         let mut n_misses = None;
         let mut n_katu = None;
+        let mut n_geki = None;
         let mut acc = None;
         let mut combo = None;
-        let mut score = None;
         let mut passed_objects = None;
         let mut clock_rate = None;
         let mut ar = None;
@@ -648,9 +666,9 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                 "n50" => n50 = Some(map.next_value()?),
                 "nMisses" => n_misses = Some(map.next_value()?),
                 "nKatu" => n_katu = Some(map.next_value()?),
+                "nGeki" => n_geki = Some(map.next_value()?),
                 "acc" => acc = Some(map.next_value()?),
                 "combo" => combo = Some(map.next_value()?),
-                "score" => score = Some(map.next_value()?),
                 "passedObjects" => passed_objects = Some(map.next_value()?),
                 "clockRate" => clock_rate = Some(map.next_value()?),
                 "ar" => ar = Some(map.next_value()?),
@@ -669,6 +687,7 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                             "n50",
                             "nMisses",
                             "nKatu",
+                            "nGeki",
                             "acc",
                             "combo",
                             "score",
@@ -697,9 +716,9 @@ impl<'de> Visitor<'de> for CalculateArgVisitor {
                     n50,
                     n_misses,
                     n_katu,
+                    n_geki,
                     acc,
                     combo,
-                    score,
                     passed_objects,
                     clock_rate,
                     ar,

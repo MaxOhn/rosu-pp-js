@@ -20,9 +20,9 @@ The library has a very simple interface, namely only two function: `calculate` a
     n100: integer,             // defaults to value based on acc
     n50: integer,              // defaults to value based on acc
     nMisses: integer,          // defaults to 0
-    nKatu: integer,            // only relevant for osu!ctb
+    nKatu: integer,            // only relevant for mania and ctb
+    nGeki: integer,            // only relevant for mania
     combo: integer,            // defaults to full combo
-    score: integer,            // only relevant for osu!mania
     passedObjects: integer,    // only consider this many hit objects; useful for failed scores; defaults to all objects
     clockRate: number,         // defaults to value based on mods i.e. 1.5 for DT, 0.75 for HT, 1.0 for NM
     ar: number,                // defaults to beatmap's value
@@ -45,8 +45,8 @@ The library has a very simple interface, namely only two function: `calculate` a
             n50: integer,
             nMisses: integer,
             nKatu: integer,
+            nGeki: integer,
             combo: integer,
-            score: integer,
             passedObjects: integer,
             clockRate: number,
             ar: number,
@@ -89,33 +89,39 @@ In the following code block, fields will be denoted with O/T/C/M for osu!standar
 
 ```js
 {
-    mode: integer,            // O/T/C/M (0=O, 1=T, 2=C, 3=M)
-    stars: number,            // O/T/C/M
-    pp: number,               // O/T/C/M
-    ppAcc: number,            // O/T/M
-    ppAim: number,            // O
-    ppFlashlight: number,     // O
-    ppSpeed: number,          // O
-    ppStrain: number,         // T/M
-    nFruits: integer,         // C
-    nDroplets: integer,       // C
-    nTinyDroplets: integer,   // C
-    aimStrain: number,        // O
-    speedStrain: number,      // O
-    flashlightRating: number, // O
-    sliderFactor: number,     // O
-    ar: number,               // O/T/C/M
-    cs: number,               // O/T/C/M
-    hp: number,               // O/T/C/M
-    od: number,               // O/T/C/M
-    bpm: number,              // O/T/C/M
-    clockRate: number,        // O/T/C/M
-    timePreempt: number,      // O
-    greatHitWindow: number,   // O/T/M
-    nCircles: integer,        // O/T/M
-    nSliders: integer,        // O/T/M
-    nSpinners: integer,       // O/T/C
-    maxCombo: integer,        // O/T/C
+    mode: integer,              // O/T/C/M (0=O, 1=T, 2=C, 3=M)
+    stars: number,              // O/T/C/M
+    pp: number,                 // O/T/C/M
+    ppAcc: number,              // O/T/M
+    ppAim: number,              // O
+    ppFlashlight: number,       // O
+    ppSpeed: number,            // O
+    ppDifficulty: number,       // T/M
+    nFruits: integer,           // C
+    nDroplets: integer,         // C
+    nTinyDroplets: integer,     // C
+    aimStrain: number,          // O
+    speedStrain: number,        // O
+    flashlightStrain: number,   // O
+    sliderFactor: number,       // O
+    effectiveMissCount: number, // O/T
+    speedNoteCount: number,     // O
+    staminaStrain: number,      // T
+    rhythmStrain: number,       // T
+    colourStrain: number,       // T
+    peakStrain: number,         // T
+    ar: number,                 // O/T/C/M
+    cs: number,                 // O/T/C/M
+    hp: number,                 // O/T/C/M
+    od: number,                 // O/T/C/M
+    bpm: number,                // O/T/C/M
+    clockRate: number,          // O/T/C/M
+    timePreempt: number,        // O
+    greatHitWindow: number,     // O/T/M
+    nCircles: integer,          // O/T/M
+    nSliders: integer,          // O/T/M
+    nSpinners: integer,         // O/T/C
+    maxCombo: integer,          // O/T/C/M
 }
 ```
 
@@ -136,8 +142,7 @@ The returned object's attributes depend on the map's game mode again and look as
     flashlight: Array<number>,   // O
     color: Array<number>,        // T
     rhythm: Array<number>,       // T
-    staminaLeft: Array<number>,  // T
-    staminaRight: Array<number>, // T
+    stamina: Array<number>,      // T
     strains: Array<number>,      // M
     movement: Array<number>,     // C
 }
