@@ -8,22 +8,41 @@ use std::{
     path::PathBuf,
 };
 
-use neon::prelude::*;
+use neon::{prelude::*, types::buffer::TypedArray};
 use rosu_pp::{
     beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
     mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
-    taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode, PerformanceAttributes,
-    Strains as RosuStrains,
+    taiko::TaikoPerformanceAttributes, AnyPP, Beatmap, BeatmapExt, GameMode, ParseResult,
+    PerformanceAttributes, Strains as RosuStrains,
 };
 use serde::{
     de::{DeserializeSeed, Error as DeError, MapAccess, SeqAccess, Unexpected, Visitor},
     Deserialize, Deserializer, Serialize,
 };
 
-fn strains(mut cx: FunctionContext) -> JsResult<JsValue> {
+fn strains_from_path(mut cx: FunctionContext) -> JsResult<JsValue> {
     let path = cx.argument::<JsString>(0)?.value(&mut cx);
+    let map_res = Beatmap::from_path(path);
 
-    let map = Beatmap::from_path(path)
+    strains(cx, map_res)
+}
+
+fn strains_from_content(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let map_res = match cx.argument::<JsString>(0) {
+        Ok(arg) => Beatmap::from_bytes(arg.value(&mut cx).as_bytes()),
+        Err(_) => match cx.argument::<JsTypedArray<u8>>(0) {
+            Ok(arg) => Beatmap::from_bytes(arg.as_slice(&cx)),
+            Err(_) => {
+                return cx.throw_error("The first argument must be a string or Uint8Array");
+            }
+        },
+    };
+
+    strains(cx, map_res)
+}
+
+fn strains(mut cx: FunctionContext, map_res: ParseResult<Beatmap>) -> JsResult<JsValue> {
+    let map = map_res
         .map_err(|e| unwind_error("Failed to parse beatmap", &e))
         .or_else(|e| cx.throw_error(e))?;
 
@@ -52,12 +71,8 @@ fn calculate(mut cx: FunctionContext) -> JsResult<JsValue> {
         return Ok(JsArray::new(&mut cx, 0).as_value(&mut cx));
     }
 
-    let map_res = match map_input {
-        MapInput::Path(path) => Beatmap::from_path(path),
-        MapInput::Bytes(bytes) => Beatmap::from_bytes(&bytes),
-    };
-
-    let mut map = map_res
+    let mut map = map_input
+        .parse()
         .map_err(|e| unwind_error("Failed to parse beatmap", &e))
         .or_else(|e| cx.throw_error(e))?;
 
@@ -141,16 +156,16 @@ fn multiple_same_attributes(params: &[ScoreParams]) -> bool {
     false
 }
 
-#[derive(Clone, Default, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize)]
 struct Strains {
     mode: u8,
+    #[serde(rename = "sectionLength")]
     section_length: f64,
-
     #[serde(skip_serializing_if = "Option::is_none")]
     color: Option<Vec<f64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     rhythm: Option<Vec<f64>>,
-    #[serde(rename = "stamina", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     stamina: Option<Vec<f64>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -161,7 +176,6 @@ struct Strains {
     speed: Option<Vec<f64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     flashlight: Option<Vec<f64>>,
-
     #[serde(skip_serializing_if = "Option::is_none")]
     strains: Option<Vec<f64>>,
 
@@ -209,6 +223,15 @@ impl From<RosuStrains> for Strains {
 enum MapInput {
     Path(PathBuf),
     Bytes(Vec<u8>),
+}
+
+impl MapInput {
+    fn parse(self) -> ParseResult<Beatmap> {
+        match self {
+            MapInput::Path(path) => Beatmap::from_path(path),
+            MapInput::Bytes(bytes) => Beatmap::from_bytes(bytes.as_ref()),
+        }
+    }
 }
 
 struct CalculateArg {
@@ -360,7 +383,7 @@ struct CalculateResult {
     aim_strain: Option<f64>,
     #[serde(rename = "speedStrain", skip_serializing_if = "Option::is_none")]
     speed_strain: Option<f64>,
-    #[serde(rename = "flashlightRating", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "flashlightStrain", skip_serializing_if = "Option::is_none")]
     flashlight_strain: Option<f64>,
     #[serde(rename = "sliderFactor", skip_serializing_if = "Option::is_none")]
     slider_factor: Option<f64>,
@@ -556,7 +579,8 @@ fn unwind_error(cause: &str, mut e: &dyn StdError) -> String {
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("calculate", calculate)?;
-    cx.export_function("strains", strains)?;
+    cx.export_function("strainsFromPath", strains_from_path)?;
+    cx.export_function("strainsFromContent", strains_from_content)?;
 
     Ok(())
 }
@@ -644,53 +668,56 @@ impl<'de> Deserialize<'de> for CalculateArg {
 
 struct BytesSeed;
 
-impl<'de> DeserializeSeed<'de> for BytesSeed {
+impl<'de> Visitor<'de> for BytesSeed {
     type Value = Vec<u8>;
+
+    fn expecting(&self, f: &mut Formatter<'_>) -> FmtResult {
+        f.write_str("a byte array")
+    }
+
+    #[inline]
+    fn visit_byte_buf<E: DeError>(self, bytes: Vec<u8>) -> Result<Self::Value, E> {
+        Ok(bytes)
+    }
+
+    #[inline]
+    fn visit_borrowed_bytes<E: DeError>(self, bytes: &'de [u8]) -> Result<Self::Value, E> {
+        Ok(bytes.into())
+    }
+
+    #[inline]
+    fn visit_string<E: DeError>(self, content: String) -> Result<Self::Value, E> {
+        self.visit_byte_buf(content.into_bytes())
+    }
+
+    #[inline]
+    fn visit_borrowed_str<E: DeError>(self, content: &'de str) -> Result<Self::Value, E> {
+        self.visit_borrowed_bytes(content.as_bytes())
+    }
+
+    #[inline]
+    fn visit_str<E: DeError>(self, content: &str) -> Result<Self::Value, E> {
+        self.visit_bytes(content.as_bytes())
+    }
+
+    #[inline]
+    fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+        let mut bytes = Vec::with_capacity(seq.size_hint().unwrap_or(4));
+
+        while let Some(byte) = seq.next_element()? {
+            bytes.push(byte);
+        }
+
+        Ok(bytes)
+    }
+}
+
+impl<'de> DeserializeSeed<'de> for BytesSeed {
+    type Value = <Self as Visitor<'de>>::Value;
 
     #[inline]
     fn deserialize<D: Deserializer<'de>>(self, d: D) -> Result<Self::Value, D::Error> {
-        struct BytesVisitor;
-
-        impl<'de> Visitor<'de> for BytesVisitor {
-            type Value = Vec<u8>;
-
-            fn expecting(&self, f: &mut Formatter<'_>) -> FmtResult {
-                f.write_str("a byte array")
-            }
-
-            #[inline]
-            fn visit_byte_buf<E: DeError>(self, bytes: Vec<u8>) -> Result<Self::Value, E> {
-                Ok(bytes)
-            }
-
-            #[inline]
-            fn visit_bytes<E: DeError>(self, bytes: &[u8]) -> Result<Self::Value, E> {
-                Ok(bytes.to_vec())
-            }
-
-            #[inline]
-            fn visit_string<E: DeError>(self, content: String) -> Result<Self::Value, E> {
-                self.visit_byte_buf(content.into_bytes())
-            }
-
-            #[inline]
-            fn visit_str<E: DeError>(self, content: &str) -> Result<Self::Value, E> {
-                self.visit_bytes(content.as_bytes())
-            }
-
-            #[inline]
-            fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
-                let mut bytes = Vec::with_capacity(seq.size_hint().unwrap_or(4));
-
-                while let Some(byte) = seq.next_element()? {
-                    bytes.push(byte);
-                }
-
-                Ok(bytes)
-            }
-        }
-
-        d.deserialize_any(BytesVisitor)
+        d.deserialize_any(self)
     }
 }
 

@@ -1,23 +1,3 @@
-export interface SingleScoreQuery {
-    path: string;
-    mode?: GameMode;
-    mods?: number;
-    acc?: number;
-    n300?: number;
-    n100?: number;
-    n50?: number;
-    nMisses?: number;
-    nKatu?: number;
-    combo?: number;
-    score?: number;
-    passedObjects?: number;
-    clockRate?: number;
-    ar?: number;
-    cs?: number;
-    hp?: number;
-    od?: number;
-}
-
 export const enum GameMode {
     Osu = 0,
     Taiko = 1,
@@ -25,12 +5,7 @@ export const enum GameMode {
     Mania = 3,
 }
 
-export interface MultipleScoreQuery {
-    path: string;
-    params: MultipleScoreQueryOptions[];
-}
-
-export interface MultipleScoreQueryOptions {
+export interface ScoreQueryOptions {
     mode?: GameMode;
     mods?: number;
     acc?: number;
@@ -39,6 +14,7 @@ export interface MultipleScoreQueryOptions {
     n50?: number;
     nMisses?: number;
     nKatu?: number;
+    nGeki?: number;
     combo?: number;
     score?: number;
     passedObjects?: number;
@@ -48,6 +24,30 @@ export interface MultipleScoreQueryOptions {
     hp?: number;
     od?: number;
 }
+
+export interface SingleScoreQueryPath extends ScoreQueryOptions {
+    path: string;
+}
+
+export interface SingleScoreQueryContent extends ScoreQueryOptions {
+    content: string | Uint8Array;
+}
+
+export type SingleScoreQuery = SingleScoreQueryPath | SingleScoreQueryContent;
+
+export interface MultipleScoreQueryParams {
+    params: ScoreQueryOptions[];
+}
+
+export interface MultipleScoreQueryPath extends MultipleScoreQueryParams {
+    path: string;
+}
+
+export interface MultipleScoreQueryContent extends MultipleScoreQueryParams {
+    content: string | Uint8Array;
+}
+
+export type MultipleScoreQuery = MultipleScoreQueryPath | MultipleScoreQueryContent;
 
 export interface GeneralData {
     stars: number;
@@ -68,12 +68,13 @@ export interface OsuData extends GeneralData {
     ppSpeed: number;
     aimStrain: number;
     speedStrain: number;
-    flashlightRating: number;
+    flashlightStrain: number;
     sliderFactor: number;
-    clockRate: number;
+    speedNoteCount: number;
     nCircles: number;
     nSliders: number;
     nSpinners: number;
+    effectiveMissCount: number;
     maxCombo: number;
     timePreempt: number;
     greatHitwindow: number;
@@ -82,10 +83,15 @@ export interface OsuData extends GeneralData {
 export interface TaikoData extends GeneralData {
     mode: GameMode.Taiko;
     ppAcc: number;
-    ppStrain: number;
+    ppDifficulty: number;
+    staminaStrain: number;
+    rhythmStrain: number;
+    colorStrain: number;
+    peakStrain: number;
     nCircles: number;
     nSliders: number;
     nSpinners: number;
+    effectiveMissCount: number;
     maxCombo: number;
     greatHitwindow: number;
 }
@@ -101,11 +107,11 @@ export interface CatchData extends GeneralData {
 
 export interface ManiaData extends GeneralData {
     mode: GameMode.Mania;
-    ppAcc: number;
-    ppStrain: number;
+    ppDifficulty: number;
     clockRate: number;
     nCircles: number;
     nSliders: number;
+    maxCombo: number;
     greatHitwindow: number;
 }
 
@@ -127,8 +133,7 @@ export interface TaikoStrains extends GeneralStrains {
     mode: GameMode.Taiko;
     color: Array<number>;
     rhythm: Array<number>;
-    staminaLeft: Array<number>;
-    staminaRight: Array<number>;
+    stamina: Array<number>;
 }
 
 export interface CatchStrains extends GeneralStrains {
@@ -141,4 +146,6 @@ export interface ManiaStrains extends GeneralStrains {
     strains: Array<number>;
 }
 
-export declare function strains(path: string, mods?: number): OsuStrains | TaikoStrains | CatchStrains | ManiaStrains;
+export declare function strainsFromPath(path: string, mods?: number): OsuStrains | TaikoStrains | CatchStrains | ManiaStrains;
+
+export declare function strainsFromContent(content: string | Uint8Array, mods?: number): OsuStrains | TaikoStrains | CatchStrains | ManiaStrains;
