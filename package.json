@@ -2,7 +2,7 @@
     "name": "rosu-pp",
     "version": "0.8.0",
     "description": "osu! difficulty and pp calculation for all modes",
-    "main": "index.node",
+    "main": "index.js",
     "types": "index.d.ts",
     "scripts": {
         "build": "cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics",
