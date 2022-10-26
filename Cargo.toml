@@ -4,7 +4,7 @@ version = "0.9.1"
 description = "osu! difficulty and pp calculation for all modes"
 authors = ["Max Ohn"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 exclude = ["index.node"]
 
 [lib]

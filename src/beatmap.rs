@@ -18,7 +18,7 @@ pub struct Map {
 
 macro_rules! set_attr {
     ($fun:ident, $field:ident) => {
-        pub fn $fun(mut cx: FunctionContext<'_>) -> JsResult<JsUndefined> {
+        pub fn $fun(mut cx: FunctionContext<'_>) -> JsResult<'_, JsUndefined> {
             let arg_opt = cx
                 .argument_opt(0)
                 .map(|arg| arg.downcast::<JsNumber, _>(&mut cx).ok());
@@ -44,7 +44,7 @@ macro_rules! set_attr {
 }
 
 impl Map {
-    pub fn js_new(mut cx: FunctionContext<'_>) -> JsResult<JsBox<Self>> {
+    pub fn js_new(mut cx: FunctionContext<'_>) -> JsResult<'_, JsBox<Self>> {
         let arg = match cx
             .argument_opt(0)
             .filter(|arg| !arg.is_a::<JsUndefined, _>(&mut cx))
@@ -136,7 +136,7 @@ impl Map {
         Ok(cx.boxed(Self { inner }))
     }
 
-    pub fn js_from_path(mut cx: FunctionContext<'_>) -> JsResult<JsUndefined> {
+    pub fn js_from_path(mut cx: FunctionContext<'_>) -> JsResult<'_, JsUndefined> {
         let arg = match cx.argument_opt(0) {
             Some(arg) => arg,
             None => return cx.throw_error("The first argument must be a path to a .osu file"),
@@ -156,7 +156,7 @@ impl Map {
         Ok(JsUndefined::new(&mut cx))
     }
 
-    pub fn js_from_content(mut cx: FunctionContext<'_>) -> JsResult<JsUndefined> {
+    pub fn js_from_content(mut cx: FunctionContext<'_>) -> JsResult<'_, JsUndefined> {
         let arg = match cx.argument_opt(0) {
             Some(arg) => arg,
             None => {
@@ -181,7 +181,7 @@ impl Map {
         Ok(JsUndefined::new(&mut cx))
     }
 
-    pub fn js_from_bytes(mut cx: FunctionContext<'_>) -> JsResult<JsUndefined> {
+    pub fn js_from_bytes(mut cx: FunctionContext<'_>) -> JsResult<'_, JsUndefined> {
         let arg = match cx.argument_opt(0) {
             Some(arg) => arg,
             None => return cx.throw_error("The first argument must be the bytes of an .osu file"),

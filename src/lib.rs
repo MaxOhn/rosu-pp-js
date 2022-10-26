@@ -1,3 +1,5 @@
+#![deny(clippy::all, nonstandard_style, rust_2018_idioms, unused, warnings)]
+
 use neon::{prelude::ModuleContext, result::NeonResult};
 
 use crate::{beatmap::Map, calculator::Calculator};
@@ -7,7 +9,7 @@ mod calculator;
 mod error;
 
 #[neon::main]
-fn main(mut cx: ModuleContext) -> NeonResult<()> {
+fn main(mut cx: ModuleContext<'_>) -> NeonResult<()> {
     cx.export_function("beatmapNew", Map::js_new)?;
     cx.export_function("beatmapFromPath", Map::js_from_path)?;
     cx.export_function("beatmapFromContent", Map::js_from_content)?;

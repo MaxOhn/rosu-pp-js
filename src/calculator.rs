@@ -18,7 +18,7 @@ use crate::beatmap::Map;
 
 macro_rules! set_field {
     ($fun:ident, $field:ident $(as $ty:ty)?) => {
-        pub fn $fun(mut cx: FunctionContext<'_>) -> JsResult<JsUndefined> {
+        pub fn $fun(mut cx: FunctionContext<'_>) -> JsResult<'_, JsUndefined> {
             let arg_opt = cx
                 .argument_opt(0)
                 .and_then(|arg| arg.downcast::<JsNumber, _>(&mut cx).ok());
@@ -68,7 +68,7 @@ macro_rules! set_calc {
 }
 
 impl Calculator {
-    pub fn js_new(mut cx: FunctionContext<'_>) -> JsResult<JsBox<Self>> {
+    pub fn js_new(mut cx: FunctionContext<'_>) -> JsResult<'_, JsBox<Self>> {
         let arg = match cx
             .argument_opt(0)
             .filter(|arg| !arg.is_a::<JsUndefined, _>(&mut cx))
@@ -147,7 +147,7 @@ impl Calculator {
         Ok(cx.boxed(Self { inner }))
     }
 
-    pub fn js_map_attrs(mut cx: FunctionContext<'_>) -> JsResult<JsObject> {
+    pub fn js_map_attrs(mut cx: FunctionContext<'_>) -> JsResult<'_, JsObject> {
         let map_opt = cx
             .argument_opt(0)
             .and_then(|arg| arg.downcast::<JsObject, _>(&mut cx).ok())
@@ -187,7 +187,7 @@ impl Calculator {
         Self::convert_map_attrs(&mut cx, calc.build(), bpm)
     }
 
-    pub fn js_difficulty(mut cx: FunctionContext<'_>) -> JsResult<JsObject> {
+    pub fn js_difficulty(mut cx: FunctionContext<'_>) -> JsResult<'_, JsObject> {
         let map_opt = cx
             .argument_opt(0)
             .and_then(|arg| arg.downcast::<JsObject, _>(&mut cx).ok())
@@ -217,7 +217,7 @@ impl Calculator {
         Self::convert_difficulty(&mut cx, calc.calculate())
     }
 
-    pub fn js_performance(mut cx: FunctionContext<'_>) -> JsResult<JsObject> {
+    pub fn js_performance(mut cx: FunctionContext<'_>) -> JsResult<'_, JsObject> {
         let map_opt = cx
             .argument_opt(0)
             .and_then(|arg| arg.downcast::<JsObject, _>(&mut cx).ok())
@@ -255,7 +255,7 @@ impl Calculator {
         Self::convert_performance(&mut cx, calc.calculate())
     }
 
-    pub fn js_strains(mut cx: FunctionContext<'_>) -> JsResult<JsObject> {
+    pub fn js_strains(mut cx: FunctionContext<'_>) -> JsResult<'_, JsObject> {
         let map_opt = cx
             .argument_opt(0)
             .and_then(|arg| arg.downcast::<JsObject, _>(&mut cx).ok())
@@ -285,7 +285,7 @@ impl Calculator {
         Self::convert_strains(&mut cx, calc.strains())
     }
 
-    pub fn js_mode(mut cx: FunctionContext<'_>) -> JsResult<JsUndefined> {
+    pub fn js_mode(mut cx: FunctionContext<'_>) -> JsResult<'_, JsUndefined> {
         let arg = match cx.argument_opt(0) {
             Some(arg) => arg,
             None => return cx.throw_error("The first argument must be a GameMode"),
