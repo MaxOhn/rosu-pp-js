@@ -92,7 +92,7 @@ Additionally, it can be modified through the following builder methods:
 
 Finally, use one of the following methods to calculate values:
 
-- `mapAttributes(map: Beatmap)` returns an objects of the form
+- `mapAttributes(map: Beatmap)` returns an object of the form
  ```js
 {
     ar: number,
