@@ -369,29 +369,6 @@ impl Calculator {
         let res = JsObject::new(cx);
 
         match attrs {
-            DifficultyAttributes::Catch(CatchDifficultyAttributes {
-                stars,
-                ar,
-                n_fruits,
-                n_droplets,
-                n_tiny_droplets,
-            }) => {
-                Self::set_number(cx, "stars", &res, stars)?;
-                Self::set_number(cx, "ar", &res, ar)?;
-                Self::set_number(cx, "nFruits", &res, n_fruits as f64)?;
-                Self::set_number(cx, "nDroplets", &res, n_droplets as f64)?;
-                Self::set_number(cx, "nTinyDroplets", &res, n_tiny_droplets as f64)?;
-                Self::set_number(cx, "maxCombo", &res, (n_fruits + n_droplets) as f64)?;
-            }
-            DifficultyAttributes::Mania(ManiaDifficultyAttributes {
-                stars,
-                hit_window,
-                max_combo,
-            }) => {
-                Self::set_number(cx, "stars", &res, stars)?;
-                Self::set_number(cx, "hitWindow", &res, hit_window)?;
-                Self::set_number(cx, "maxCombo", &res, max_combo as f64)?;
-            }
             DifficultyAttributes::Osu(OsuDifficultyAttributes {
                 aim,
                 speed,
@@ -407,6 +384,7 @@ impl Calculator {
                 stars,
                 max_combo,
             }) => {
+                Self::set_number(cx, "mode", &res, 0)?;
                 Self::set_number(cx, "aim", &res, aim)?;
                 Self::set_number(cx, "speed", &res, speed)?;
                 Self::set_number(cx, "flashlight", &res, flashlight)?;
@@ -429,12 +407,38 @@ impl Calculator {
                 stars,
                 max_combo,
             }) => {
+                Self::set_number(cx, "mode", &res, 1)?;
                 Self::set_number(cx, "stamina", &res, stamina)?;
                 Self::set_number(cx, "rhythm", &res, rhythm)?;
                 Self::set_number(cx, "color", &res, colour)?;
                 Self::set_number(cx, "peak", &res, peak)?;
                 Self::set_number(cx, "hitWindow", &res, hit_window)?;
                 Self::set_number(cx, "stars", &res, stars)?;
+                Self::set_number(cx, "maxCombo", &res, max_combo as f64)?;
+            }
+            DifficultyAttributes::Catch(CatchDifficultyAttributes {
+                stars,
+                ar,
+                n_fruits,
+                n_droplets,
+                n_tiny_droplets,
+            }) => {
+                Self::set_number(cx, "mode", &res, 2)?;
+                Self::set_number(cx, "stars", &res, stars)?;
+                Self::set_number(cx, "ar", &res, ar)?;
+                Self::set_number(cx, "nFruits", &res, n_fruits as f64)?;
+                Self::set_number(cx, "nDroplets", &res, n_droplets as f64)?;
+                Self::set_number(cx, "nTinyDroplets", &res, n_tiny_droplets as f64)?;
+                Self::set_number(cx, "maxCombo", &res, (n_fruits + n_droplets) as f64)?;
+            }
+            DifficultyAttributes::Mania(ManiaDifficultyAttributes {
+                stars,
+                hit_window,
+                max_combo,
+            }) => {
+                Self::set_number(cx, "mode", &res, 3)?;
+                Self::set_number(cx, "stars", &res, stars)?;
+                Self::set_number(cx, "hitWindow", &res, hit_window)?;
                 Self::set_number(cx, "maxCombo", &res, max_combo as f64)?;
             }
         }
@@ -449,23 +453,6 @@ impl Calculator {
         let res = JsObject::new(cx);
 
         match attrs {
-            PerformanceAttributes::Catch(CatchPerformanceAttributes { difficulty, pp }) => {
-                Self::set_number(cx, "pp", &res, pp)?;
-
-                let diff = Self::convert_difficulty(cx, DifficultyAttributes::Catch(difficulty))?;
-                res.set(cx, "difficulty", diff)?;
-            }
-            PerformanceAttributes::Mania(ManiaPerformanceAttributes {
-                difficulty,
-                pp,
-                pp_difficulty,
-            }) => {
-                Self::set_number(cx, "pp", &res, pp)?;
-                Self::set_number(cx, "ppDifficulty", &res, pp_difficulty)?;
-
-                let diff = Self::convert_difficulty(cx, DifficultyAttributes::Mania(difficulty))?;
-                res.set(cx, "difficulty", diff)?;
-            }
             PerformanceAttributes::Osu(OsuPerformanceAttributes {
                 difficulty,
                 pp,
@@ -475,6 +462,7 @@ impl Calculator {
                 pp_speed,
                 effective_miss_count,
             }) => {
+                Self::set_number(cx, "mode", &res, 0)?;
                 Self::set_number(cx, "pp", &res, pp)?;
                 Self::set_number(cx, "ppAcc", &res, pp_acc)?;
                 Self::set_number(cx, "ppAim", &res, pp_aim)?;
@@ -492,12 +480,32 @@ impl Calculator {
                 pp_difficulty,
                 effective_miss_count,
             }) => {
+                Self::set_number(cx, "mode", &res, 1)?;
                 Self::set_number(cx, "pp", &res, pp)?;
                 Self::set_number(cx, "ppAcc", &res, pp_acc)?;
                 Self::set_number(cx, "ppDifficulty", &res, pp_difficulty)?;
                 Self::set_number(cx, "effectiveMissCount", &res, effective_miss_count)?;
 
                 let diff = Self::convert_difficulty(cx, DifficultyAttributes::Taiko(difficulty))?;
+                res.set(cx, "difficulty", diff)?;
+            }
+            PerformanceAttributes::Catch(CatchPerformanceAttributes { difficulty, pp }) => {
+                Self::set_number(cx, "mode", &res, 2)?;
+                Self::set_number(cx, "pp", &res, pp)?;
+
+                let diff = Self::convert_difficulty(cx, DifficultyAttributes::Catch(difficulty))?;
+                res.set(cx, "difficulty", diff)?;
+            }
+            PerformanceAttributes::Mania(ManiaPerformanceAttributes {
+                difficulty,
+                pp,
+                pp_difficulty,
+            }) => {
+                Self::set_number(cx, "mode", &res, 3)?;
+                Self::set_number(cx, "pp", &res, pp)?;
+                Self::set_number(cx, "ppDifficulty", &res, pp_difficulty)?;
+
+                let diff = Self::convert_difficulty(cx, DifficultyAttributes::Mania(difficulty))?;
                 res.set(cx, "difficulty", diff)?;
             }
         };
@@ -512,20 +520,6 @@ impl Calculator {
         let res = JsObject::new(cx);
 
         match strains {
-            Strains::Catch(CatchStrains {
-                section_len,
-                movement,
-            }) => {
-                Self::set_number(cx, "sectionLength", &res, section_len)?;
-                Self::set_array(cx, "movement", &res, movement)?;
-            }
-            Strains::Mania(ManiaStrains {
-                section_len,
-                strains,
-            }) => {
-                Self::set_number(cx, "sectionLength", &res, section_len)?;
-                Self::set_array(cx, "strains", &res, strains)?;
-            }
             Strains::Osu(OsuStrains {
                 section_len,
                 aim,
@@ -533,6 +527,7 @@ impl Calculator {
                 speed,
                 flashlight,
             }) => {
+                Self::set_number(cx, "mode", &res, 0)?;
                 Self::set_number(cx, "sectionLength", &res, section_len)?;
                 Self::set_array(cx, "aim", &res, aim)?;
                 Self::set_array(cx, "aimNoSliders", &res, aim_no_sliders)?;
@@ -545,10 +540,27 @@ impl Calculator {
                 rhythm,
                 stamina,
             }) => {
+                Self::set_number(cx, "mode", &res, 1)?;
                 Self::set_number(cx, "sectionLength", &res, section_len)?;
                 Self::set_array(cx, "color", &res, color)?;
                 Self::set_array(cx, "rhythm", &res, rhythm)?;
                 Self::set_array(cx, "stamina", &res, stamina)?;
+            }
+            Strains::Catch(CatchStrains {
+                section_len,
+                movement,
+            }) => {
+                Self::set_number(cx, "mode", &res, 2)?;
+                Self::set_number(cx, "sectionLength", &res, section_len)?;
+                Self::set_array(cx, "movement", &res, movement)?;
+            }
+            Strains::Mania(ManiaStrains {
+                section_len,
+                strains,
+            }) => {
+                Self::set_number(cx, "mode", &res, 3)?;
+                Self::set_number(cx, "sectionLength", &res, section_len)?;
+                Self::set_array(cx, "strains", &res, strains)?;
             }
         }
 

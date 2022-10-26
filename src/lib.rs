@@ -32,7 +32,7 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     cx.export_function("calculatorN50", Calculator::js_n50)?;
     cx.export_function("calculatorMisses", Calculator::js_misses)?;
     cx.export_function("calculatorCombo", Calculator::js_combo)?;
-    cx.export_function("calculatorPassedObject", Calculator::js_passed_objects)?;
+    cx.export_function("calculatorPassedObjects", Calculator::js_passed_objects)?;
     cx.export_function("calculatorClockRate", Calculator::js_clock_rate)?;
 
     Ok(())
