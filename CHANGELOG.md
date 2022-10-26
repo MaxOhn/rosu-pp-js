@@ -1,6 +1,6 @@
 ## Upcoming
 
-- Updated to [rosu-pp v0.9.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v090-2022-10-24)
+- Updated to [rosu-pp v0.9.1](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v091-2022-10-26) including the big changes in [v0.9.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v090-2022-10-24)
 - The binding interface is rewritten, see the readme.
 
 # v0.8.0 (2022-08-02)

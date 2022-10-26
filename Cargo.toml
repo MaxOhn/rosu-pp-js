@@ -1,6 +1,6 @@
 [package]
 name = "rosu-pp"
-version = "0.9.0"
+version = "0.9.1"
 description = "osu! difficulty and pp calculation for all modes"
 authors = ["Max Ohn"]
 license = "MIT"
@@ -12,5 +12,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 neon = { version = "0.10", default-features = false, features = ["napi-6"] }
-rosu-pp = { version = "0.9" }
+rosu-pp = { version = "0.9.1" }
 
