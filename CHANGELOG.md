@@ -1,3 +1,8 @@
+## Upcoming
+
+- Updated to [rosu-pp v0.9.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v090-2022-10-24)
+- The binding interface is rewritten, see the readme.
+
 # v0.8.0 (2022-08-02)
 - Updated to [rosu-pp v0.8.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v080-2022-08-02)
 - The calculation result now contains a `timePreempt` field for osu!standard and `greatHitWindow` for
