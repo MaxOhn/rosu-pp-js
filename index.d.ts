@@ -46,6 +46,7 @@ export class Calculator {
 export interface Score {
     mode?: GameMode,
     mods?: number,
+    acc?: number,
     nGeki?: number,
     nKatu?: number,
     n300?: number,
