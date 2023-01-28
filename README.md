@@ -95,6 +95,11 @@ Finally, use one of the following methods to calculate values:
 - `mapAttributes(map: Beatmap)` returns an object of the form
  ```js
 {
+    mode: number,
+    version: number,
+    nCircles: number,
+    nSliders: number,
+    nSpinners: number,
     ar: number,
     cs: number,
     hp: number,
