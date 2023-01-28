@@ -79,10 +79,10 @@ dependencies = [
 
 [[package]]
 name = "rosu-pp"
-version = "0.9.1"
+version = "0.9.3"
 dependencies = [
  "neon",
- "rosu-pp 0.9.3",
+ "rosu-pp 0.9.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
