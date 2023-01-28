@@ -12,5 +12,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 neon = { version = "0.10", default-features = false, features = ["napi-6"] }
-rosu-pp = { version = "0.9.1" }
+rosu-pp = { version = "0.9.3" }
 
