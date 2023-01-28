@@ -1,4 +1,7 @@
-use std::cell::{Ref, RefCell};
+use std::{
+    borrow::Cow,
+    cell::{Ref, RefCell},
+};
 
 use neon::{
     prelude::{Context, FunctionContext, Object},
@@ -11,7 +14,7 @@ use rosu_pp::{
     mania::{ManiaDifficultyAttributes, ManiaPerformanceAttributes, ManiaStrains},
     osu::{OsuDifficultyAttributes, OsuPerformanceAttributes, OsuStrains},
     taiko::{TaikoDifficultyAttributes, TaikoPerformanceAttributes, TaikoStrains},
-    BeatmapExt, DifficultyAttributes, GameMode, PerformanceAttributes, Strains,
+    Beatmap, BeatmapExt, DifficultyAttributes, GameMode, PerformanceAttributes, Strains,
 };
 
 use crate::beatmap::Map;
@@ -165,6 +168,11 @@ impl Calculator {
         let this = cx.this().downcast_or_throw::<JsBox<Self>, _>(&mut cx)?;
         let this = this.inner.borrow();
 
+        let (map, mode) = match this.mode {
+            Some(mode) => (map.convert_mode(mode), mode),
+            None => (Cow::Borrowed(&*map), map.mode),
+        };
+
         let bpm = map.bpm();
         let mut calc = map.attributes();
 
@@ -184,7 +192,7 @@ impl Calculator {
             calc.clock_rate(clock_rate);
         }
 
-        Self::convert_map_attrs(&mut cx, calc.build(), bpm)
+        Self::convert_map_attrs(&mut cx, calc.build(), bpm, mode, map.as_ref())
     }
 
     pub fn js_difficulty(mut cx: FunctionContext<'_>) -> JsResult<'_, JsObject> {
@@ -347,9 +355,16 @@ impl Calculator {
         cx: &mut FunctionContext<'c>,
         attrs: BeatmapAttributes,
         bpm: f64,
+        mode: GameMode,
+        map: &Beatmap,
     ) -> JsResult<'c, JsObject> {
         let res = JsObject::new(cx);
 
+        Self::set_number(cx, "mode", &res, mode as u8)?;
+        Self::set_number(cx, "version", &res, map.version)?;
+        Self::set_number(cx, "nCircles", &res, map.n_circles)?;
+        Self::set_number(cx, "nSliders", &res, map.n_sliders)?;
+        Self::set_number(cx, "nSpinners", &res, map.n_spinners)?;
         Self::set_number(cx, "ar", &res, attrs.ar)?;
         Self::set_number(cx, "cs", &res, attrs.cs)?;
         Self::set_number(cx, "hp", &res, attrs.hp)?;

@@ -59,6 +59,11 @@ export interface Score {
 }
 
 export interface MapAttributes {
+    mode: GameMode,
+    version: number,
+    nCircles: number,
+    nSliders: number,
+    nSpinners: number,
     ar: number,
     cs: number,
     hp: number,
