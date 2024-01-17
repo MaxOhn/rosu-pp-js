@@ -39,19 +39,18 @@ Additionally, it can be modified through the following builder methods:
 #### Example
 
 ```js
-import { Beatmap } from require('rosu-pp');
+import { Beatmap } from "rosu-pp";
+import fs from "fs"
 
-let params = {
+const params = {
     path: './maps/100.osu',
     od: 10.0,
 };
 
-let map = new Beatmap(params).ar(9);
-
-require('fs').readFile('./maps/100.osu', (_, data) => {
-    let map = new Beatmap().fromBytes(data);
-    map = map.cs(0);
-});
+const map = new Beatmap(params).ar(9);
+const data = fs.readFileSync('./maps/100.osu');
+let newMap = new Beatmap().fromBytes(data);
+newMap = newMap.cs(0)
 ```
 
 ### `Calculator`
@@ -190,20 +189,20 @@ Finally, use one of the following methods to calculate values:
 #### Example
 
 ```js
-import { Beatmap, Calculator } from require('rosu-pp');
+import { Beatmap, Calculator } from "rosu-pp";
 
-let map = new Beatmap({ path: './maps/100.osu' });
+const map = new Beatmap({ path: './maps/100.osu' });
 
-let score = {
+const score = {
     mode: 2, // osu!catch
     mods: 8 + 64, // HDDT
 };
 
-let calc = new Calculator(score);
+const calc = new Calculator(score);
 
-let maxAttrs = calc.performance(map);
+const maxAttrs = calc.performance(map);
 
-let currAttrs = calc.n300(150)
+const currAttrs = calc.n300(150)
     .n100(10)
     .nMisses(20)
     .passedObjects(200)
