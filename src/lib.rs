@@ -6,7 +6,6 @@ use wasm_bindgen::prelude::*;
 mod attributes;
 mod beatmap;
 mod difficulty;
-mod error;
 mod mode;
 mod performance;
 

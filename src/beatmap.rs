@@ -1,4 +1,4 @@
-use std::io;
+use std::{error, fmt::Write, io};
 
 use rosu_pp::{
     model::mode::{ConvertStatus, GameMode},
@@ -6,7 +6,7 @@ use rosu_pp::{
 };
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{cannot_convert, error::ErrorExt, mode::JsGameMode};
+use crate::{cannot_convert, mode::JsGameMode};
 
 /// All beatmap data that is relevant for difficulty and performance
 /// calculation.
@@ -46,7 +46,17 @@ impl JsBeatmap {
 
 impl JsBeatmap {
     fn new(res: Result<Beatmap, io::Error>) -> Result<JsBeatmap, String> {
-        let inner = res.map_err(|e| e.unwind("Failed to decode beatmap"))?;
+        let inner = res.map_err(|e| {
+            let mut e = &e as &dyn error::Error;
+            let mut content = format!("Failed to decode beatmap: {e}");
+
+            while let Some(src) = e.source() {
+                let _ = writeln!(content, "  - caused by: {src}");
+                e = src;
+            }
+
+            content
+        })?;
 
         Ok(Self { inner })
     }
