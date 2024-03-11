@@ -6,8 +6,10 @@ use wasm_bindgen::prelude::*;
 mod attributes;
 mod beatmap;
 mod difficulty;
+mod gradual;
 mod mode;
 mod performance;
+mod score_state;
 
 #[wasm_bindgen]
 extern "C" {

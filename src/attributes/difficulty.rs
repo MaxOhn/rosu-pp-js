@@ -143,18 +143,14 @@ pub struct JsDifficultyAttributes {
     #[wasm_bindgen(readonly, js_name = hitWindow)]
     pub hit_window: Option<f64>,
 
-    /// The maximum combo.
-    ///
-    /// Only available for osu!, osu!taiko, and osu!mania.
-    /// It's recommended to use the `maxCombo` method instead.
-    #[wasm_bindgen(readonly, js_name = maxCombo)]
-    pub max_combo: Option<u32>,
+    max_combo: Option<u32>,
 }
 
 #[wasm_bindgen(js_class = DifficultyAttributes)]
 impl JsDifficultyAttributes {
     /// Return the maximum combo.
     /// @throws Will throw an error if the attributes have been modified manually
+    #[wasm_bindgen(getter)]
     pub fn maxCombo(&self) -> Result<u32, String> {
         if let Some(max_combo) = self.max_combo {
             Ok(max_combo)

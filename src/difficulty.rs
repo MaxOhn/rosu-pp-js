@@ -2,7 +2,10 @@ use rosu_pp::{model::mode::GameMode, Difficulty};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    attributes::difficulty::JsDifficultyAttributes, beatmap::JsBeatmap, mode::JsGameMode,
+    attributes::difficulty::JsDifficultyAttributes,
+    beatmap::JsBeatmap,
+    gradual::{difficulty::JsGradualDifficulty, performance::JsGradualPerformance},
+    mode::JsGameMode,
     performance::JsPerformance,
 };
 
@@ -47,7 +50,8 @@ impl JsDifficulty {
     /// If you want to calculate the difficulty after every few objects,
     /// instead of using `Difficulty` multiple times with different
     /// `passedObjects`, you should use `GradualDifficulty`.
-    pub fn passedObjects(self, passedObjects: u32) -> Self {
+    #[wasm_bindgen(js_name = passedObjects)]
+    pub fn passed_objects(self, passedObjects: u32) -> Self {
         Self {
             inner: self.inner.passed_objects(passedObjects),
             mode: self.mode,
@@ -62,7 +66,8 @@ impl JsDifficulty {
     /// | Minimum | Maximum |
     /// | :-----: | :-----: |
     /// | 0.01    | 100     |
-    pub fn clockRate(self, clockRate: f64) -> Self {
+    #[wasm_bindgen(js_name = clockRate)]
+    pub fn clock_rate(self, clockRate: f64) -> Self {
         Self {
             inner: self.inner.clock_rate(clockRate),
             mode: self.mode,
@@ -140,7 +145,8 @@ impl JsDifficulty {
     /// Adjust patterns as if the HR mod is enabled.
     ///
     /// Only relevant for osu!catch.
-    pub fn hardrockOffsets(self, hardrockOffsets: bool) -> Self {
+    #[wasm_bindgen(js_name = hardrockOffsets)]
+    pub fn hardrock_offsets(self, hardrockOffsets: bool) -> Self {
         Self {
             inner: self.inner.hardrock_offsets(hardrockOffsets),
             mode: self.mode,
@@ -157,7 +163,20 @@ impl JsDifficulty {
         Ok(self.inner.calculate(&map.inner).into())
     }
 
+    /// Returns a performance calculator for the current difficulty settings.
     pub fn performance(self) -> JsPerformance {
         JsPerformance::new(Some(self))
+    }
+
+    /// Returns a gradual difficulty calculator for the current difficulty settings.
+    /// @throws Will throw an error if the specified mode is incompatible with the map's mode
+    pub fn gradual_difficulty(self, map: &mut JsBeatmap) -> Result<JsGradualDifficulty, String> {
+        JsGradualDifficulty::new(self, map)
+    }
+
+    /// Returns a gradual performance calculator for the current difficulty settings.
+    /// @throws Will throw an error if the specified mode is incompatible with the map's mode
+    pub fn gradual_performance(self, map: &mut JsBeatmap) -> Result<JsGradualPerformance, String> {
+        JsGradualPerformance::new(self, map)
     }
 }

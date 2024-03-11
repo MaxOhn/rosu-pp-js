@@ -67,8 +67,9 @@ impl JsPerformance {
     /// If you want to calculate the performance after every few objects,
     /// instead of using `Performance` multiple times with different
     /// `passedObjects`, you should use `GradualPerformance`.
-    pub fn passedObjects(mut self, passedObjects: u32) -> Self {
-        self.difficulty = self.difficulty.passedObjects(passedObjects);
+    #[wasm_bindgen(js_name = passedObjects)]
+    pub fn passed_objects(mut self, passedObjects: u32) -> Self {
+        self.difficulty = self.difficulty.passed_objects(passedObjects);
 
         self
     }
@@ -81,8 +82,9 @@ impl JsPerformance {
     /// | Minimum | Maximum |
     /// | :-----: | :-----: |
     /// | 0.01    | 100     |
-    pub fn clockRate(mut self, clockRate: f64) -> Self {
-        self.difficulty = self.difficulty.clockRate(clockRate);
+    #[wasm_bindgen(js_name = clockRate)]
+    pub fn clock_rate(mut self, clockRate: f64) -> Self {
+        self.difficulty = self.difficulty.clock_rate(clockRate);
 
         self
     }
@@ -154,8 +156,9 @@ impl JsPerformance {
     /// Adjust patterns as if the HR mod is enabled.
     ///
     /// Only relevant for osu!catch.
-    pub fn hardrockOffsets(mut self, hardrockOffsets: bool) -> Self {
-        self.difficulty = self.difficulty.hardrockOffsets(hardrockOffsets);
+    #[wasm_bindgen(js_name = hardrockOffsets)]
+    pub fn hardrock_offsets(mut self, hardrockOffsets: bool) -> Self {
+        self.difficulty = self.difficulty.hardrock_offsets(hardrockOffsets);
 
         self
     }
@@ -179,7 +182,8 @@ impl JsPerformance {
     /// Specify the amount of gekis of a play.
     ///
     /// Only relevant for osu!mania for which it repesents the amount of n320.
-    pub fn nGeki(mut self, nGeki: u32) -> Self {
+    #[wasm_bindgen(js_name = nGeki)]
+    pub fn n_geki(mut self, nGeki: u32) -> Self {
         self.n_geki = Some(nGeki);
 
         self
@@ -189,7 +193,8 @@ impl JsPerformance {
     ///
     /// Only relevant for osu!catch for which it represents the amount of tiny
     /// droplet misses and osu!mania for which it repesents the amount of n200.
-    pub fn nKatu(mut self, nKatu: u32) -> Self {
+    #[wasm_bindgen(js_name = nKatu)]
+    pub fn n_katu(mut self, nKatu: u32) -> Self {
         self.n_katu = Some(nKatu);
 
         self
@@ -228,7 +233,8 @@ impl JsPerformance {
     /// Specify how hitresults should be generated.
     ///
     /// Defauls to `HitResultPriority.BestCase`.
-    pub fn hitresultPriority(mut self, priority: JsHitResultPriority) -> Self {
+    #[wasm_bindgen(js_name = hitresultPriority)]
+    pub fn hitresult_priority(mut self, priority: JsHitResultPriority) -> Self {
         self.hitresult_priority = priority.into();
 
         self
@@ -239,8 +245,9 @@ impl JsPerformance {
     /// Note that using this method will perform the costly computation of
     /// difficulty attributes internally. If attributes for the current
     /// `Difficulty` settings are already available, consider using the method
-    /// `calculate_with_attributes` instead.
+    /// `calculateWithAttributes` instead.
     /// @throws Will throw an error if the specified mode is incompatible with the map's mode
+    #[wasm_bindgen(js_name = calculateWithMap)]
     pub fn calculate_with_map(
         self,
         map: &mut JsBeatmap,
@@ -257,6 +264,7 @@ impl JsPerformance {
     /// Note that `attrs` must have been calculated for the same map and
     /// `Difficulty` settings, otherwise the final attributes will be incorrect.
     /// @throws Will throw an error if the specified mode is incompatible with the attributes or if the attributes have been modified manually
+    #[wasm_bindgen(js_name = calculateWithAttributes)]
     pub fn calculate_with_attributes(
         self,
         attrs: JsDifficultyAttributes,
