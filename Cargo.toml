@@ -1,24 +1,23 @@
 [package]
 name = "rosu-pp-js"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-description = "TODO: description"
-repository = "TODO: repository"
+authors = ["MaxOhn <ohn.m@hotmail.de>"]
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/MaxOhn/rosu-pp-js"
+description = "Difficulty and performance calculation for osu!"
+keywords = ["osu", "pp", "stars", "performance", "osu!"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[features]
-default = ["console_error_panic_hook"]
-
 [dependencies]
 rosu-pp = { path = "../rosu-pp" }
 wasm-bindgen = "0.2.84"
-console_error_panic_hook = { version = "0.1.7", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
 
 [profile.release]
-opt-level = "s"
+# opt-level = "s"
