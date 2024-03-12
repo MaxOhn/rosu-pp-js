@@ -7,6 +7,7 @@ use crate::{
     gradual::{difficulty::JsGradualDifficulty, performance::JsGradualPerformance},
     mode::JsGameMode,
     performance::JsPerformance,
+    strains::JsStrains,
 };
 
 /// Builder for a difficulty calculation.
@@ -165,6 +166,17 @@ impl JsDifficulty {
         }
 
         Ok(self.inner.calculate(&map.inner).into())
+    }
+
+    /// Perform the difficulty calculation but instead of evaluating strain
+    /// values, return them as is.
+    /// @throws Will throw an error if the specified mode is incompatible with the map's mode
+    pub fn strains(&self, map: &mut JsBeatmap) -> Result<JsStrains, String> {
+        if let Some(mode) = self.mode {
+            map.convert_native(mode)?;
+        }
+
+        Ok(self.inner.strains(&map.inner).into())
     }
 
     /// Returns a performance calculator for the current difficulty settings.

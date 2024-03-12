@@ -10,6 +10,7 @@ mod gradual;
 mod mode;
 mod performance;
 mod score_state;
+mod strains;
 
 #[wasm_bindgen]
 extern "C" {
