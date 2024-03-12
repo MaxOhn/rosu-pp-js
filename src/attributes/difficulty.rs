@@ -286,10 +286,10 @@ impl From<DifficultyAttributes> for JsDifficultyAttributes {
     }
 }
 
-impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
+impl TryFrom<&JsDifficultyAttributes> for DifficultyAttributes {
     type Error = String;
 
-    fn try_from(attrs: JsDifficultyAttributes) -> Result<Self, Self::Error> {
+    fn try_from(attrs: &JsDifficultyAttributes) -> Result<Self, Self::Error> {
         let JsDifficultyAttributes {
             mode,
             stars,
@@ -347,19 +347,19 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                     max_combo,
                 ) {
                     return Ok(Self::Osu(OsuDifficultyAttributes {
-                        aim,
-                        speed,
-                        flashlight,
-                        slider_factor,
-                        speed_note_count,
-                        ar,
-                        od,
-                        hp,
-                        n_circles,
-                        n_sliders,
-                        n_spinners,
-                        stars,
-                        max_combo,
+                        aim: *aim,
+                        speed: *speed,
+                        flashlight: *flashlight,
+                        slider_factor: *slider_factor,
+                        speed_note_count: *speed_note_count,
+                        ar: *ar,
+                        od: *od,
+                        hp: *hp,
+                        n_circles: *n_circles,
+                        n_sliders: *n_sliders,
+                        n_spinners: *n_spinners,
+                        stars: *stars,
+                        max_combo: *max_combo,
                     }));
                 }
             }
@@ -374,14 +374,14 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                 ) = (stamina, rhythm, color, peak, hit_window, max_combo)
                 {
                     return Ok(Self::Taiko(TaikoDifficultyAttributes {
-                        stamina,
-                        rhythm,
-                        color,
-                        peak,
-                        hit_window,
-                        stars,
-                        max_combo,
-                        is_convert,
+                        stamina: *stamina,
+                        rhythm: *rhythm,
+                        color: *color,
+                        peak: *peak,
+                        hit_window: *hit_window,
+                        stars: *stars,
+                        max_combo: *max_combo,
+                        is_convert: *is_convert,
                     }));
                 }
             }
@@ -390,12 +390,12 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                     (ar, n_fruits, n_droplets, n_tiny_droplets)
                 {
                     return Ok(Self::Catch(CatchDifficultyAttributes {
-                        stars,
-                        ar,
-                        n_fruits,
-                        n_droplets,
-                        n_tiny_droplets,
-                        is_convert,
+                        stars: *stars,
+                        ar: *ar,
+                        n_fruits: *n_fruits,
+                        n_droplets: *n_droplets,
+                        n_tiny_droplets: *n_tiny_droplets,
+                        is_convert: *is_convert,
                     }));
                 }
             }
@@ -404,11 +404,11 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                     (hit_window, n_objects, max_combo)
                 {
                     return Ok(Self::Mania(ManiaDifficultyAttributes {
-                        stars,
-                        hit_window,
-                        n_objects,
-                        max_combo,
-                        is_convert,
+                        stars: *stars,
+                        hit_window: *hit_window,
+                        n_objects: *n_objects,
+                        max_combo: *max_combo,
+                        is_convert: *is_convert,
                     }));
                 }
             }

@@ -16,7 +16,7 @@ impl JsGradualDifficulty {
     /// @throws Will throw an error if the specified mode is incompatible with the map's mode
     #[wasm_bindgen(constructor)]
     pub fn new(
-        difficulty: JsDifficulty,
+        difficulty: &JsDifficulty,
         map: &mut JsBeatmap,
     ) -> Result<JsGradualDifficulty, String> {
         if let Some(mode) = difficulty.mode {
@@ -24,7 +24,7 @@ impl JsGradualDifficulty {
         }
 
         Ok(Self {
-            inner: GradualDifficulty::new(difficulty.inner, &map.inner),
+            inner: GradualDifficulty::new(difficulty.inner.clone(), &map.inner),
         })
     }
 

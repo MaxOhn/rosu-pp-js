@@ -46,6 +46,9 @@ impl JsBeatmap {
 
 impl JsBeatmap {
     fn new(res: Result<Beatmap, io::Error>) -> Result<JsBeatmap, String> {
+        #[cfg(feature = "panic_hook")]
+        console_error_panic_hook::set_once();
+
         let inner = res.map_err(|e| {
             let mut e = &e as &dyn error::Error;
             let mut content = format!("Failed to decode beatmap: {e}");

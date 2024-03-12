@@ -11,6 +11,7 @@ use crate::{
 
 /// Builder for a difficulty calculation.
 #[wasm_bindgen(js_name = Difficulty)]
+#[derive(Clone)]
 pub struct JsDifficulty {
     pub(crate) inner: Difficulty,
     pub(crate) mode: Option<GameMode>,
@@ -21,6 +22,9 @@ impl JsDifficulty {
     #[wasm_bindgen(constructor)]
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
+        #[cfg(feature = "panic_hook")]
+        console_error_panic_hook::set_once();
+
         Self {
             inner: Difficulty::new(),
             mode: None,
@@ -164,19 +168,19 @@ impl JsDifficulty {
     }
 
     /// Returns a performance calculator for the current difficulty settings.
-    pub fn performance(self) -> JsPerformance {
-        JsPerformance::new(Some(self))
+    pub fn performance(&self) -> JsPerformance {
+        JsPerformance::new().difficulty(self)
     }
 
     /// Returns a gradual difficulty calculator for the current difficulty settings.
     /// @throws Will throw an error if the specified mode is incompatible with the map's mode
-    pub fn gradual_difficulty(self, map: &mut JsBeatmap) -> Result<JsGradualDifficulty, String> {
+    pub fn gradual_difficulty(&self, map: &mut JsBeatmap) -> Result<JsGradualDifficulty, String> {
         JsGradualDifficulty::new(self, map)
     }
 
     /// Returns a gradual performance calculator for the current difficulty settings.
     /// @throws Will throw an error if the specified mode is incompatible with the map's mode
-    pub fn gradual_performance(self, map: &mut JsBeatmap) -> Result<JsGradualPerformance, String> {
+    pub fn gradual_performance(&self, map: &mut JsBeatmap) -> Result<JsGradualPerformance, String> {
         JsGradualPerformance::new(self, map)
     }
 }

@@ -80,6 +80,7 @@ dependencies = [
 name = "rosu-pp-js"
 version = "1.0.0"
 dependencies = [
+ "console_error_panic_hook",
  "rosu-pp",
  "wasm-bindgen",
  "wasm-bindgen-test",

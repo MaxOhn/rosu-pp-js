@@ -31,9 +31,9 @@ pub struct JsPerformance {
 impl JsPerformance {
     #[wasm_bindgen(constructor)]
     #[allow(clippy::new_without_default)]
-    pub fn new(difficulty: Option<JsDifficulty>) -> Self {
+    pub fn new() -> Self {
         Self {
-            difficulty: difficulty.unwrap_or_else(JsDifficulty::new),
+            difficulty: JsDifficulty::new(),
             acc: None,
             combo: None,
             n_geki: None,
@@ -47,8 +47,8 @@ impl JsPerformance {
     }
 
     /// Use the specified settings of the given `Difficulty`.
-    pub fn difficulty(mut self, difficulty: JsDifficulty) -> Self {
-        self.difficulty = difficulty;
+    pub fn difficulty(mut self, difficulty: &JsDifficulty) -> Self {
+        self.difficulty = difficulty.to_owned();
 
         self
     }
@@ -267,7 +267,7 @@ impl JsPerformance {
     #[wasm_bindgen(js_name = calculateWithAttributes)]
     pub fn calculate_with_attributes(
         self,
-        attrs: JsDifficultyAttributes,
+        attrs: &JsDifficultyAttributes,
     ) -> Result<JsPerformanceAttributes, String> {
         if let Some(to) = self.difficulty.mode {
             let from = GameMode::from(attrs.mode);
