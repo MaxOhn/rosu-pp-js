@@ -150,8 +150,8 @@ pub struct JsDifficultyAttributes {
 impl JsDifficultyAttributes {
     /// Return the maximum combo.
     /// @throws Will throw an error if the attributes have been modified manually
-    #[wasm_bindgen(getter)]
-    pub fn maxCombo(&self) -> Result<u32, String> {
+    #[wasm_bindgen(js_name = maxCombo, getter)]
+    pub fn max_combo(&self) -> Result<u32, String> {
         if let Some(max_combo) = self.max_combo {
             Ok(max_combo)
         } else if let (Some(n_fruits), Some(n_droplets)) = (self.n_fruits, self.n_droplets) {
