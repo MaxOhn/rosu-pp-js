@@ -1,7 +1,10 @@
 use std::{error, fmt::Write, io};
 
 use rosu_pp::{
-    model::mode::{ConvertStatus, GameMode},
+    model::{
+        hit_object::HitObjectKind,
+        mode::{ConvertStatus, GameMode},
+    },
     Beatmap,
 };
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -41,6 +44,72 @@ impl JsBeatmap {
     #[wasm_bindgen(getter)]
     pub fn mode(&self) -> JsGameMode {
         self.inner.mode.into()
+    }
+
+    #[wasm_bindgen(js_name = nBreaks)]
+    pub fn n_breaks(&self) -> usize {
+        self.inner.breaks.len()
+    }
+
+    #[wasm_bindgen(js_name = nTimingPoints)]
+    pub fn n_timing_points(&self) -> usize {
+        self.inner.timing_points.len()
+    }
+
+    #[wasm_bindgen(js_name = nDifficultyPoints)]
+    pub fn n_difficulty_points(&self) -> usize {
+        self.inner.difficulty_points.len()
+    }
+
+    #[wasm_bindgen(js_name = nEffectPoints)]
+    pub fn n_effect_points(&self) -> usize {
+        self.inner.effect_points.len()
+    }
+
+    /// The amount of hitobjects.
+    #[wasm_bindgen(js_name = nObjects)]
+    pub fn n_objects(&self) -> usize {
+        self.inner.hit_objects.len()
+    }
+
+    /// The amount of circle hitobjects.
+    #[wasm_bindgen(js_name = nCircles)]
+    pub fn n_circles(&self) -> usize {
+        self.inner
+            .hit_objects
+            .iter()
+            .filter(|h| h.is_circle())
+            .count()
+    }
+
+    /// The amount of slider hitobjects.
+    #[wasm_bindgen(js_name = nSliders)]
+    pub fn n_sliders(&self) -> usize {
+        self.inner
+            .hit_objects
+            .iter()
+            .filter(|h| h.is_slider())
+            .count()
+    }
+
+    /// The amount of spinner hitobjects.
+    #[wasm_bindgen(js_name = nSpinners)]
+    pub fn n_spinners(&self) -> usize {
+        self.inner
+            .hit_objects
+            .iter()
+            .filter(|h| h.is_spinner())
+            .count()
+    }
+
+    /// The amount of hold hitobjects.
+    #[wasm_bindgen(js_name = nHolds)]
+    pub fn n_holds(&self) -> usize {
+        self.inner
+            .hit_objects
+            .iter()
+            .filter(|h| matches!(h.kind, HitObjectKind::Hold(_)))
+            .count()
     }
 }
 
@@ -120,12 +189,4 @@ getters! {
     od: f32,
     slider_multiplier as sliderMultiplier: f64,
     slider_tick_rate as sliderTickRate: f64,
-
-    // TODO
-    // breaks: Vec<BreakPeriod>,
-    // timing_points: Vec<TimingPoint>,
-    // difficulty_points: Vec<DifficultyPoint>,
-    // effect_points: Vec<EffectPoint>,
-    // hit_objects: Vec<HitObject>,
-    // hit_sounds: Vec<HitSoundType>,
 }

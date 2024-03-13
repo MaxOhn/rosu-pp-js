@@ -14,6 +14,7 @@ impl JsBeatmapAttributesBuilder {
     ///
     /// The mode will be `GameMode.Osu` and attributes are set to `5.0`.
     #[wasm_bindgen(constructor)]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             inner: BeatmapAttributesBuilder::new(),
