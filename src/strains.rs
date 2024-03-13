@@ -44,6 +44,7 @@ pub struct JsStrains {
 impl JsStrains {
     /// The strains' gamemode.
     /// @throws Will throw an error if the strains have been modified manually
+    #[wasm_bindgen(getter)]
     pub fn mode(&self) -> Result<JsGameMode, String> {
         if self.aim.is_some() {
             Ok(JsGameMode::Osu)
