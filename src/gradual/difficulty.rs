@@ -46,9 +46,9 @@ impl JsGradualDifficulty {
             .collect()
     }
 
-    /// Returns the exact remaining length of the iterator.
-    #[wasm_bindgen(getter)]
-    pub fn length(&self) -> usize {
+    /// Returns the amount of remaining items.
+    #[wasm_bindgen(js_name = nRemaining, getter)]
+    pub fn n_remaining(&self) -> usize {
         self.inner.len()
     }
 }

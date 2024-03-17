@@ -48,9 +48,9 @@ impl JsGradualPerformance {
         maybe_convert_serialize::<PerformanceAttributes, _, _>(self.inner.nth(state, n))
     }
 
-    /// Returns the amount of remaining objects.
-    #[wasm_bindgen(getter)]
-    pub fn length(&self) -> usize {
+    /// Returns the amount of remaining items.
+    #[wasm_bindgen(js_name = nRemaining, getter)]
+    pub fn n_remaining(&self) -> usize {
         self.inner.len()
     }
 }
