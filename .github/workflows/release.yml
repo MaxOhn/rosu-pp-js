@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create release
+        # run: gh release create --draft --title ${{ format('Release {0}', github.ref) }} ${{ github.ref }}
+        run: gh release create --draft --prerelease --title 'Release testtag' testtag
+
+  build_upload:
+    name: Build and upload
+    needs: create_release
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        target: [bundler, nodejs, web]
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build
+        run: wasm-pack build --release --target ${{ matrix.target }} --out-dir ${{ format('pkg_{0}', matrix.target) }}
+
+      - name: Zip
+        run: tar -czvf ${{ format('rosu_pp_js_{0}.tar.gz', matrix.target) }} -C ${{ format('pkg_{0}', matrix.target) }} .
+
+      - name: Upload to release
+        # run: gh release upload ${{ github.ref }} ${{ format('rosu_pp_js_{0}.tar.gz', matrix.target) }}
+        run: gh release upload testtag ${{ format('rosu_pp_js_{0}.tar.gz', matrix.target) }}
+
+  publish:
+    name: Publish release
+    needs: [build_upload]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Publish release
+        # run: gh release edit ${{ github.ref }} --draft=false
+        run: gh release edit testtag --draft=false
