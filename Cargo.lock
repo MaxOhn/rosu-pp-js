@@ -90,6 +90,7 @@ checksum = "3c55926c8f0fed1db12fbe96f7a6083a2c4186443dd32532ab34e6902467a4f3"
 [[package]]
 name = "rosu-pp"
 version = "1.0.0"
+source = "git+https://github.com/MaxOhn/rosu-pp?branch=next#90196329c15b957597accb69056e4468523529bb"
 dependencies = [
  "rosu-map",
 ]
