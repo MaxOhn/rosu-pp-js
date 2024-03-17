@@ -14,12 +14,13 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = []
-# default = ["wee_alloc"] # reduces file size by ~2kb
-panic_hook = ["console_error_panic_hook"]
+# default = ["wee_alloc"]
 
 [dependencies]
-console_error_panic_hook = { version = "0.1.7", optional = true }
+js-sys = "0.3.69"
 rosu-pp = { path = "../rosu-pp" }
+serde = { version = "1.0.197", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
 wasm-bindgen = "0.2.84"
 wee_alloc = { version = "0.4.5", optional = true }
 
@@ -27,15 +28,9 @@ wee_alloc = { version = "0.4.5", optional = true }
 wasm-bindgen-test = "0.3.34"
 
 [profile.release]
-# opt-level = "z" # reduces file size by ~15% but decreases performance by ~25%
+opt-level = 3
+# opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
 strip = true
-
-# opt level 3:       339569
-# opt level s:       303366
-# opt level z:       293216
-# opt level 3 + wee: 337884
-# opt level s + wee: 298267
-# opt level z + wee: 287281

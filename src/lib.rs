@@ -1,8 +1,7 @@
-#![allow(non_snake_case)]
+#[macro_use]
+mod macros;
 
-use rosu_pp::model::mode::GameMode;
-use wasm_bindgen::prelude::*;
-
+mod args;
 mod attributes;
 mod beatmap;
 mod difficulty;
@@ -11,17 +10,11 @@ mod mode;
 mod performance;
 mod score_state;
 mod strains;
+mod util;
+
+type JsError = serde_wasm_bindgen::Error;
+type JsResult<T> = Result<T, JsError>;
 
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-fn cannot_convert(from: GameMode, to: GameMode) -> String {
-    format!("Cannot convert {from:?} to {to:?}")
-}

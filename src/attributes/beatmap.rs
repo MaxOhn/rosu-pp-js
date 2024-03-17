@@ -1,7 +1,13 @@
-use rosu_pp::model::beatmap::{BeatmapAttributes, BeatmapAttributesBuilder, HitWindows};
+use rosu_pp::model::beatmap::{
+    BeatmapAttributes as RosuBeatmapAttributes, BeatmapAttributesBuilder,
+};
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{beatmap::JsBeatmap, difficulty::JsDifficulty, mode::JsGameMode};
+use crate::{
+    args::beatmap::{BeatmapAttributesArgs, JsBeatmapAttributesArgs},
+    beatmap::JsBeatmap,
+    util, JsError, JsResult,
+};
 
 #[wasm_bindgen(js_name = BeatmapAttributesBuilder)]
 pub struct JsBeatmapAttributesBuilder {
@@ -11,163 +17,66 @@ pub struct JsBeatmapAttributesBuilder {
 #[wasm_bindgen(js_class = BeatmapAttributesBuilder)]
 impl JsBeatmapAttributesBuilder {
     /// Create a new `BeatmapAttributesBuilder`.
-    ///
-    /// The mode will be `GameMode.Osu` and attributes are set to `5.0`.
     #[wasm_bindgen(constructor)]
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            inner: BeatmapAttributesBuilder::new(),
-        }
-    }
+    pub fn new(args: &JsBeatmapAttributesArgs) -> JsResult<JsBeatmapAttributesBuilder> {
+        let inner =
+            BeatmapAttributesArgs::from_value(args).and_then(BeatmapAttributesBuilder::try_from)?;
 
-    /// Create a new `BeatmapAttributesBuilder` from a beatmap.
-    #[wasm_bindgen(js_name = fromMap)]
-    pub fn from_map(map: &JsBeatmap) -> Self {
-        Self {
-            inner: BeatmapAttributesBuilder::from_map(&map.inner),
-        }
-    }
-
-    /// Specify a gamemode and whether it's a converted map.
-    pub fn mode(self, mode: JsGameMode, isConvert: bool) -> Self {
-        Self {
-            inner: self.inner.mode(mode.into(), isConvert),
-        }
-    }
-
-    /// Specify all settings through a `JsDifficulty` object.
-    ///
-    /// **Note** if `difficulty` has a specified `mode` it will be ignored.
-    pub fn difficulty(self, difficulty: &JsDifficulty) -> Self {
-        Self {
-            inner: self.inner.difficulty(&difficulty.inner),
-        }
-    }
-
-    /// Specify mods through their bit values.
-    ///
-    /// See <https://github.com/ppy/osu-api/wiki#mods>
-    pub fn mods(self, mods: u32) -> Self {
-        Self {
-            inner: self.inner.mods(mods),
-        }
-    }
-
-    /// Adjust the clock rate used in the calculation.
-    ///
-    /// If none is specified, it will take the clock rate based on the mods
-    /// i.e. 1.5 for DT, 0.75 for HT and 1.0 otherwise.
-    ///
-    /// | Minimum | Maximum |
-    /// | :-----: | :-----: |
-    /// | 0.01    | 100     |
-    #[wasm_bindgen(js_name = clockRate)]
-    pub fn clock_rate(self, clockRate: f64) -> Self {
-        Self {
-            inner: self.inner.clock_rate(clockRate),
-        }
-    }
-
-    /// Override a beatmap's set AR.
-    ///
-    /// Only relevant for osu! and osu!catch.
-    ///
-    /// `withMods` determines if the given value should be used before
-    /// or after accounting for mods, e.g. on `true` the value will be
-    /// used as is and on `false` it will be modified based on the mods.
-    ///
-    /// | Minimum | Maximum |
-    /// | :-----: | :-----: |
-    /// | -20     | 20      |
-    pub fn ar(self, ar: f32, withMods: bool) -> Self {
-        Self {
-            inner: self.inner.ar(ar, withMods),
-        }
-    }
-
-    /// Override a beatmap's set CS.
-    ///
-    /// Only relevant for osu! and osu!catch.
-    ///
-    /// `withMods` determines if the given value should be used before
-    /// or after accounting for mods, e.g. on `true` the value will be
-    /// used as is and on `false` it will be modified based on the mods.
-    ///
-    /// | Minimum | Maximum |
-    /// | :-----: | :-----: |
-    /// | -20     | 20      |
-    pub fn cs(self, cs: f32, withMods: bool) -> Self {
-        Self {
-            inner: self.inner.cs(cs, withMods),
-        }
-    }
-
-    /// Override a beatmap's set HP.
-    ///
-    /// `withMods` determines if the given value should be used before
-    /// or after accounting for mods, e.g. on `true` the value will be
-    /// used as is and on `false` it will be modified based on the mods.
-    ///
-    /// | Minimum | Maximum |
-    /// | :-----: | :-----: |
-    /// | -20     | 20      |
-    pub fn hp(self, hp: f32, withMods: bool) -> Self {
-        Self {
-            inner: self.inner.hp(hp, withMods),
-        }
-    }
-
-    /// Override a beatmap's set OD.
-    ///
-    /// `withMods` determines if the given value should be used before
-    /// or after accounting for mods, e.g. on `true` the value will be
-    /// used as is and on `false` it will be modified based on the mods.
-    ///
-    /// | Minimum | Maximum |
-    /// | :-----: | :-----: |
-    /// | -20     | 20      |
-    pub fn od(self, od: f32, withMods: bool) -> Self {
-        Self {
-            inner: self.inner.od(od, withMods),
-        }
-    }
-
-    /// Calculate the AR and OD hit windows.
-    #[wasm_bindgen(js_name = hitWindows)]
-    pub fn hit_windows(&self) -> JsHitWindows {
-        self.inner.hit_windows().into()
+        Ok(Self { inner })
     }
 
     /// Calculate the `BeatmapAttributes`.
-    pub fn build(&self) -> JsBeatmapAttributes {
-        self.inner.build().into()
+    pub fn build(&self) -> JsResult<JsBeatmapAttributes> {
+        let attrs = BeatmapAttributes::from(self.inner.build());
+
+        util::to_value(&attrs).map(From::from)
     }
 }
 
-/// AR and OD hit windows
-#[wasm_bindgen(js_name = HitWindows, inspectable)]
-#[derive(Copy, Clone)]
-pub struct JsHitWindows {
-    /// Hit window for approach rate i.e. TimePreempt in milliseconds.
-    pub ar: f64,
-    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in
-    /// milliseconds.
-    pub od: f64,
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = BeatmapAttributes)]
+    pub type JsBeatmapAttributes;
 }
 
-impl From<HitWindows> for JsHitWindows {
-    fn from(hit_windows: HitWindows) -> Self {
-        Self {
-            ar: hit_windows.ar,
-            od: hit_windows.od,
-        }
-    }
-}
+#[wasm_bindgen(typescript_custom_section)]
+const _: &'static str = r#"/**
+* The result of building a `BeatmapAttributesBuilder`.
+*/
+interface BeatmapAttributes {
+    /**
+    * The approach rate.
+    */
+    ar: number,
+    /**
+    * The overall difficulty.
+    */
+    od: number,
+    /**
+    * The circle size.
+    */
+    cs: number,
+    /**
+    * The health drain rate
+    */
+    hp: number,
+    /**
+    * The clock rate with respect to mods.
+    */
+    clockRate: number,
+    /**
+    * Hit window for approach rate i.e. TimePreempt in milliseconds.
+    */
+    arHitWindow: number,
+    /**
+    * Hit window for overall difficulty i.e. time to hit a 300 ("Great") in
+    * milliseconds.
+    */
+    odHitWindow: number,
+}"#;
 
-/// Summary object for a beatmap's attributes.
-#[wasm_bindgen(js_name = BeatmapAttributes, inspectable)]
-pub struct JsBeatmapAttributes {
+#[derive(serde::Serialize)]
+pub(crate) struct BeatmapAttributes {
     /// The approach rate.
     pub ar: f64,
     /// The overall difficulty.
@@ -177,20 +86,67 @@ pub struct JsBeatmapAttributes {
     /// The health drain rate
     pub hp: f64,
     /// The clock rate with respect to mods.
+    #[serde(rename = "clockRate")]
     pub clock_rate: f64,
-    /// The hit windows for approach rate and overall difficulty.
-    pub hit_windows: JsHitWindows,
+    /// Hit window for approach rate i.e. TimePreempt in milliseconds.
+    #[serde(rename = "arHitWindow")]
+    pub ar_hitwindow: f64,
+    /// Hit window for overall difficulty i.e. time to hit a 300 ("Great") in
+    /// milliseconds.
+    #[serde(rename = "odHitWindow")]
+    pub od_hitwindow: f64,
 }
 
-impl From<BeatmapAttributes> for JsBeatmapAttributes {
-    fn from(attrs: BeatmapAttributes) -> Self {
+impl From<RosuBeatmapAttributes> for BeatmapAttributes {
+    fn from(attrs: RosuBeatmapAttributes) -> Self {
         Self {
             ar: attrs.ar,
             od: attrs.od,
             cs: attrs.cs,
             hp: attrs.hp,
             clock_rate: attrs.clock_rate,
-            hit_windows: attrs.hit_windows.into(),
+            ar_hitwindow: attrs.hit_windows.ar,
+            od_hitwindow: attrs.hit_windows.od,
         }
+    }
+}
+
+impl TryFrom<BeatmapAttributesArgs> for BeatmapAttributesBuilder {
+    type Error = JsError;
+
+    fn try_from(args: BeatmapAttributesArgs) -> Result<Self, Self::Error> {
+        let mut builder = if let Some(value) = args.map {
+            let map = JsBeatmap::try_from_value(&value)?;
+
+            Self::from_map(&map.inner)
+        } else {
+            Self::new()
+        };
+
+        if let Some(mode) = args.mode {
+            builder = builder.mode(mode.into(), args.is_convert);
+        }
+
+        if let Some(clock_rate) = args.common.clock_rate {
+            builder = builder.clock_rate(clock_rate);
+        }
+
+        if let Some(ar) = args.common.ar {
+            builder = builder.ar(ar, args.common.ar_with_mods);
+        }
+
+        if let Some(cs) = args.common.cs {
+            builder = builder.cs(cs, args.common.cs_with_mods);
+        }
+
+        if let Some(hp) = args.common.hp {
+            builder = builder.hp(hp, args.common.hp_with_mods);
+        }
+
+        if let Some(od) = args.common.od {
+            builder = builder.od(od, args.common.od_with_mods);
+        }
+
+        Ok(builder.mods(args.common.mods))
     }
 }

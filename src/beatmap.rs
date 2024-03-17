@@ -1,5 +1,6 @@
-use std::{error, fmt::Write, io};
+use std::{error, fmt::Write, ops::DerefMut};
 
+use js_sys::Reflect;
 use rosu_pp::{
     model::{
         hit_object::HitObjectKind,
@@ -7,9 +8,13 @@ use rosu_pp::{
     },
     Beatmap,
 };
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{convert::RefMutFromWasmAbi, prelude::wasm_bindgen, JsValue};
 
-use crate::{cannot_convert, mode::JsGameMode};
+use crate::{
+    args::beatmap::{BeatmapArgs, JsBeatmapArgs},
+    mode::JsGameMode,
+    util, JsError, JsResult,
+};
 
 /// All beatmap data that is relevant for difficulty and performance
 /// calculation.
@@ -20,60 +25,78 @@ pub struct JsBeatmap {
 
 #[wasm_bindgen(js_class = Beatmap)]
 impl JsBeatmap {
-    /// Parse a map by providing the content of a `.osu` file as a `Uint8Array`.
-    /// @throws Will throw an error if decoding the map fails
-    #[wasm_bindgen(js_name = fromBytes)]
-    pub fn from_bytes(bytes: &[u8]) -> Result<JsBeatmap, String> {
-        Self::new(Beatmap::from_bytes(bytes))
+    /// Create a new beatmap instance by parsing an `.osu` file's content.
+    /// @throws Throws an error if `bytes` or `content` are not specified, decoding the map failed, or the specified mode is incompatible with the map's mode
+    #[wasm_bindgen(constructor)]
+    pub fn new(args: &JsBeatmapArgs) -> JsResult<JsBeatmap> {
+        #[cfg(feature = "panic_hook")]
+        console_error_panic_hook::set_once();
+
+        let args = BeatmapArgs::from_value(args)?;
+
+        let map_res = if let Some(bytes) = args.bytes {
+            Beatmap::from_bytes(&bytes)
+        } else if let Some(content) = args.content {
+            content.parse()
+        } else {
+            return Err(JsError::new("`bytes` or `content` must be specified"));
+        };
+
+        let map = match map_res {
+            Ok(map) => map,
+            Err(err) => {
+                let mut e = &err as &dyn error::Error;
+                let mut content = format!("Failed to decode beatmap: {e}");
+
+                while let Some(src) = e.source() {
+                    let _ = writeln!(content, "  - caused by: {src}");
+                    e = src;
+                }
+
+                return Err(JsError::new(content));
+            }
+        };
+
+        let mut this = Self { inner: map };
+
+        if let Some(mode) = args.mode {
+            this.convert(mode)?;
+        }
+
+        Ok(this)
     }
 
-    /// Parse a map by providing the content of a `.osu` file as a `string`.
-    /// @throws Will throw an error if decoding the map fails
-    #[wasm_bindgen(js_name = fromString)]
-    #[allow(clippy::should_implement_trait)]
-    pub fn from_str(s: &str) -> Result<JsBeatmap, String> {
-        Self::new(s.parse())
-    }
+    /// Convert a beatmap to a specific mode.
+    /// @throws Throws an error if the specified mode is incompatible with the map's mode
+    pub fn convert(&mut self, mode: JsGameMode) -> JsResult<()> {
+        let mode = GameMode::from(mode);
 
-    /// Convert the map to a given mode.
-    /// @throws Will throw an error if the mode is incompatible e.g. cannot convert mania to taiko.
-    pub fn convert(&mut self, mode: JsGameMode) -> Result<(), String> {
-        self.convert_native(mode.into())
+        if let ConvertStatus::Incompatible = self.inner.convert_in_place(mode) {
+            return Err(JsError::new(format!(
+                "Cannot convert {:?} to {mode:?}",
+                self.inner.mode
+            )));
+        }
+
+        Ok(())
     }
 
     #[wasm_bindgen(getter)]
     pub fn mode(&self) -> JsGameMode {
-        self.inner.mode.into()
+        JsGameMode::from(self.inner.mode)
     }
 
-    #[wasm_bindgen(js_name = nBreaks)]
+    #[wasm_bindgen(js_name = nBreaks, getter)]
     pub fn n_breaks(&self) -> usize {
         self.inner.breaks.len()
     }
 
-    #[wasm_bindgen(js_name = nTimingPoints)]
-    pub fn n_timing_points(&self) -> usize {
-        self.inner.timing_points.len()
-    }
-
-    #[wasm_bindgen(js_name = nDifficultyPoints)]
-    pub fn n_difficulty_points(&self) -> usize {
-        self.inner.difficulty_points.len()
-    }
-
-    #[wasm_bindgen(js_name = nEffectPoints)]
-    pub fn n_effect_points(&self) -> usize {
-        self.inner.effect_points.len()
-    }
-
-    /// The amount of hitobjects.
-    #[wasm_bindgen(js_name = nObjects)]
+    #[wasm_bindgen(js_name = nObjects, getter)]
     pub fn n_objects(&self) -> usize {
         self.inner.hit_objects.len()
     }
 
-    /// The amount of circle hitobjects.
-    #[wasm_bindgen(js_name = nCircles)]
+    #[wasm_bindgen(js_name = nCircles, getter)]
     pub fn n_circles(&self) -> usize {
         self.inner
             .hit_objects
@@ -82,8 +105,7 @@ impl JsBeatmap {
             .count()
     }
 
-    /// The amount of slider hitobjects.
-    #[wasm_bindgen(js_name = nSliders)]
+    #[wasm_bindgen(js_name = nSliders, getter)]
     pub fn n_sliders(&self) -> usize {
         self.inner
             .hit_objects
@@ -92,8 +114,7 @@ impl JsBeatmap {
             .count()
     }
 
-    /// The amount of spinner hitobjects.
-    #[wasm_bindgen(js_name = nSpinners)]
+    #[wasm_bindgen(js_name = nSpinners, getter)]
     pub fn n_spinners(&self) -> usize {
         self.inner
             .hit_objects
@@ -102,8 +123,7 @@ impl JsBeatmap {
             .count()
     }
 
-    /// The amount of hold hitobjects.
-    #[wasm_bindgen(js_name = nHolds)]
+    #[wasm_bindgen(js_name = nHolds, getter)]
     pub fn n_holds(&self) -> usize {
         self.inner
             .hit_objects
@@ -114,79 +134,39 @@ impl JsBeatmap {
 }
 
 impl JsBeatmap {
-    fn new(res: Result<Beatmap, io::Error>) -> Result<JsBeatmap, String> {
-        #[cfg(feature = "panic_hook")]
-        console_error_panic_hook::set_once();
+    pub(crate) fn try_from_value(js: &JsValue) -> JsResult<impl DerefMut<Target = Self>> {
+        const EXPECTED_BEATMAP: &str = "Expected Beatmap instance";
 
-        let inner = res.map_err(|e| {
-            let mut e = &e as &dyn error::Error;
-            let mut content = format!("Failed to decode beatmap: {e}");
-
-            while let Some(src) = e.source() {
-                let _ = writeln!(content, "  - caused by: {src}");
-                e = src;
-            }
-
-            content
-        })?;
-
-        Ok(Self { inner })
-    }
-
-    pub(crate) fn convert_native(&mut self, mode: GameMode) -> Result<(), String> {
-        if let ConvertStatus::Incompatible = self.inner.convert_in_place(mode) {
-            return Err(cannot_convert(self.inner.mode, mode));
+        if !js.is_object() {
+            return Err(JsError::new(EXPECTED_BEATMAP));
         }
 
-        Ok(())
+        let constructor = Reflect::get(js, &util::static_str_to_js("constructor").into())?;
+
+        let correct_classname = Reflect::get(&constructor, &util::static_str_to_js("name").into())?
+            .as_string()
+            .is_some_and(|name| name == "Beatmap");
+
+        if !correct_classname {
+            return Err(JsError::new(EXPECTED_BEATMAP));
+        }
+
+        let ptr = Reflect::get(js, &JsValue::from_str("__wbg_ptr"))?;
+        let ptr_u32 = ptr.as_f64().ok_or(JsValue::NULL)? as u32;
+        let instance_ref = unsafe { JsBeatmap::ref_mut_from_abi(ptr_u32) };
+
+        Ok(instance_ref)
     }
 }
 
-macro_rules! getters {
-    // all getter names are specified
-    ( $( $field:ident as $getter:ident: $ty:ty, )+ ) => {
-        #[wasm_bindgen(js_class = Beatmap)]
-        impl JsBeatmap {
-            $(
-                #[wasm_bindgen(getter)]
-                pub fn $getter(&self) -> $ty {
-                    self.inner.$field
-                }
-            )*
-        }
-    };
-    // some getter name not specified, suffix "! !" and cycle through items
-    ( $( $field:ident $( as $getter:ident )?: $ty:ty, )+ ) => {
-        getters!($( $field $(as $getter)?: $ty,)* ! !);
-    };
-    // item at front misses getter name, append it with getter name and continue
-    (
-        $field:ident: $ty:ty, $(! $tt:tt)?
-        $( $rest_field:ident $( as $rest_getter:ident )?: $rest_ty:ty, $(! $rest_tt:tt)? )+
-    ) => {
-        getters!( $(! $tt)? $( $rest_field $( as $rest_getter)?: $rest_ty, $(! $rest_tt)? )* $field as $field: $ty, );
-    };
-    // item at front has getter name, append it and continue
-    (
-        $field:ident as $getter:ident: $ty:ty, $(! $tt:tt)?
-        $( $rest_field:ident $( as $rest_getter:ident )?: $rest_ty:ty, $(! $rest_tt:tt)? )+
-    ) => {
-        getters!( $(! $tt)? $( $rest_field $( as $rest_getter)?: $rest_ty, $(! $rest_tt)? )* $field as $getter: $ty, );
-    };
-    // initially suffixed "! !" are at the start so we cycled through everything
-    ( ! ! $(  $rest_field:ident as $rest_getter:ident: $rest_ty:ty, )+) => {
-        getters!( $( $rest_field as $rest_getter: $rest_ty, )* );
-    };
-}
-
-getters! {
-    version: i32,
+beatmap_getters! {
+    version as version: i32,
     is_convert as isConvert: bool,
     stack_leniency as stackLeniency: f32,
-    ar: f32,
-    cs: f32,
-    hp: f32,
-    od: f32,
+    ar as ar: f32,
+    cs as cs: f32,
+    hp as hp: f32,
+    od as od: f32,
     slider_multiplier as sliderMultiplier: f64,
     slider_tick_rate as sliderTickRate: f64,
 }

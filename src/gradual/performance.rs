@@ -2,8 +2,12 @@ use rosu_pp::GradualPerformance;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    attributes::performance::JsPerformanceAttributes, beatmap::JsBeatmap, difficulty::JsDifficulty,
-    score_state::JsScoreState,
+    attributes::performance::{JsPerformanceAttributes, PerformanceAttributes},
+    beatmap::JsBeatmap,
+    difficulty::JsDifficulty,
+    gradual::maybe_convert_serialize,
+    score_state::{JsScoreState, ScoreState},
+    JsResult,
 };
 
 /// Gradually calculate performance attributes after each hitresult.
@@ -14,27 +18,19 @@ pub struct JsGradualPerformance {
 
 #[wasm_bindgen(js_class = GradualPerformance)]
 impl JsGradualPerformance {
-    /// @throws Will throw an error if the specified mode is incompatible with the map's mode
     #[wasm_bindgen(constructor)]
-    pub fn new(
-        difficulty: &JsDifficulty,
-        map: &mut JsBeatmap,
-    ) -> Result<JsGradualPerformance, String> {
-        if let Some(mode) = difficulty.mode {
-            map.convert_native(mode)?;
-        }
-
-        Ok(Self {
+    pub fn new(difficulty: &JsDifficulty, map: &JsBeatmap) -> JsGradualPerformance {
+        Self {
             inner: GradualPerformance::new(difficulty.inner.clone(), &map.inner),
-        })
+        }
     }
 
     /// Process the next hit object and calculate the performance attributes
     /// for the resulting score state.
-    pub fn next(&mut self, state: JsScoreState) -> Option<JsPerformanceAttributes> {
-        self.inner
-            .next(state.into())
-            .map(JsPerformanceAttributes::from)
+    pub fn next(&mut self, state: &JsScoreState) -> JsResult<Option<JsPerformanceAttributes>> {
+        let state = ScoreState::from_value(state)?;
+
+        maybe_convert_serialize::<PerformanceAttributes, _, _>(self.inner.next(state))
     }
 
     /// Process everything up to the next `n`th hitobject and calculate the
@@ -42,10 +38,14 @@ impl JsGradualPerformance {
     ///
     /// Note that the count is zero-indexed, so `n=0` will process 1 object,
     /// `n=1` will process 2, and so on.
-    pub fn nth(&mut self, state: JsScoreState, n: usize) -> Option<JsPerformanceAttributes> {
-        self.inner
-            .nth(state.into(), n)
-            .map(JsPerformanceAttributes::from)
+    pub fn nth(
+        &mut self,
+        state: &JsScoreState,
+        n: usize,
+    ) -> JsResult<Option<JsPerformanceAttributes>> {
+        let state = ScoreState::from_value(state)?;
+
+        maybe_convert_serialize::<PerformanceAttributes, _, _>(self.inner.nth(state, n))
     }
 
     /// Returns the amount of remaining objects.
