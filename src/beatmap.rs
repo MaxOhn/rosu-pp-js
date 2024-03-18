@@ -82,6 +82,11 @@ impl JsBeatmap {
     }
 
     #[wasm_bindgen(getter)]
+    pub fn bpm(&self) -> f64 {
+        self.inner.bpm()
+    }
+
+    #[wasm_bindgen(getter)]
     pub fn mode(&self) -> JsGameMode {
         JsGameMode::from(self.inner.mode)
     }
