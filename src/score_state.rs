@@ -50,7 +50,7 @@ interface ScoreState {
     misses?: number,
 }"#;
 
-#[derive(Debug, Default, serde::Serialize)]
+#[derive(Default, serde::Serialize)]
 pub(crate) struct ScoreState {
     #[serde(rename = "maxCombo")]
     max_combo: u32,

@@ -90,7 +90,7 @@ interface CommonArgs {
     odWithMods?: boolean;
 }"#;
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct CommonArgs {
     pub mods: u32,
     pub clock_rate: Option<f64>,

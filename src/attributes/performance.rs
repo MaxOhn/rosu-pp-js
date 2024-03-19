@@ -68,7 +68,7 @@ interface PerformanceAttributes extends DifficultyAttributes {
     state?: ScoreState, 
 }"#;
 
-#[derive(Debug, Default, serde::Serialize)]
+#[derive(Default, serde::Serialize)]
 pub(crate) struct PerformanceAttributes {
     // serde_wasm_bindgen doesn't seem to like #[serde(flatten)] so we have
     // to add DifficultyAttributes' fields manually

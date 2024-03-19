@@ -115,13 +115,12 @@ impl TryFrom<BeatmapAttributesArgs> for BeatmapAttributesBuilder {
     type Error = JsError;
 
     fn try_from(args: BeatmapAttributesArgs) -> Result<Self, Self::Error> {
-        let mut builder = if let Some(value) = args.map {
-            let map = JsBeatmap::try_from_value(&value)?;
+        let mut builder = Self::new();
 
-            Self::from_map(&map.inner)
-        } else {
-            Self::new()
-        };
+        if let Some(value) = args.map {
+            let map = JsBeatmap::try_from_value(&value)?;
+            builder = builder.map(&map.inner);
+        }
 
         if let Some(mode) = args.mode {
             builder = builder.mode(mode.into(), args.is_convert);

@@ -2,7 +2,7 @@ use rosu_pp::Performance;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    args::performance::{JsPerformanceArgs, MapOrAttrs, PerformanceArgs},
+    args::performance::{JsMapOrAttributes, JsPerformanceArgs, MapOrAttrs, PerformanceArgs},
     attributes::performance::{JsPerformanceAttributes, PerformanceAttributes},
     beatmap::JsBeatmap,
     util, JsError, JsResult,
@@ -11,85 +11,58 @@ use crate::{
 /// Builder for a performance calculation.
 #[wasm_bindgen(js_name = Performance)]
 pub struct JsPerformance {
-    inner: Performance<'static>,
+    args: PerformanceArgs,
 }
 
 #[wasm_bindgen(js_class = Performance)]
 impl JsPerformance {
     /// Create a new performance calculator.
     #[wasm_bindgen(constructor)]
-    pub fn new(args: &JsPerformanceArgs) -> JsResult<JsPerformance> {
+    pub fn new(args: Option<JsPerformanceArgs>) -> JsResult<JsPerformance> {
         #[cfg(feature = "panic_hook")]
         console_error_panic_hook::set_once();
 
-        let inner = PerformanceArgs::from_value(args).and_then(Performance::try_from)?;
+        let args = args
+            .as_ref()
+            .map(PerformanceArgs::from_value)
+            .transpose()?
+            .unwrap_or_default();
 
-        Ok(Self { inner })
+        Ok(Self { args })
     }
 
     /// Calculate performance attributes.
-    #[wasm_bindgen(js_name = calculate)]
-    pub fn calculate(&mut self) -> JsResult<JsPerformanceAttributes> {
-        let state = self.inner.generate_state();
-        let perf = self.inner.clone().calculate();
-        let attrs = PerformanceAttributes::new(perf, state);
+    ///
+    /// If a beatmap is passed as argument, difficulty attributes will have to
+    /// be calculated internally which is a comparably expensive task. Hence,
+    /// passing previously calculated attributes should be prefered whenever
+    /// available.
+    ///
+    /// However, be careful that the passed attributes have been calculated
+    /// for the same difficulty settings like mods, clock rate, beatmap,
+    /// custom ar, ... otherwise the final attributes will be incorrect.
+    pub fn calculate(&mut self, args: &JsMapOrAttributes) -> JsResult<JsPerformanceAttributes> {
+        let map_or_attrs = MapOrAttrs::from_value(args);
+        let map;
 
-        util::to_value(&attrs).map(From::from)
-    }
-}
-
-impl TryFrom<PerformanceArgs> for Performance<'static> {
-    type Error = JsError;
-
-    fn try_from(args: PerformanceArgs) -> Result<Self, Self::Error> {
-        let difficulty = args.difficulty.as_difficulty();
-
-        let attrs = match args.map_or_attrs {
+        let mut perf = match map_or_attrs {
             MapOrAttrs::Map(value) => {
-                let map = JsBeatmap::try_from_value(&value)?;
+                map = JsBeatmap::try_from_value(value).map_err(|_| {
+                    JsError::new(
+                        "argument must be either previously calculated difficulty attributes or \
+                        a beatmap",
+                    )
+                })?;
 
-                difficulty.calculate(&map.inner)
+                Performance::from_map(&map.inner)
             }
-            MapOrAttrs::Attrs(attrs) => attrs,
-            MapOrAttrs::Neither => {
-                return Err(JsError::new("`map` or `attributes` must be specified"))
-            }
+            MapOrAttrs::Attrs(attrs) => Performance::from_attributes(attrs),
         };
 
-        let mut performance = Performance::from_attributes(attrs).difficulty(difficulty);
+        perf = self.args.apply(perf);
+        let state = perf.generate_state();
+        let attrs = PerformanceAttributes::new(perf.calculate(), state);
 
-        if let Some(accuracy) = args.accuracy {
-            performance = performance.accuracy(accuracy);
-        }
-
-        if let Some(combo) = args.combo {
-            performance = performance.combo(combo);
-        }
-
-        if let Some(n_geki) = args.n_geki {
-            performance = performance.n_geki(n_geki);
-        }
-
-        if let Some(n_katu) = args.n_katu {
-            performance = performance.n_katu(n_katu);
-        }
-
-        if let Some(n300) = args.n300 {
-            performance = performance.n300(n300);
-        }
-
-        if let Some(n100) = args.n100 {
-            performance = performance.n100(n100);
-        }
-
-        if let Some(n50) = args.n50 {
-            performance = performance.n50(n50);
-        }
-
-        if let Some(misses) = args.misses {
-            performance = performance.misses(misses);
-        }
-
-        Ok(performance.hitresult_priority(args.hitresult_priority))
+        util::to_value(&attrs).map(From::from)
     }
 }

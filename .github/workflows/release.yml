@@ -43,6 +43,8 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
+      # TODO: adjust Cargo.toml to reduce wasm size for web targets
+
       - name: Build
         run: wasm-pack build --release --target ${{ matrix.target }} --out-dir ${{ format('pkg_{0}', matrix.target) }}
 

@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use crate::JsError;
 
 #[wasm_bindgen(js_name = GameMode)]
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Default)]
 pub enum JsGameMode {
     #[default]
     Osu,

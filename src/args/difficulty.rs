@@ -32,7 +32,7 @@ interface DifficultyArgs extends CommonArgs {
     hardrockOffsets?: boolean;
 }"#;
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct DifficultyArgs {
     pub common: CommonArgs,
     pub passed_objects: Option<u32>,

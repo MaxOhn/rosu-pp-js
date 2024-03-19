@@ -160,7 +160,7 @@ interface DifficultyAttributes {
     maxCombo: number,
 }"#;
 
-#[derive(Clone, Debug, Default, serde::Serialize)]
+#[derive(Clone, Default, serde::Serialize)]
 pub(crate) struct DifficultyAttributes {
     pub mode: JsGameMode,
     pub stars: f64,
