@@ -12,10 +12,6 @@ keywords = ["osu", "pp", "stars", "performance", "osu!"]
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[features]
-default = []
-# default = ["wee_alloc"]
-
 [dependencies]
 js-sys = "0.3.69"
 rosu-pp = { git = "https://github.com/MaxOhn/rosu-pp", branch = "next" }
@@ -28,8 +24,6 @@ wee_alloc = { version = "0.4.5", optional = true }
 wasm-bindgen-test = "0.3.34"
 
 [profile.release]
-opt-level = 3
-# opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
