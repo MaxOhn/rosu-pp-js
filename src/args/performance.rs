@@ -189,24 +189,5 @@ impl<'a> MapOrAttrs<'a> {
         } else {
             Self::Map(value)
         }
-
-        // let obj = value.unchecked_ref::<ObjectExt>();
-        // let js_field = util::static_str_to_js("attributes");
-        // let js_value = obj.get_with_ref_key(&js_field);
-
-        // if !js_value.is_undefined() {
-        //     let attrs = DifficultyAttributes::from_value(js_value.unchecked_ref())?;
-
-        //     return Ok(Self::Attrs(attrs));
-        // }
-
-        // let js_field = util::static_str_to_js("map");
-        // let js_value = obj.get_with_ref_key(&js_field);
-
-        // if !js_value.is_undefined() {
-        //     return Ok(Self::Map(js_value));
-        // }
-
-        // Err(JsError::new("`map` or `attributes` must be specified"))
     }
 }
