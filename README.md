@@ -41,6 +41,9 @@ Additionally, it can be modified through the following builder methods:
 ```js
 import { Beatmap } from "rosu-pp";
 import fs from "fs"
+// or if you're using CommonJS:
+const { Beatmap } = require("rosu-pp");
+const fs = require("fs");
 
 const params = {
     path: './maps/100.osu',
@@ -190,6 +193,8 @@ Finally, use one of the following methods to calculate values:
 
 ```js
 import { Beatmap, Calculator } from "rosu-pp";
+// or if you're using CommonJS:
+const { Beatmap, Calculator } = require("rosu-pp");
 
 const map = new Beatmap({ path: './maps/100.osu' });
 
