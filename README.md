@@ -184,8 +184,11 @@ Its only method is `build(): BeatmapAttributes`.
 ### Calculating performance
 
 ```js
-import * as rosu from 'rosu-pp-js';
-import * as fs from 'fs';
+import * as rosu from "rosu-pp-js";
+import * as fs from "fs";
+// or if you're using CommonJS:
+const rosu = require("rosu-pp-js");
+const fs = require("fs");
 
 const bytes = fs.readFileSync("/path/to/file.osu");
 
@@ -213,8 +216,8 @@ console.log(`PP: ${currAttrs.pp}/${maxAttrs.pp} | Stars: ${maxAttrs.difficulty.s
 ### Gradual calculation
 
 ```js
-import * as rosu from 'rosu-pp-js';
-import * as fs from 'fs';
+import * as rosu from "rosu-pp-js";
+import * as fs from "fs";
 
 const content = fs.readFileSync("/path/to/file.osu", "utf-8");
 const map = new rosu.Beatmap(content);
