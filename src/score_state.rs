@@ -125,7 +125,7 @@ impl JsScoreState {
             }
         }
 
-        const FIELDS: &'static [&'static str] = &[
+        const FIELDS: &[&str] = &[
             "maxCombo", "nGeki", "nKatu", "n300", "n100", "n50", "misses",
         ];
 
