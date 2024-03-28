@@ -1,13 +1,15 @@
 use rosu_pp::{
-    any::{DifficultyAttributes as RosuDifficultyAttributes, HitResultPriority},
+    any::{DifficultyAttributes, HitResultPriority},
     Performance,
 };
-use wasm_bindgen::{prelude::wasm_bindgen, JsCast, JsValue};
+use serde::de;
+use wasm_bindgen::{__rt::RefMut, prelude::wasm_bindgen, JsValue};
 
 use crate::{
-    attributes::difficulty::DifficultyAttributes,
-    util::{self, JsValueExt, ObjectExt},
-    JsError, JsResult,
+    attributes::{difficulty::JsDifficultyAttributes, performance::JsPerformanceAttributes},
+    beatmap::JsBeatmap,
+    deserializer::JsDeserializer,
+    util, JsError, JsResult,
 };
 
 use super::difficulty::DifficultyArgs;
@@ -25,58 +27,60 @@ extern "C" {
 const _: &'static str = r#"/**
 * Arguments to provide the `Performance` constructor.
 */
-interface PerformanceArgs extends DifficultyArgs {
+export interface PerformanceArgs extends DifficultyArgs {
     /**
     * Set the accuracy between `0.0` and `100.0`.
     */
-    accuracy?: number,
+    accuracy?: number;
     /**
     * Specify the max combo of the play.
     *
     * Irrelevant for osu!mania.
     */
-    combo?: number,
+    combo?: number;
     /**
     * Specify the amount of gekis of a play.
     *
     * Only relevant for osu!mania for which it repesents the amount of n320.
     */
-    nGeki?: number,
+    nGeki?: number;
     /**
     * Specify the amount of katus of a play.
     *
     * Only relevant for osu!catch for which it represents the amount of tiny
     * droplet misses and osu!mania for which it repesents the amount of n200.
     */
-    nKatu?: number,
+    nKatu?: number;
     /**
     * Specify the amount of 300s of a play.
     */
-    n300?: number,
+    n300?: number;
     /**
     * Specify the amount of 100s of a play.
     */
-    n100?: number,
+    n100?: number;
     /**
     * Specify the amount of 50s of a play.
     *
     * Irrelevant for osu!taiko.
     */
-    n50?: number,
+    n50?: number;
     /**
     * Specify the amount of misses of a play.
     */
-    misses?: number,
+    misses?: number;
     /**
     * Specify how hitresults should be generated.
     *
     * Defaults to `HitResultPriority.BestCase`.
     */
-    hitresultPriority?: HitResultPriority,
+    hitresultPriority?: HitResultPriority;
 }"#;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize)]
+#[serde(rename_all = "camelCase", rename = "Object")]
 pub struct PerformanceArgs {
+    #[serde(default)]
     pub difficulty: DifficultyArgs,
     pub accuracy: Option<f64>,
     pub combo: Option<u32>,
@@ -86,20 +90,8 @@ pub struct PerformanceArgs {
     pub n100: Option<u32>,
     pub n50: Option<u32>,
     pub misses: Option<u32>,
+    #[serde(default, deserialize_with = "JsHitResultPriority::deserialize")]
     pub hitresult_priority: HitResultPriority,
-}
-
-from_jsvalue! {
-    PerformanceArgs {
-        accuracy as accuracy: f64?,
-        combo as combo: u32?,
-        n_geki as nGeki: u32?,
-        n_katu as nKatu: u32?,
-        n300 as n300: u32?,
-        n100 as n100: u32?,
-        n50 as n50: u32?,
-        misses as misses: u32?,
-    }
 }
 
 /// While generating remaining hitresults, decide how they should be distributed.
@@ -112,27 +104,19 @@ pub enum JsHitResultPriority {
     WorstCase,
 }
 
-impl PerformanceArgs {
-    pub fn from_value(value: &JsPerformanceArgs) -> JsResult<Self> {
-        let mut this = util::from_value::<Self>(value)?;
+impl JsHitResultPriority {
+    fn deserialize<'de, D: de::Deserializer<'de>>(d: D) -> Result<HitResultPriority, D::Error> {
+        let priority = match <u8 as de::Deserialize>::deserialize(d) {
+            Ok(0) => HitResultPriority::BestCase,
+            Ok(1) => HitResultPriority::WorstCase,
+            _ => return Err(de::Error::custom("invalid HitResultPriority")),
+        };
 
-        let obj = value.unchecked_ref::<ObjectExt>();
-        let js_field = util::static_str_to_js("hitresultPriority");
-        let js_value = obj.get_with_ref_key(&js_field);
-
-        if !js_value.is_undefined() {
-            match js_value.as_safe_integer() {
-                Some(0) => this.hitresult_priority = HitResultPriority::BestCase,
-                Some(1) => this.hitresult_priority = HitResultPriority::WorstCase,
-                _ => return Err(JsError::new("invalid hitresultPriority")),
-            }
-        }
-
-        this.difficulty = DifficultyArgs::from_value(value.unchecked_ref())?;
-
-        Ok(this)
+        Ok(priority)
     }
+}
 
+impl PerformanceArgs {
     pub fn apply<'a>(&self, mut perf: Performance<'a>) -> Performance<'a> {
         if let Some(accuracy) = self.accuracy {
             perf = perf.accuracy(accuracy);
@@ -175,19 +159,31 @@ impl PerformanceArgs {
 const _: &'static str = r#"/**
 * Either previously calculated attributes or a beatmap.
 */
-type MapOrAttributes = DifficultyAttributes | Beatmap;"#;
+export type MapOrAttributes = DifficultyAttributes | PerformanceAttributes | Beatmap;"#;
 
-pub enum MapOrAttrs<'a> {
-    Map(&'a JsValue),
-    Attrs(RosuDifficultyAttributes),
+pub enum MapOrAttrs {
+    Map(RefMut<'static, JsBeatmap>),
+    Attrs(DifficultyAttributes),
 }
 
-impl<'a> MapOrAttrs<'a> {
-    pub fn from_value(value: &'a JsValue) -> Self {
-        if let Some(Ok(attrs)) = value.dyn_ref().map(DifficultyAttributes::from_value) {
-            Self::Attrs(attrs)
-        } else {
-            Self::Map(value)
+impl MapOrAttrs {
+    pub fn from_value(value: &JsValue) -> JsResult<Self> {
+        if let Ok(js_attrs) =
+            JsPerformanceAttributes::deserialize_difficulty(JsDeserializer::from_ref(value))
+        {
+            return js_attrs.try_into().map(Self::Attrs);
         }
+
+        if let Ok(js_attrs) = util::from_value::<JsDifficultyAttributes>(value) {
+            return js_attrs.try_into().map(Self::Attrs);
+        }
+
+        if let Ok(map) = JsBeatmap::deserialize(JsDeserializer::from_ref(value)) {
+            return Ok(Self::Map(map));
+        }
+
+        Err(JsError::from(
+            "Expected either previously calculated attributes or a beatmap",
+        ))
     }
 }

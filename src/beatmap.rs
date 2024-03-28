@@ -1,6 +1,8 @@
-use std::{error, fmt::Write, ops::DerefMut};
+use std::{
+    error,
+    fmt::{Formatter, Result as FmtResult, Write},
+};
 
-use js_sys::Reflect;
 use rosu_pp::{
     model::{
         hit_object::HitObjectKind,
@@ -8,12 +10,14 @@ use rosu_pp::{
     },
     Beatmap,
 };
-use wasm_bindgen::{convert::RefMutFromWasmAbi, prelude::wasm_bindgen, JsValue};
+use serde::de;
+use wasm_bindgen::{__rt::RefMut, convert::RefMutFromWasmAbi, prelude::wasm_bindgen};
 
 use crate::{
-    args::beatmap::{BeatmapArgs, JsBeatmapArgs},
+    args::beatmap::{BeatmapContent, JsBeatmapContent},
     mode::JsGameMode,
-    util, JsError, JsResult,
+    util::{self, FieldVisitor},
+    JsError, JsResult,
 };
 
 /// All beatmap data that is relevant for difficulty and performance
@@ -26,24 +30,16 @@ pub struct JsBeatmap {
 #[wasm_bindgen(js_class = Beatmap)]
 impl JsBeatmap {
     /// Create a new beatmap instance by parsing an `.osu` file's content.
-    /// @throws Throws an error if `bytes` or `content` are not specified, decoding the map failed, or the specified mode is incompatible with the map's mode
+    /// @throws Throws an error if decoding the map failed
     #[wasm_bindgen(constructor)]
-    pub fn new(args: &JsBeatmapArgs) -> JsResult<JsBeatmap> {
+    pub fn new(args: &JsBeatmapContent) -> JsResult<JsBeatmap> {
         #[cfg(feature = "panic_hook")]
         console_error_panic_hook::set_once();
 
-        let args = BeatmapArgs::from_value(args)?;
+        let content = util::from_value::<BeatmapContent>(args)?;
 
-        let map_res = if let Some(bytes) = args.bytes {
-            Beatmap::from_bytes(&bytes)
-        } else if let Some(content) = args.content {
-            content.parse()
-        } else {
-            return Err(JsError::new("`bytes` or `content` must be specified"));
-        };
-
-        let map = match map_res {
-            Ok(map) => map,
+        match Beatmap::from_bytes(&content.bytes) {
+            Ok(inner) => Ok(Self { inner }),
             Err(err) => {
                 let mut e = &err as &dyn error::Error;
                 let mut content = format!("Failed to decode beatmap: {e}");
@@ -53,17 +49,9 @@ impl JsBeatmap {
                     e = src;
                 }
 
-                return Err(JsError::new(content));
+                Err(JsError::new(content))
             }
-        };
-
-        let mut this = Self { inner: map };
-
-        if let Some(mode) = args.mode {
-            this.convert(mode)?;
         }
-
-        Ok(this)
     }
 
     /// Convert a beatmap to a specific mode.
@@ -139,29 +127,57 @@ impl JsBeatmap {
 }
 
 impl JsBeatmap {
-    pub(crate) fn try_from_value(js: &JsValue) -> JsResult<impl DerefMut<Target = Self>> {
-        const EXPECTED_BEATMAP: &str = "Expected Beatmap instance";
+    pub fn deserialize<'de, D: de::Deserializer<'de>>(
+        d: D,
+    ) -> Result<RefMut<'static, Self>, D::Error> {
+        struct BeatmapField;
 
-        if !js.is_object() {
-            return Err(JsError::new(EXPECTED_BEATMAP));
+        impl BeatmapField {
+            const NAME: &'static str = "__wbg_ptr";
         }
 
-        let constructor = Reflect::get(js, &util::static_str_to_js("constructor").into())?;
-
-        let correct_classname = Reflect::get(&constructor, &util::static_str_to_js("name").into())?
-            .as_string()
-            .is_some_and(|name| name == "Beatmap");
-
-        if !correct_classname {
-            return Err(JsError::new(EXPECTED_BEATMAP));
+        impl<'de> de::Deserialize<'de> for BeatmapField {
+            fn deserialize<D: de::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                d.deserialize_str(FieldVisitor::new(Self::NAME))
+                    .map(|_| Self)
+            }
         }
 
-        let ptr = Reflect::get(js, &JsValue::from_str("__wbg_ptr"))?;
-        let ptr_u32 = ptr.as_f64().ok_or(JsValue::NULL)? as u32;
-        let instance_ref = unsafe { JsBeatmap::ref_mut_from_abi(ptr_u32) };
+        struct BeatmapVisitor;
 
-        Ok(instance_ref)
+        impl<'de> de::Visitor<'de> for BeatmapVisitor {
+            type Value = RefMut<'static, JsBeatmap>;
+
+            fn expecting(&self, f: &mut Formatter) -> FmtResult {
+                f.write_str("a Beatmap")
+            }
+
+            fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                map.next_key::<BeatmapField>()?;
+
+                let ptr_u32 = map.next_value::<u32>()?;
+                let instance_ref = unsafe { JsBeatmap::ref_mut_from_abi(ptr_u32) };
+
+                Ok(instance_ref)
+            }
+        }
+
+        d.deserialize_struct("Beatmap", &[BeatmapField::NAME], BeatmapVisitor)
     }
+}
+
+macro_rules! beatmap_getters {
+    ( $( $field:ident as $getter:ident: $ty:ty, )+ ) => {
+        #[wasm_bindgen(js_class = Beatmap)]
+        impl JsBeatmap {
+            $(
+                #[wasm_bindgen(js_name = $getter, getter)]
+                pub fn $field(&self) -> $ty {
+                    self.inner.$field
+                }
+            )*
+        }
+    };
 }
 
 beatmap_getters! {

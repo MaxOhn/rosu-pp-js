@@ -2,12 +2,9 @@ use rosu_pp::GradualPerformance;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
-    attributes::performance::{JsPerformanceAttributes, PerformanceAttributes},
-    beatmap::JsBeatmap,
-    difficulty::JsDifficulty,
-    gradual::maybe_convert_serialize,
-    score_state::{JsScoreState, ScoreState},
-    JsResult,
+    attributes::performance::JsPerformanceAttributes, beatmap::JsBeatmap,
+    deserializer::JsDeserializer, difficulty::JsDifficulty, error::JsResult,
+    score_state::JsScoreState,
 };
 
 /// Gradually calculate performance attributes after each hitresult.
@@ -28,9 +25,9 @@ impl JsGradualPerformance {
     /// Process the next hit object and calculate the performance attributes
     /// for the resulting score state.
     pub fn next(&mut self, state: &JsScoreState) -> JsResult<Option<JsPerformanceAttributes>> {
-        let state = ScoreState::from_value(state)?;
+        let state = JsScoreState::deserialize(JsDeserializer::from_ref(state))?;
 
-        maybe_convert_serialize::<PerformanceAttributes, _, _>(self.inner.next(state))
+        Ok(self.inner.next(state).map(From::from))
     }
 
     /// Process everything up to the next `n`th hitobject and calculate the
@@ -43,9 +40,9 @@ impl JsGradualPerformance {
         state: &JsScoreState,
         n: usize,
     ) -> JsResult<Option<JsPerformanceAttributes>> {
-        let state = ScoreState::from_value(state)?;
+        let state = JsScoreState::deserialize(JsDeserializer::from_ref(state))?;
 
-        maybe_convert_serialize::<PerformanceAttributes, _, _>(self.inner.nth(state, n))
+        Ok(self.inner.nth(state, n).map(From::from))
     }
 
     /// Returns the amount of remaining items.

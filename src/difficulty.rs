@@ -3,10 +3,10 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     args::difficulty::{DifficultyArgs, JsDifficultyArgs},
-    attributes::difficulty::{DifficultyAttributes, JsDifficultyAttributes},
+    attributes::difficulty::JsDifficultyAttributes,
     beatmap::JsBeatmap,
     gradual::{difficulty::JsGradualDifficulty, performance::JsGradualPerformance},
-    strains::{JsStrains, Strains},
+    strains::JsStrains,
     util, JsResult,
 };
 
@@ -25,10 +25,8 @@ impl JsDifficulty {
         #[cfg(feature = "panic_hook")]
         console_error_panic_hook::set_once();
 
-        let inner = if let Some(args) = args {
-            let args = DifficultyArgs::from_value(&args)?;
-
-            args.as_difficulty()
+        let inner = if let Some(ref args) = args {
+            util::from_value::<DifficultyArgs>(args)?.as_difficulty()
         } else {
             Difficulty::new()
         };
@@ -37,20 +35,16 @@ impl JsDifficulty {
     }
 
     /// Perform the difficulty calculation.
-    pub fn calculate(&self, map: &JsBeatmap) -> JsResult<JsDifficultyAttributes> {
-        let attrs = DifficultyAttributes::from(self.inner.calculate(&map.inner));
-
-        util::to_value(&attrs).map(From::from)
+    pub fn calculate(&self, map: &JsBeatmap) -> JsDifficultyAttributes {
+        JsDifficultyAttributes::from(self.inner.calculate(&map.inner))
     }
 
     /// Perform the difficulty calculation but instead of evaluating strain
     /// values, return them as is.
     ///
     /// Suitable to plot the difficulty over time.
-    pub fn strains(&self, map: &JsBeatmap) -> JsResult<JsStrains> {
-        let strains = Strains::from(self.inner.strains(&map.inner));
-
-        util::to_value(&strains).map(From::from)
+    pub fn strains(&self, map: &JsBeatmap) -> JsStrains {
+        self.inner.strains(&map.inner).into()
     }
 
     /// Returns a gradual difficulty calculator for the current difficulty settings.

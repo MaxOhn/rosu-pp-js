@@ -14,25 +14,10 @@ The library exposes multiple classes and interfaces:
 
 Class containing a parsed `.osu` file, ready to be passed to difficulty and performance calculators.
 
-The constructor takes an object of the form
+The constructor takes an object of type `Uint8Array | string` representing the content of a `.osu`
+file and throws an error if decoding the beatmap fails.
 
-```ts
-{
-    // The bytes of a `.osu` file's content.
-    bytes?: Uint8Array,
-    // The content of a `.osu` file.
-    content?: string,
-    // The mode to convert the beatmap to.
-    mode?: GameMode,
-}
-```
-
-and throws an error if
-- neither `bytes` nor `content` is specified
-- decoding the beatmap failed
-- the beatmap's mode cannot be converted to the specified mode
-
-To convert a beatmap after initialization, use the `convert(GameMode): void` method.
+To convert a beatmap use the `convert(GameMode): void` method.
 
 `Beatmap` provides various getters:
 - `ar: number`
@@ -67,7 +52,7 @@ The constructor takes an *optional* object of the form
     // Custom approach rate between -20 and 20
     ar?: number,
     // Whether given `ar` should be used as is or adjusted based on mods
-    // I.e. `true` means "given ar is already with mods".
+    // i.e. `true` means "given ar already considers mods".
     arWithMods?: boolean,
     // Custom circle size between -20 and 20
     cs?: number,
@@ -100,11 +85,6 @@ Performance calculator whose constructor takes an object of the form
 {
     // ... same fields as for `Difficulty` but also:
 
-    // A beatmap to calculate the performance on.
-    map?: Beatmap,
-    // A previous result of difficulty or performances calculation *for the same difficulty parameters*
-    // This should be prefered over `map` whenever possible.
-    attributes?: DifficultyAttributes,
     // Accuracy between 0 and 100
     accuracy?: number,
     // The max combo of a play
@@ -126,19 +106,22 @@ Performance calculator whose constructor takes an object of the form
 }
 ```
 
-and throws an error if neither `map` nor `attributes` is specified.
-Note that if `attributes` is not specified, they'll have to be calculated which is the most
-expensive part of the whole calculation. However, be careful that the given attributes were
-calculated for the same difficulty parameters e.g. same map, clock rate,
-passed object count, custom ar, ...
+Its only method `calculate(DifficultyAttributes | PerformanceAttributes | Beatmap): PerformanceAttributes`
+produces the performance attributes. The method's argument must be either the attributes of a
+previous calculation or a beatmap.
 
-Its only method is `calculate(): PerformanceAttributes`.
+Note that if a beatmap is given, difficulty attributes have to be calculated internally which is
+comparably expensive so passing attributes should be prefered whenever possible.
+
+However, be careful that the passed attributes have been calculated for the
+same difficulty settings like mods, clock rate, beatmap, custom ar, ...
+otherwise the final performance attributes will be incorrect.
 
 ### GradualDifficulty
 
 Class to calculate difficulty attributes after each hitobject.
 
-Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemaining`, and the methods
+Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemaining: number`, and the methods
 
 - `next(): DifficultyAttributes | undefined`: Process the next hitobject and return the difficulty attributes (or `undefined` if the last object has already been processed)
 - `nth(number): DifficultyAttributes | undefined`: Process the next `number - 1` hitobjects, i.e. `nth(0)` will process one, `nth(1)` will proces two, ...
@@ -148,22 +131,22 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
 
 Class to calculate performance attributes after each hitresult.
 
-Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemaining`, and the methods
+Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemaining: number`, and the methods
 
 - `next(ScoreState): PerformanceAttributes | undefined`: Process the next hitobject and return the performance attributes (or `undefined` if the last object has already been processed)
 - `nth(ScoreState, number): PerformanceAttributes | undefined`: Process the next `number - 1` hitobjects, i.e. `nth(0)` will process one, `nth(1)` will proces two, ...
 
-`ScoreState` is an object of the form
+`ScoreState` is an object like
 
 ```ts
 {
-    maxCombo?: number,
-    nGeki?: number,
-    nKatu?: number,
-    n300?: number,
-    n100?: number,
-    n50?: number,
-    misses?: number,
+  maxCombo?: number;
+  misses?: number;
+  n100?: number;
+  n300?: number;
+  n50?: number;
+  nGeki?: number;
+  nKatu?: number;
 }
 ```
 
@@ -175,14 +158,12 @@ Its constructor takes an object of the form
 
 ```ts
 {
-    // Start off with the given beatmap's attributes
+    // Start off with the given beatmap's attributes, mode, and convert status
     map?: Beatmap,
     // Specify a gamemode
     mode?: GameMode,
     // Whether the map is a convert, only relevant for mania
     isConvert?: boolean,
-
-    // same fields as for `Difficulty` ...
     mods?: number,
     clockRate?: number,
     ar?: number,
@@ -208,26 +189,25 @@ import * as fs from 'fs';
 
 const bytes = fs.readFileSync("/path/to/file.osu");
 
-// Parse the map and convert it to osu!taiko if it's not already a taiko map.
-// Note that this will throw an error if it's an osu!catch or osu!mania map.
-const map = new rosu.Beatmap({ bytes, mode: rosu.GameMode.Taiko });
+// Parse the map.
+let map = new rosu.Beatmap(bytes);
+
+// Optionally convert the beatmap to a specific mode.
+map.convert(rosu.GameMode.Taiko);
 
 // Calculating performance attributes for a HDDT SS
-const maxAttrs = new rosu.Performance({ map, mods: 8 + 64 }).calculate();
+const maxAttrs = new rosu.Performance({ mods: 8 + 64 }).calculate(map);
 
 // Calculating performance attributes for a specific score.
-// Note we're re-using previous attributes to speed up the calculation.
 const currAttrs = new rosu.Performance({
-    attributes: maxAttrs,
-    // Must be the same as before in order to use the previous attributes!
-    mods: 8 + 64,
+    mods: 8 + 64, // Must be the same as before in order to use the previous attributes!
     misses: 2,
     accuracy: 98.4,
     combo: 567,
     hitresultPriority: rosu.HitResultPriority.WorstCase,
-}).calculate();
+}).calculate(maxAttrs); // Re-using previous attributes to speed up the calculation.
 
-console.log(`PP: ${currAttrs.pp}/${maxAttrs.pp} | Stars: ${maxAttrs.stars}`);
+console.log(`PP: ${currAttrs.pp}/${maxAttrs.pp} | Stars: ${maxAttrs.difficulty.stars}`);
 ```
 
 ### Gradual calculation
@@ -237,7 +217,7 @@ import * as rosu from 'rosu-pp-js';
 import * as fs from 'fs';
 
 const content = fs.readFileSync("/path/to/file.osu", "utf-8");
-const map = new rosu.Beatmap({ content });
+const map = new rosu.Beatmap(content);
 
 // Specifying some difficulty parameters
 const difficulty = new rosu.Difficulty({
@@ -254,7 +234,7 @@ let gradualDiff = difficulty.gradualDifficulty(map);
 let i = 1;
 
 while (gradualDiff.nRemaining > 0) {
-    console.log(`Stars after ${i} hitobjects: ${gradualDiff.next().stars}`);
+    console.log(`Stars after ${i} hitobjects: ${gradualDiff.next()?.stars}`);
     i += 1;
 }
 
@@ -271,7 +251,7 @@ while (gradualPerf.nRemaining > 0) {
         // ...
     };
 
-    console.log(`PP: ${gradualPerf.next(state).pp}`);
+    console.log(`PP: ${gradualPerf.next(state)?.pp}`);
     j += 1;
 }
 ```

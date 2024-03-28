@@ -1,84 +1,67 @@
-use js_sys::Uint8Array;
-use wasm_bindgen::{
-    prelude::{wasm_bindgen, JsValue},
-    JsCast,
-};
+use std::fmt::{Formatter, Result as FmtResult};
 
-use crate::{
-    mode::JsGameMode,
-    util::{self, FromJsValue, JsValueExt, ObjectExt},
-    JsResult,
-};
+use serde::de;
+use wasm_bindgen::{__rt::RefMut, prelude::wasm_bindgen};
 
-use super::common::CommonArgs;
+use crate::{beatmap::JsBeatmap, mode::JsGameMode};
 
 #[wasm_bindgen]
 extern "C" {
-    #[wasm_bindgen(typescript_type = BeatmapArgs)]
-    pub type JsBeatmapArgs;
+    #[wasm_bindgen(typescript_type = BeatmapContent)]
+    pub type JsBeatmapContent;
+}
 
+#[wasm_bindgen(typescript_custom_section)]
+const _: &str = r#"/**
+* The content of a `.osu` file either as bytes or string.
+*/
+export type BeatmapContent = Uint8Array | string;"#;
+
+pub struct BeatmapContent {
+    pub bytes: Vec<u8>,
+}
+
+impl<'de> de::Deserialize<'de> for BeatmapContent {
+    fn deserialize<D: de::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        struct BeatmapContentVisitor;
+
+        impl<'de> de::Visitor<'de> for BeatmapContentVisitor {
+            type Value = BeatmapContent;
+
+            fn expecting(&self, f: &mut Formatter) -> FmtResult {
+                f.write_str("a Uint8Array or a string")
+            }
+
+            fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
+                self.visit_string(v.to_owned())
+            }
+
+            fn visit_string<E: de::Error>(self, v: String) -> Result<Self::Value, E> {
+                Ok(BeatmapContent {
+                    bytes: v.into_bytes(),
+                })
+            }
+
+            fn visit_byte_buf<E: de::Error>(self, v: Vec<u8>) -> Result<Self::Value, E> {
+                Ok(BeatmapContent { bytes: v })
+            }
+        }
+
+        d.deserialize_any(BeatmapContentVisitor)
+    }
+}
+
+#[wasm_bindgen]
+extern "C" {
     #[wasm_bindgen(typescript_type = BeatmapAttributesArgs)]
     pub type JsBeatmapAttributesArgs;
 }
 
 #[wasm_bindgen(typescript_custom_section)]
 const _: &'static str = r#"/**
-* Arguments to provide the `Beatmap` constructor.
-*/
-interface BeatmapArgs {
-    /**
-    * The bytes of a `.osu` file's content.
-    */
-    bytes?: Uint8Array,
-    /**
-    * The content of a `.osu` file.
-    */
-    content?: string,
-    /**
-    * The mode to convert the beatmap to.
-    */
-    mode?: GameMode,
-}"#;
-
-#[derive(Default)]
-pub struct BeatmapArgs {
-    pub bytes: Option<Vec<u8>>,
-    pub content: Option<String>,
-    pub mode: Option<JsGameMode>,
-}
-
-impl BeatmapArgs {
-    pub fn from_value(value: &JsBeatmapArgs) -> JsResult<Self> {
-        util::from_value(value)
-    }
-}
-
-impl FromJsValue for BeatmapArgs {
-    const FIELDS: &'static [&'static str] = &["bytes", "content", "mode"];
-
-    fn field(&mut self, name: &str, value: JsValue) -> JsResult<()> {
-        match name {
-            "bytes" => self.bytes = Some(Uint8Array::new(&value).to_vec()),
-            "content" => match value.as_string() {
-                Some(content) => self.content = Some(content),
-                None => return Err(crate::JsError::new("invalid content")),
-            },
-            "mode" => match value.as_safe_integer().map(TryFrom::try_from) {
-                Some(Ok(mode)) => self.mode = Some(mode),
-                _ => return Err(crate::JsError::new("invalid mode")),
-            },
-            _ => unreachable!(),
-        }
-
-        Ok(())
-    }
-}
-
-#[wasm_bindgen(typescript_custom_section)]
-const _: &'static str = r#"/**
 * Arguments to provide the `BeatmapAttributesBuilder` constructor.
 */
-interface BeatmapAttributesArgs extends CommonArgs {
+export interface BeatmapAttributesArgs extends CommonArgs {
     /**
     * Specify a gamemode.
     */
@@ -86,41 +69,58 @@ interface BeatmapAttributesArgs extends CommonArgs {
     /**
     * Specify whether it's a converted map.
     */
-    isConvert?: boolean,
+    isConvert?: boolean;
     /**
-    * Start off with a beatmap's attributes.
+    * Start off with a beatmap's attributes, mode, and convert status.
     */
-    map?: Beatmap,
+    map?: Beatmap;
 }"#;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize)]
+#[serde(rename_all = "camelCase", rename = "Object")]
 pub struct BeatmapAttributesArgs {
-    pub common: CommonArgs,
+    #[serde(default)]
+    pub mods: u32,
+    pub clock_rate: Option<f64>,
+    pub ar: Option<f32>,
+    #[serde(default)]
+    pub ar_with_mods: bool,
+    pub cs: Option<f32>,
+    #[serde(default)]
+    pub cs_with_mods: bool,
+    pub hp: Option<f32>,
+    #[serde(default)]
+    pub hp_with_mods: bool,
+    pub od: Option<f32>,
+    #[serde(default)]
+    pub od_with_mods: bool,
     pub mode: Option<JsGameMode>,
+    #[serde(default)]
     pub is_convert: bool,
-    pub map: Option<JsValue>,
+    #[serde(default, deserialize_with = "deser_maybe_map")]
+    pub map: Option<RefMut<'static, JsBeatmap>>,
 }
 
-impl BeatmapAttributesArgs {
-    pub fn from_value(value: &JsBeatmapAttributesArgs) -> JsResult<Self> {
-        let mut this = util::from_value::<Self>(value)?;
-        this.common = util::from_value(value)?;
+fn deser_maybe_map<'de, D: de::Deserializer<'de>>(
+    d: D,
+) -> Result<Option<RefMut<'static, JsBeatmap>>, D::Error> {
+    struct MaybeMapVisitor;
 
-        let obj = value.unchecked_ref::<ObjectExt>();
-        let js_field = util::static_str_to_js("map");
-        let js_value = obj.get_with_ref_key(&js_field);
+    impl<'de> de::Visitor<'de> for MaybeMapVisitor {
+        type Value = Option<RefMut<'static, JsBeatmap>>;
 
-        if !js_value.is_undefined() {
-            this.map = Some(js_value);
+        fn expecting(&self, f: &mut Formatter) -> FmtResult {
+            f.write_str("an optional Beatmap")
         }
 
-        Ok(this)
-    }
-}
+        fn visit_some<D: de::Deserializer<'de>>(self, d: D) -> Result<Self::Value, D::Error> {
+            JsBeatmap::deserialize(d).map(Some)
+        }
 
-from_jsvalue! {
-    BeatmapAttributesArgs {
-        mode as mode: JsGameMode?,
-        is_convert as isConvert: bool!,
+        fn visit_none<E: de::Error>(self) -> Result<Self::Value, E> {
+            Ok(None)
+        }
     }
+
+    d.deserialize_option(MaybeMapVisitor)
 }

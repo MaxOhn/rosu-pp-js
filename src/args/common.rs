@@ -1,16 +1,10 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(typescript_type = CommonArgs)]
-    pub type JsCommonArgs;
-}
-
 #[wasm_bindgen(typescript_custom_section)]
 const _: &'static str = r#"/**
-* Common arguments to extend other argument interfaces.
+* Common properties to extend other argument interfaces.
 */
-interface CommonArgs {
+export interface CommonArgs {
     /**
     * Specify mods through their bit values.
     *
@@ -89,32 +83,3 @@ interface CommonArgs {
     */
     odWithMods?: boolean;
 }"#;
-
-#[derive(Default)]
-pub struct CommonArgs {
-    pub mods: u32,
-    pub clock_rate: Option<f64>,
-    pub ar: Option<f32>,
-    pub ar_with_mods: bool,
-    pub cs: Option<f32>,
-    pub cs_with_mods: bool,
-    pub hp: Option<f32>,
-    pub hp_with_mods: bool,
-    pub od: Option<f32>,
-    pub od_with_mods: bool,
-}
-
-from_jsvalue! {
-    CommonArgs {
-        mods as mods: u32!,
-        clock_rate as clockRate: f64?,
-        ar as ar: f32?,
-        ar_with_mods as arWithMods: bool!,
-        cs as cs: f32?,
-        cs_with_mods as csWithMods: bool!,
-        hp as hp: f32?,
-        hp_with_mods as hpWithMods: bool!,
-        od as od: f32?,
-        od_with_mods as odWithMods: bool!,
-    }
-}

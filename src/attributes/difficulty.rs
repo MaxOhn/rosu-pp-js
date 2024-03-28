@@ -1,288 +1,132 @@
 use rosu_pp::{
-    any::DifficultyAttributes as RosuDifficultyAttributes, catch::CatchDifficultyAttributes,
-    mania::ManiaDifficultyAttributes, osu::OsuDifficultyAttributes,
-    taiko::TaikoDifficultyAttributes,
+    any::DifficultyAttributes, catch::CatchDifficultyAttributes, mania::ManiaDifficultyAttributes,
+    osu::OsuDifficultyAttributes, taiko::TaikoDifficultyAttributes,
 };
-use wasm_bindgen::{prelude::wasm_bindgen, JsCast};
+use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{
-    mode::JsGameMode,
-    util::{self, JsValueExt, ObjectExt},
-    JsError, JsResult,
-};
+use crate::{mode::JsGameMode, JsError};
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(typescript_type = DifficultyAttributes)]
-    pub type JsDifficultyAttributes;
-}
-
-#[wasm_bindgen(typescript_custom_section)]
-const _: &'static str = r#"/**
-* The result of a difficulty calculation.
-*/
-interface DifficultyAttributes {
-    /**
-    * The attributes' gamemode.
-    */
-    mode: GameMode,
-    /**
-    * The final star rating.
-    */
-    stars: number,
-    /**
-    * Whether the map was a convert i.e. an osu! map.
-    */
-    isConvert: boolean,
-    /**
-    * The difficulty of the aim skill.
-    *
-    * Only available for osu!.
-    */
-    aim?: number,
-    /**
-    * The difficulty of the speed skill.
-    *
-    * Only available for osu!.
-    */
-    speed?: number,
-    /**
-    * The difficulty of the flashlight skill.
-    *
-    * Only available for osu!.
-    */
-    flashlight?: number,
-    /**
-    * The ratio of the aim strain with and without considering sliders
-    *
-    * Only available for osu!.
-    */
-    sliderFactor?: number,
-    /**
-    * The number of clickable objects weighted by difficulty.
-    *
-    * Only available for osu!.
-    */
-    speedNoteCount?: number,
-    /**
-    * The overall difficulty
-    *
-    * Only available for osu!.
-    */
-    od?: number,
-    /**
-    * The health drain rate.
-    *
-    * Only available for osu!.
-    */
-    hp?: number,
-    /**
-    * The amount of circles.
-    *
-    * Only available for osu!.
-    */
-    nCircles?: number,
-    /**
-    * The amount of sliders.
-    *
-    * Only available for osu!.
-    */
-    nSliders?: number,
-    /**
-    * The amount of spinners.
-    *
-    * Only available for osu!.
-    */
-    nSpinners?: number,
-    /**
-    * The difficulty of the stamina skill.
-    *
-    * Only available for osu!taiko.
-    */
-    stamina?: number,
-    /**
-    * The difficulty of the rhythm skill.
-    *
-    * Only available for osu!taiko.
-    */
-    rhythm?: number,
-    /**
-    * The difficulty of the color skill.
-    *
-    * Only available for osu!taiko.
-    */
-    color?: number,
-    /**
-    * The difficulty of the hardest parts of the map.
-    *
-    * Only available for osu!taiko.
-    */
-    peak?: number,
-    /**
-    * The amount of fruits.
-    *
-    * Only available for osu!catch.
-    */
-    nFruits?: number,
-    /**
-    * The amount of droplets.
-    *
-    * Only available for osu!catch.
-    */
-    nDroplets?: number,
-    /**
-    * The amount of tiny droplets.
-    *
-    * Only available for osu!catch.
-    */
-    nTinyDroplets?: number,
-    /**
-    * The amount of hitobjects in the map.
-    *
-    * Only available for osu!mania.
-    */
-    nObjects?: number,
-    /**
-    * The approach rate.
-    *
-    * Only available for osu! and osu!catch.
-    */
-    ar?: number,
-    /**
-    * The perceived hit window for an n300 inclusive of rate-adjusting mods (DT/HT/etc)
-    *
-    * Only available for osu!taiko and osu!mania.
-    */
-    hitWindow?: number,
-    /**
-    * Return the maximum combo.
-    */
-    maxCombo: number,
-}"#;
-
-#[derive(Clone, Default, serde::Serialize)]
-pub(crate) struct DifficultyAttributes {
+/// The result of a difficulty calculation.
+#[wasm_bindgen(js_name = DifficultyAttributes, inspectable)]
+#[derive(Clone, Default, serde::Deserialize)]
+#[serde(rename = "DifficultyAttributes", rename_all = "camelCase")]
+pub struct JsDifficultyAttributes {
+    /// The attributes' gamemode.
+    #[wasm_bindgen(readonly)]
     pub mode: JsGameMode,
+    /// The final star rating.
+    #[wasm_bindgen(readonly)]
     pub stars: f64,
-    #[serde(rename = "isConvert")]
+    /// Whether the map was a convert i.e. an osu! map.
+    #[wasm_bindgen(js_name = "isConvert", readonly)]
     pub is_convert: bool,
+    /// The difficulty of the aim skill.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(readonly)]
     pub aim: Option<f64>,
+    /// The difficulty of the speed skill.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(readonly)]
     pub speed: Option<f64>,
+    /// The difficulty of the flashlight skill.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(readonly)]
     pub flashlight: Option<f64>,
-    #[serde(rename = "sliderFactor")]
+    /// The ratio of the aim strain with and without considering sliders
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "sliderFactor", readonly)]
     pub slider_factor: Option<f64>,
-    #[serde(rename = "speedNoteCount")]
+    /// The number of clickable objects weighted by difficulty.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "speedNoteCount", readonly)]
     pub speed_note_count: Option<f64>,
+    /// The overall difficulty
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(readonly)]
     pub od: Option<f64>,
+    /// The health drain rate.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(readonly)]
     pub hp: Option<f64>,
-    #[serde(rename = "nCircles")]
+    /// The amount of circles.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "nCircles", readonly)]
     pub n_circles: Option<u32>,
-    #[serde(rename = "nSliders")]
+    /// The amount of sliders.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "nSliders", readonly)]
     pub n_sliders: Option<u32>,
-    #[serde(rename = "nSpinners")]
+    /// The amount of spinners.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "nSpinners", readonly)]
     pub n_spinners: Option<u32>,
+    /// The difficulty of the stamina skill.
+    ///
+    /// Only available for osu!taiko.
+    #[wasm_bindgen(readonly)]
     pub stamina: Option<f64>,
+    /// The difficulty of the rhythm skill.
+    ///
+    /// Only available for osu!taiko.
+    #[wasm_bindgen(readonly)]
     pub rhythm: Option<f64>,
+    /// The difficulty of the color skill.
+    ///
+    /// Only available for osu!taiko.
+    #[wasm_bindgen(readonly)]
     pub color: Option<f64>,
+    /// The difficulty of the hardest parts of the map.
+    ///
+    /// Only available for osu!taiko.
+    #[wasm_bindgen(readonly)]
     pub peak: Option<f64>,
-    #[serde(rename = "nFruits")]
+    /// The amount of fruits.
+    ///
+    /// Only available for osu!catch.
+    #[wasm_bindgen(js_name = "nFruits", readonly)]
     pub n_fruits: Option<u32>,
-    #[serde(rename = "nDroplets")]
+    /// The amount of droplets.
+    ///
+    /// Only available for osu!catch.
+    #[wasm_bindgen(js_name = "nDroplets", readonly)]
     pub n_droplets: Option<u32>,
-    #[serde(rename = "nTinyDroplets")]
+    /// The amount of tiny droplets.
+    ///
+    /// Only available for osu!catch.
+    #[wasm_bindgen(js_name = "nTinyDroplets", readonly)]
     pub n_tiny_droplets: Option<u32>,
-    #[serde(rename = "nObjects")]
+    /// The amount of hitobjects in the map.
+    ///
+    /// Only available for osu!mania.
+    #[wasm_bindgen(js_name = "nObjects", readonly)]
     pub n_objects: Option<u32>,
+    /// The approach rate.
+    ///
+    /// Only available for osu! and osu!catch.
+    #[wasm_bindgen(readonly)]
     pub ar: Option<f64>,
-    #[serde(rename = "hitWindow")]
+    /// The perceived hit window for an n300 inclusive of rate-adjusting mods
+    /// (DT/HT/etc)
+    ///
+    /// Only available for osu!taiko and osu!mania.
+    #[wasm_bindgen(js_name = "hitWindow", readonly)]
     pub hit_window: Option<f64>,
-    #[serde(rename = "maxCombo")]
+    /// Return the maximum combo.
+    #[wasm_bindgen(js_name = "maxCombo", readonly)]
     pub max_combo: u32,
 }
 
-impl DifficultyAttributes {
-    pub fn from_value(value: &JsDifficultyAttributes) -> JsResult<RosuDifficultyAttributes> {
-        if !value.is_object() {
-            return Err(JsError::new("argument must be an object"));
-        }
-
-        let obj = value.unchecked_ref::<ObjectExt>();
-        let js_field = util::static_str_to_js("mode");
-        let js_value = obj.get_with_ref_key(&js_field);
-
-        if js_value.is_undefined() {
-            return Err(JsError::new("missing mode"));
-        }
-
-        let mode = match js_value.as_safe_integer().map(TryFrom::try_from) {
-            Some(Ok(mode)) => mode,
-            _ => return Err(JsError::new("invalid mode")),
-        };
-
-        let attrs = match mode {
-            JsGameMode::Osu => RosuDifficultyAttributes::Osu(util::from_value(value)?),
-            JsGameMode::Taiko => RosuDifficultyAttributes::Taiko(util::from_value(value)?),
-            JsGameMode::Catch => RosuDifficultyAttributes::Catch(util::from_value(value)?),
-            JsGameMode::Mania => RosuDifficultyAttributes::Mania(util::from_value(value)?),
-        };
-
-        Ok(attrs)
-    }
-}
-
-from_jsvalue! {
-    OsuDifficultyAttributes {
-        stars as stars: f64!,
-        aim as aim: f64!,
-        speed as speed: f64!,
-        flashlight as flashlight: f64!,
-        slider_factor as sliderFactor: f64!,
-        speed_note_count as speedNoteCount: f64!,
-        ar as ar: f64!,
-        od as od: f64!,
-        hp as hp: f64!,
-        n_circles as nCircles: u32!,
-        n_sliders as nSliders: u32!,
-        n_spinners as nSpinners: u32!,
-        max_combo as maxCombo: u32!,
-    }
-}
-
-from_jsvalue! {
-    TaikoDifficultyAttributes {
-        stars as stars: f64!,
-        is_convert as isConvert: bool!,
-        stamina as stamina: f64!,
-        rhythm as rhythm: f64!,
-        color as color: f64!,
-        peak as peak: f64!,
-        hit_window as hitWindow: f64!,
-        max_combo as maxCombo: u32!,
-    }
-}
-
-from_jsvalue! {
-    CatchDifficultyAttributes {
-        stars as stars: f64!,
-        is_convert as isConvert: bool!,
-        n_fruits as nFruits: u32!,
-        n_droplets as nDroplets: u32!,
-        n_tiny_droplets as nTinyDroplets: u32!,
-        ar as ar: f64!,
-    }
-}
-
-from_jsvalue! {
-    ManiaDifficultyAttributes {
-        stars as stars: f64!,
-        is_convert as isConvert: bool!,
-        n_objects as nObjects: u32!,
-        hit_window as hitWindow: f64!,
-        max_combo as maxCombo: u32!,
-    }
-}
-
-impl From<OsuDifficultyAttributes> for DifficultyAttributes {
+impl From<OsuDifficultyAttributes> for JsDifficultyAttributes {
     fn from(attrs: OsuDifficultyAttributes) -> Self {
         let OsuDifficultyAttributes {
             aim,
@@ -321,7 +165,7 @@ impl From<OsuDifficultyAttributes> for DifficultyAttributes {
     }
 }
 
-impl From<TaikoDifficultyAttributes> for DifficultyAttributes {
+impl From<TaikoDifficultyAttributes> for JsDifficultyAttributes {
     fn from(attrs: TaikoDifficultyAttributes) -> Self {
         let TaikoDifficultyAttributes {
             stamina,
@@ -349,7 +193,7 @@ impl From<TaikoDifficultyAttributes> for DifficultyAttributes {
     }
 }
 
-impl From<CatchDifficultyAttributes> for DifficultyAttributes {
+impl From<CatchDifficultyAttributes> for JsDifficultyAttributes {
     fn from(attrs: CatchDifficultyAttributes) -> Self {
         let max_combo = attrs.max_combo();
 
@@ -376,7 +220,7 @@ impl From<CatchDifficultyAttributes> for DifficultyAttributes {
     }
 }
 
-impl From<ManiaDifficultyAttributes> for DifficultyAttributes {
+impl From<ManiaDifficultyAttributes> for JsDifficultyAttributes {
     fn from(attrs: ManiaDifficultyAttributes) -> Self {
         let ManiaDifficultyAttributes {
             stars,
@@ -398,22 +242,22 @@ impl From<ManiaDifficultyAttributes> for DifficultyAttributes {
     }
 }
 
-impl From<RosuDifficultyAttributes> for DifficultyAttributes {
-    fn from(attrs: RosuDifficultyAttributes) -> Self {
+impl From<DifficultyAttributes> for JsDifficultyAttributes {
+    fn from(attrs: DifficultyAttributes) -> Self {
         match attrs {
-            RosuDifficultyAttributes::Osu(attrs) => attrs.into(),
-            RosuDifficultyAttributes::Taiko(attrs) => attrs.into(),
-            RosuDifficultyAttributes::Catch(attrs) => attrs.into(),
-            RosuDifficultyAttributes::Mania(attrs) => attrs.into(),
+            DifficultyAttributes::Osu(attrs) => attrs.into(),
+            DifficultyAttributes::Taiko(attrs) => attrs.into(),
+            DifficultyAttributes::Catch(attrs) => attrs.into(),
+            DifficultyAttributes::Mania(attrs) => attrs.into(),
         }
     }
 }
 
-impl TryFrom<DifficultyAttributes> for RosuDifficultyAttributes {
+impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
     type Error = JsError;
 
-    fn try_from(attrs: DifficultyAttributes) -> Result<Self, Self::Error> {
-        let DifficultyAttributes {
+    fn try_from(attrs: JsDifficultyAttributes) -> Result<Self, Self::Error> {
+        let JsDifficultyAttributes {
             mode,
             stars,
             is_convert,
@@ -527,6 +371,6 @@ impl TryFrom<DifficultyAttributes> for RosuDifficultyAttributes {
             }
         }
 
-        Err(JsError::new("invalid difficulty attributes"))
+        Err(JsError::from("invalid difficulty attributes"))
     }
 }

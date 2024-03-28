@@ -1,36 +1,28 @@
 use rosu_pp::model::mode::GameMode;
-use serde::{Serialize, Serializer};
+use serde::de;
 use wasm_bindgen::prelude::wasm_bindgen;
-
-use crate::JsError;
 
 #[wasm_bindgen(js_name = GameMode)]
 #[derive(Copy, Clone, Default)]
 pub enum JsGameMode {
     #[default]
-    Osu,
-    Taiko,
-    Catch,
-    Mania,
+    Osu = 0,
+    Taiko = 1,
+    Catch = 2,
+    Mania = 3,
 }
 
-impl TryFrom<i64> for JsGameMode {
-    type Error = JsError;
+impl<'de> de::Deserialize<'de> for JsGameMode {
+    fn deserialize<D: de::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let mode = match u8::deserialize(d) {
+            Ok(0) => Self::Osu,
+            Ok(1) => Self::Taiko,
+            Ok(2) => Self::Catch,
+            Ok(3) => Self::Mania,
+            _ => return Err(de::Error::custom("invalid GameMode")),
+        };
 
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        match value {
-            0 => Ok(Self::Osu),
-            1 => Ok(Self::Taiko),
-            2 => Ok(Self::Catch),
-            3 => Ok(Self::Mania),
-            _ => Err(JsError::new("invalid GameMode")),
-        }
-    }
-}
-
-impl Serialize for JsGameMode {
-    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        s.serialize_u8(*self as u8)
+        Ok(mode)
     }
 }
 

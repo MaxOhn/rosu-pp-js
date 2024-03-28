@@ -3,9 +3,8 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     args::performance::{JsMapOrAttributes, JsPerformanceArgs, MapOrAttrs, PerformanceArgs},
-    attributes::performance::{JsPerformanceAttributes, PerformanceAttributes},
-    beatmap::JsBeatmap,
-    util, JsError, JsResult,
+    attributes::performance::JsPerformanceAttributes,
+    util, JsResult,
 };
 
 /// Builder for a performance calculation.
@@ -23,8 +22,8 @@ impl JsPerformance {
         console_error_panic_hook::set_once();
 
         let args = args
-            .as_ref()
-            .map(PerformanceArgs::from_value)
+            .as_deref()
+            .map(util::from_value::<PerformanceArgs>)
             .transpose()?
             .unwrap_or_default();
 
@@ -42,17 +41,12 @@ impl JsPerformance {
     /// for the same difficulty settings like mods, clock rate, beatmap,
     /// custom ar, ... otherwise the final attributes will be incorrect.
     pub fn calculate(&mut self, args: &JsMapOrAttributes) -> JsResult<JsPerformanceAttributes> {
-        let map_or_attrs = MapOrAttrs::from_value(args);
+        let map_or_attrs = MapOrAttrs::from_value(args)?;
         let map;
 
         let mut perf = match map_or_attrs {
-            MapOrAttrs::Map(value) => {
-                map = JsBeatmap::try_from_value(value).map_err(|_| {
-                    JsError::new(
-                        "argument must be either previously calculated difficulty attributes or \
-                        a beatmap",
-                    )
-                })?;
+            MapOrAttrs::Map(map_) => {
+                map = map_;
 
                 Performance::from_map(&map.inner)
             }
@@ -61,8 +55,8 @@ impl JsPerformance {
 
         perf = self.args.apply(perf);
         let state = perf.generate_state();
-        let attrs = PerformanceAttributes::new(perf.calculate(), state);
+        let attrs = JsPerformanceAttributes::new(perf.calculate(), state);
 
-        util::to_value(&attrs).map(From::from)
+        Ok(attrs)
     }
 }
