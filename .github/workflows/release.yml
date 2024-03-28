@@ -33,7 +33,7 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - if: ${{ matrix.target != nodejs }}
+      - if: ${{ matrix.target != 'nodejs' }}
         name: Optimize for size
         run: |
           echo "opt-level = \"z\"" >> Cargo.toml
