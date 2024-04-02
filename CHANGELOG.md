@@ -1,4 +1,18 @@
-# v0.9.4 (2023-02-09)
+# v1.0.0 (2024-04-02)
+
+- Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
+- The binding is no longer imported under the name `rosu-pp` but as `rosu-pp-js`
+- The binding is now powered by [`Wasm`](https://webassembly.org/) instead of [`Neon`](https://neon-bindings.com/). As a result, Rust is no longer required to be installed and the library now works in non-nodejs environments like browsers.
+- Breaking changes ahead! There are now multiple different calculators:
+  - `Difficulty` to calculate `DifficultyAttributes`, `Strains`, or create gradual calculators
+  - `Performance` to calculate `PerformanceAttributes`
+  - `BeatmapAttributesBuilder` to calculate `BeatmapAttributes`
+  - `GradualDifficulty` to calculate `DifficultyAttributes` for each hitobject
+  - `GradualPerformance` to calculate `PerformanceAttributes` for each hitresult
+
+Check out the [`rosu_pp_js.d.ts`](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts) file to see available types, methods, arguments, and fields. The `README.md` file provides some more explanations and examples.
+
+## v0.9.4 (2023-02-09)
 
 - Updated to [rosu-pp v0.9.4](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v094-2023-02-09).
 

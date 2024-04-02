@@ -10,7 +10,7 @@ Since Wasm is used as intermediate layer, Rust doesn't even need to be installed
 
 The library exposes multiple classes and interfaces:
 
-### Beatmap
+### [Beatmap](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L249-L318)
 
 Class containing a parsed `.osu` file, ready to be passed to difficulty and performance calculators.
 
@@ -37,11 +37,11 @@ To convert a beatmap use the `convert(GameMode): void` method.
 - `stackLeniency: number`
 - `version: number`
 
-### Difficulty
+### [Difficulty](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L376-L413)
 
-Class to calculate difficulty attributes, strains, or create gradual calculators.
+Class to calculate [`DifficultyAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L414-L564), [`Strains`](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L723-L782), or create gradual calculators.
 
-The constructor takes an *optional* object of the form
+The constructor takes [an *optional* object of the form](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L130-L148)
 
 ```ts
 {
@@ -77,9 +77,9 @@ The following methods are available:
 - `gradualDifficulty(Beatmap): GradualDifficulty`: A gradual difficulty calculator
 - `gradualPerformance(Beatmap): GradualPerformance`: A gradual performance calculator
 
-### Performance
+### [Performance](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L633-L658)
 
-Performance calculator whose constructor takes an object of the form
+Calculator of [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L659-L722) whose constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L150-L201)
 
 ```ts
 {
@@ -117,7 +117,7 @@ However, be careful that the passed attributes have been calculated for the
 same difficulty settings like mods, clock rate, beatmap, custom ar, ...
 otherwise the final performance attributes will be incorrect.
 
-### GradualDifficulty
+### [GradualDifficulty](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L565-L599)
 
 Class to calculate difficulty attributes after each hitobject.
 
@@ -127,7 +127,7 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
 - `nth(number): DifficultyAttributes | undefined`: Process the next `number - 1` hitobjects, i.e. `nth(0)` will process one, `nth(1)` will proces two, ...
 - `collect(): DifficultyAttributes[]`: Collect all remaining difficulty attributes into a list
 
-### GradualPerformance
+### [GradualPerformance](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L600-L632)
 
 Class to calculate performance attributes after each hitresult.
 
@@ -136,7 +136,7 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
 - `next(ScoreState): PerformanceAttributes | undefined`: Process the next hitobject and return the performance attributes (or `undefined` if the last object has already been processed)
 - `nth(ScoreState, number): PerformanceAttributes | undefined`: Process the next `number - 1` hitobjects, i.e. `nth(0)` will process one, `nth(1)` will proces two, ...
 
-`ScoreState` is an object like
+[`ScoreState`](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L208-L247) is an object like
 
 ```ts
 {
@@ -150,11 +150,11 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
 }
 ```
 
-### BeatmapAttributesBuilder
+### [BeatmapAttributesBuilder](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L361-L375)
 
-Class to calculate beatmap attributes for various custom parameters.
+Class to calculate [`BeatmapAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L319-L360) for various custom parameters.
 
-Its constructor takes an object of the form
+Its constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-js/blob/e7e5ad1d128ac488aa3a72f9582db4c2f2804afb/rosu_pp_js.d.ts#L29-L45)
 
 ```ts
 {
