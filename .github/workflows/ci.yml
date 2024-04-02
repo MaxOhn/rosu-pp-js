@@ -1,4 +1,4 @@
-name: Release
+name: ci
 
 on:
   push:
@@ -11,6 +11,33 @@ on:
   workflow_dispatch:
 
 jobs:
+  types:
+    name: Check .d.ts file
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build
+        run: wasm-pack build --target nodejs --out-dir pkg
+
+      - name: Compare .d.ts files
+        run: |
+          if ! cmp --silent pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts; then
+            echo ".d.ts file is not up to date"
+            exit 1
+          fi
+
   build:
     name: Build
     runs-on: ubuntu-latest
