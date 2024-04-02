@@ -50,6 +50,7 @@ jobs:
       - name: Upload tarballs
         uses: actions/upload-artifact@v4
         with:
+          name: rosu_pp_js_${{ matrix.target }}
           path: rosu_pp_js_${{ matrix.target }}.tar.gz
 
   release:
