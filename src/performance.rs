@@ -48,9 +48,9 @@ impl JsPerformance {
             MapOrAttrs::Map(map_) => {
                 map = map_;
 
-                Performance::from_map(&map.inner)
+                Performance::new(&map.inner)
             }
-            MapOrAttrs::Attrs(attrs) => Performance::from_attributes(attrs),
+            MapOrAttrs::Attrs(attrs) => Performance::new(attrs),
         };
 
         perf = self.args.apply(perf);
