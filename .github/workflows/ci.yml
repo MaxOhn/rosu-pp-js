@@ -113,9 +113,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://registry.npmjs.org'
+
+      - name: Extract nodejs tarball
+        run: |
+          mkdir extracted
+          tar -xzvf ./tars/rosu_pp_js_nodejs.tar.gz -C ./extracted
 
       - name: Publish
-        run: npm publish ./tars/rosu_pp_js_nodejs.tar.gz
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          package: ./extracted
+          token: ${{ secrets.NPM_TOKEN }}
