@@ -111,14 +111,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: https://registry.npmjs.org/
 
       - name: Install rosu_pp_js_nodejs
-        run: |
-          npm -v
-          ls -la1 tars
-          npm install ./tars/rosu_pp_js_nodejs.tar.gz
+        run: npm clean-install ./tars/rosu_pp_js_nodejs.tar.gz
 
       - name: Publish
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
