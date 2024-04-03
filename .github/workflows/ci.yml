@@ -11,8 +11,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  types:
-    name: Check .d.ts file
+  check:
+    name: Check files
     runs-on: ubuntu-latest
 
     steps:
@@ -31,12 +31,18 @@ jobs:
       - name: Build
         run: wasm-pack build --target nodejs --out-dir pkg
 
-      - name: Compare .d.ts files
+      - name: Check .d.ts file
         run: |
           if ! cmp --silent pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts; then
             echo ".d.ts file is not up to date"
             cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
             exit 1
+          fi
+
+      - name: Check install link
+        run: |
+          if ! grep ${{ format('npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/{0}/rosu_pp_js_nodejs.tar.gz', github.ref_name) }} README.md; then
+            echo ${{ format('Did not find install link in readme: "npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/{0}/rosu_pp_js_nodejs.tar.gz"', github.ref_name) }}
           fi
 
   build:
@@ -83,7 +89,7 @@ jobs:
 
   release:
     name: Release
-    needs: [types, build]
+    needs: [check, build]
     if: success() && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
@@ -100,15 +106,15 @@ jobs:
           files: |
             tars/*.tar.gz
 
-      # - name: Set up Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 20
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      # - name: Install rosu_pp_js_nodejs
-      #   run: npm install tars/rosu_pp_js_nodejs.tar.gz
+      - name: Install rosu_pp_js_nodejs
+        run: npm install tars/rosu_pp_js_nodejs.tar.gz
 
-      # - name: Publish
-      #   uses: JS-DevTools/npm-publish@v3
-      #   with:
-      #     token: ${{ secrets.NPM_TOKEN }}
+      - name: Publish
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
