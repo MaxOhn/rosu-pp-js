@@ -1,3 +1,7 @@
+# v1.0.1 (2024-04-03)
+
+- Fixed difficulty arguments not being considered as performance attributes
+
 # v1.0.0 (2024-04-03)
 
 - Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
