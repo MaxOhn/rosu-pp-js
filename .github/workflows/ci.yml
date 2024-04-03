@@ -41,8 +41,8 @@ jobs:
 
       - name: Check install link
         run: |
-          if ! grep ${{ format('npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/{0}/rosu_pp_js_nodejs.tar.gz', github.ref_name) }} README.md; then
-            echo ${{ format('Did not find install link in readme: "npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/{0}/rosu_pp_js_nodejs.tar.gz"', github.ref_name) }}
+          if ! grep "npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/${{ github.ref_name }}/rosu_pp_js_nodejs.tar.gz" README.md; then
+            echo "Did not find install link in readme: 'npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/${{ github.ref_name }}/rosu_pp_js_nodejs.tar.gz'"
           fi
 
   build:
