@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
       - next
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '**'
   pull_request:
   workflow_dispatch:
 
@@ -99,15 +99,15 @@ jobs:
           files: |
             tars/*.tar.gz
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      # - name: Set up Node
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 20
 
-      - name: Install rosu_pp_js_nodejs
-        run: npm install tars/rosu_pp_js_nodejs.tar.gz
+      # - name: Install rosu_pp_js_nodejs
+      #   run: npm install tars/rosu_pp_js_nodejs.tar.gz
 
-      - name: Publish
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish
+      #   uses: JS-DevTools/npm-publish@v3
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
