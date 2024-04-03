@@ -35,6 +35,7 @@ jobs:
         run: |
           if ! cmp --silent pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts; then
             echo ".d.ts file is not up to date"
+            cmp --print_bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
             exit 1
           fi
 
