@@ -1,4 +1,4 @@
-# v1.0.0 (2024-04-02)
+# v1.0.0 (2024-04-03)
 
 - Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
 - The binding is no longer imported under the name `rosu-pp` but as `rosu-pp-js`
