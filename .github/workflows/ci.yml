@@ -19,6 +19,14 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
+      - if: startsWith(github.ref, 'refs/tags/')
+        name: Check install link
+        run: |
+          if ! grep "npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/${{ github.ref_name }}/rosu_pp_js_nodejs.tar.gz" README.md; then
+            echo "Did not find install link in readme: 'npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/${{ github.ref_name }}/rosu_pp_js_nodejs.tar.gz'"
+            exit 1
+          fi
+
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
 
@@ -37,12 +45,6 @@ jobs:
             echo ".d.ts file is not up to date"
             cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
             exit 1
-          fi
-
-      - name: Check install link
-        run: |
-          if ! grep "npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/${{ github.ref_name }}/rosu_pp_js_nodejs.tar.gz" README.md; then
-            echo "Did not find install link in readme: 'npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/${{ github.ref_name }}/rosu_pp_js_nodejs.tar.gz'"
           fi
 
   build:
@@ -103,8 +105,7 @@ jobs:
       - name: Upload to github release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            tars/*.tar.gz
+          files: tars/*.tar.gz
 
       - name: Set up Node
         uses: actions/setup-node@v4
