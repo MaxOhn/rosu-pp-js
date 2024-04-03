@@ -81,7 +81,22 @@ export interface PerformanceArgs extends DifficultyArgs {
 #[serde(rename_all = "camelCase", rename = "Object")]
 pub struct PerformanceArgs {
     #[serde(default)]
-    pub difficulty: DifficultyArgs,
+    pub mods: u32,
+    pub clock_rate: Option<f64>,
+    pub ar: Option<f32>,
+    #[serde(default)]
+    pub ar_with_mods: bool,
+    pub cs: Option<f32>,
+    #[serde(default)]
+    pub cs_with_mods: bool,
+    pub hp: Option<f32>,
+    #[serde(default)]
+    pub hp_with_mods: bool,
+    pub od: Option<f32>,
+    #[serde(default)]
+    pub od_with_mods: bool,
+    pub passed_objects: Option<u32>,
+    pub hardrock_offsets: Option<bool>,
     pub accuracy: Option<f64>,
     pub combo: Option<u32>,
     pub n_geki: Option<u32>,
@@ -150,8 +165,23 @@ impl PerformanceArgs {
             perf = perf.misses(misses);
         }
 
+        let difficulty = DifficultyArgs {
+            mods: self.mods,
+            clock_rate: self.clock_rate,
+            ar: self.ar,
+            ar_with_mods: self.ar_with_mods,
+            cs: self.cs,
+            cs_with_mods: self.cs_with_mods,
+            hp: self.hp,
+            hp_with_mods: self.hp_with_mods,
+            od: self.od,
+            od_with_mods: self.od_with_mods,
+            passed_objects: self.passed_objects,
+            hardrock_offsets: self.hardrock_offsets,
+        };
+
         perf.hitresult_priority(self.hitresult_priority)
-            .difficulty(self.difficulty.as_difficulty())
+            .difficulty(difficulty.as_difficulty())
     }
 }
 
