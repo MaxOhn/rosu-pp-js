@@ -35,7 +35,7 @@ jobs:
         run: |
           if ! cmp --silent pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts; then
             echo ".d.ts file is not up to date"
-            cmp --print_bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
+            cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
             exit 1
           fi
 
@@ -83,7 +83,7 @@ jobs:
 
   release:
     name: Release
-    needs: [build]
+    needs: [types, build]
     if: success() && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
