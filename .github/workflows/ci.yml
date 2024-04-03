@@ -113,7 +113,7 @@ jobs:
           node-version: 20
 
       - name: Install rosu_pp_js_nodejs
-        run: npm install tars/rosu_pp_js_nodejs.tar.gz
+        run: npm install ./tars/rosu_pp_js_nodejs.tar.gz
 
       - name: Publish
         uses: JS-DevTools/npm-publish@v3
