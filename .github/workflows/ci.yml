@@ -114,7 +114,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Install rosu_pp_js_nodejs
-        run: npm clean-install ./tars/rosu_pp_js_nodejs.tar.gz
+        run: npm install ./tars/rosu_pp_js_nodejs.tar.gz
 
       - name: Publish
         run: npm publish
