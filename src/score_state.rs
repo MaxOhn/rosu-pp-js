@@ -136,11 +136,9 @@ impl JsScoreState {
 impl From<ScoreState> for JsScoreState {
     fn from(state: ScoreState) -> Self {
         let obj = js_sys::Object::new();
+        let obj_as_ext = obj.unchecked_ref::<util::ObjectExt>();
 
-        let set = |key, value: u32| {
-            obj.unchecked_ref::<util::ObjectExt>()
-                .set(util::static_str_to_js(key), value.into())
-        };
+        let set = |key, value: u32| obj_as_ext.set(util::static_str_to_js(key), value.into());
 
         set("maxCombo", state.max_combo);
         set("nGeki", state.n_geki);
