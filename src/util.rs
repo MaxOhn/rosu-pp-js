@@ -23,7 +23,7 @@ extern "C" {
     pub fn get_with_ref_key(this: &ObjectExt, key: &JsString) -> JsValue;
 
     #[wasm_bindgen(method, indexing_setter)]
-    fn set(this: &ObjectExt, key: JsString, value: JsValue);
+    pub fn set(this: &ObjectExt, key: JsString, value: JsValue);
 }
 
 /// Store converted strings and return clones instead of converting them

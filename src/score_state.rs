@@ -135,15 +135,21 @@ impl JsScoreState {
 
 impl From<ScoreState> for JsScoreState {
     fn from(state: ScoreState) -> Self {
-        let map = js_sys::Map::new();
-        map.set(&util::static_str_to_js("maxCombo"), &state.max_combo.into());
-        map.set(&util::static_str_to_js("nGeki"), &state.n_geki.into());
-        map.set(&util::static_str_to_js("nKatu"), &state.n_katu.into());
-        map.set(&util::static_str_to_js("n300"), &state.n300.into());
-        map.set(&util::static_str_to_js("n100"), &state.n100.into());
-        map.set(&util::static_str_to_js("n50"), &state.n50.into());
-        map.set(&util::static_str_to_js("misses"), &state.misses.into());
+        let obj = js_sys::Object::new();
 
-        JsValue::from(map).into()
+        let set = |key, value: u32| {
+            obj.unchecked_ref::<util::ObjectExt>()
+                .set(util::static_str_to_js(key), value.into())
+        };
+
+        set("maxCombo", state.max_combo);
+        set("nGeki", state.n_geki);
+        set("nKatu", state.n_katu);
+        set("n300", state.n300);
+        set("n100", state.n100);
+        set("n50", state.n50);
+        set("misses", state.misses);
+
+        JsValue::from(obj).into()
     }
 }
