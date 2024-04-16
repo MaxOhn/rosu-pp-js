@@ -81,6 +81,7 @@ jobs:
           tar -czvf rosu_pp_js_${{ matrix.target }}.tar.gz -C pkg .
 
       - name: Upload tarballs
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: rosu_pp_js_${{ matrix.target }}
