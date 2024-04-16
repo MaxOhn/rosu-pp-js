@@ -72,11 +72,7 @@ jobs:
 
       - if: ${{ matrix.target != 'nodejs' }}
         name: Optimize for size
-        run: |
-          echo "opt-level = \"z\"" >> Cargo.toml
-          echo "" >> Cargo.toml
-          echo "[features]" >> Cargo.toml
-          echo "default = [\"wee_alloc\"]" >> Cargo.toml
+        run: echo "opt-level = \"z\"" >> Cargo.toml
 
       - name: Build & zip
         run: |
