@@ -268,7 +268,7 @@ $ npm install rosu-pp-js
 or
 
 ```sh
-$ npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/v1.0.1/rosu_pp_js_nodejs.tar.gz
+$ npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/v1.0.2/rosu_pp_js_nodejs.tar.gz
 ```
 
 ## Learn More

@@ -1,3 +1,8 @@
+# v1.0.2 (2024-04-16)
+
+- Fixed the `state` field of `PerformanceAttributes` ([#9])
+- Removed the `wee_alloc` feature because its repository is unmaintained.
+
 # v1.0.1 (2024-04-03)
 
 - Fixed difficulty arguments not being considered as performance attributes
@@ -68,3 +73,4 @@ osu!standard, osu!taiko, and osu!mania.
 [@minidomo]: https://github.com/minidomo
 
 [#1]: https://github.com/MaxOhn/rosu-pp-js/pull/1
+[#9]: https://github.com/MaxOhn/rosu-pp-js/pull/9
