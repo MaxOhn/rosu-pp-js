@@ -4,7 +4,9 @@ use crate::{
     args::difficulty::{DifficultyArgs, JsDifficultyArgs},
     attributes::difficulty::JsDifficultyAttributes,
     beatmap::JsBeatmap,
+    deserializer::JsDeserializer,
     gradual::{difficulty::JsGradualDifficulty, performance::JsGradualPerformance},
+    mods::JsGameMods,
     strains::JsStrains,
     util, JsResult,
 };
@@ -35,7 +37,7 @@ impl JsDifficulty {
 
     /// Perform the difficulty calculation.
     pub fn calculate(&self, map: &JsBeatmap) -> JsDifficultyAttributes {
-        JsDifficultyAttributes::from(self.args.as_difficulty().calculate(&map.inner))
+        JsDifficultyAttributes::from(self.args.to_difficulty().calculate(&map.inner))
     }
 
     /// Perform the difficulty calculation but instead of evaluating strain
@@ -43,7 +45,7 @@ impl JsDifficulty {
     ///
     /// Suitable to plot the difficulty over time.
     pub fn strains(&self, map: &JsBeatmap) -> JsStrains {
-        self.args.as_difficulty().strains(&map.inner).into()
+        self.args.to_difficulty().strains(&map.inner).into()
     }
 
     /// Returns a gradual difficulty calculator for the current difficulty settings.
@@ -59,8 +61,15 @@ impl JsDifficulty {
     }
 
     #[wasm_bindgen(setter)]
-    pub fn set_mods(&mut self, mods: Option<u32>) {
-        self.args.mods = mods.unwrap_or_default();
+    pub fn set_mods(&mut self, mods: Option<JsGameMods>) -> JsResult<()> {
+        self.args.mods = mods
+            .as_deref()
+            .map(JsDeserializer::from_ref)
+            .map(util::deserialize_mods)
+            .transpose()?
+            .unwrap_or_default();
+
+        Ok(())
     }
 
     #[wasm_bindgen(setter = clockRate)]

@@ -6,6 +6,8 @@ use crate::{
         JsHitResultPriority, JsMapOrAttributes, JsPerformanceArgs, MapOrAttrs, PerformanceArgs,
     },
     attributes::performance::JsPerformanceAttributes,
+    deserializer::JsDeserializer,
+    mods::JsGameMods,
     util, JsResult,
 };
 
@@ -63,8 +65,15 @@ impl JsPerformance {
     }
 
     #[wasm_bindgen(setter)]
-    pub fn set_mods(&mut self, mods: Option<u32>) {
-        self.args.mods = mods.unwrap_or_default();
+    pub fn set_mods(&mut self, mods: Option<JsGameMods>) -> JsResult<()> {
+        self.args.mods = mods
+            .as_deref()
+            .map(JsDeserializer::from_ref)
+            .map(util::deserialize_mods)
+            .transpose()?
+            .unwrap_or_default();
+
+        Ok(())
     }
 
     #[wasm_bindgen(setter = clockRate)]

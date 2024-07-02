@@ -6,6 +6,7 @@ mod difficulty;
 mod error;
 mod gradual;
 mod mode;
+mod mods;
 mod performance;
 mod score_state;
 mod strains;

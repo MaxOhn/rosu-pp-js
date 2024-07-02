@@ -6,11 +6,25 @@ const _: &'static str = r#"/**
 */
 export interface CommonArgs {
     /**
-    * Specify mods through their bit values.
+    * Specify mods.
+    *
+    * The type must be either
+    *   - an integer for bitflags
+    *   - a string for acronyms
+    *   - a single mod object as described below
+    *   - a sequence of types that deserialize into a single mod
+    *
+    * Types that deserialize into a single mod are
+    *   - an integer for bitflags
+    *   - a string for an acronym
+    *   - a mod object
+    *
+    * A mod object must have an `acronym: string` property and an optional
+    * `settings?: Object` property.
     *
     * See <https://github.com/ppy/osu-api/wiki#mods>
     */
-    mods?: number;
+    mods?: Object;
     /**
     * Adjust the clock rate used in the calculation.
     *

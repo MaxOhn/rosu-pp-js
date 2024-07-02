@@ -1,5 +1,8 @@
+use rosu_mods::GameMods;
 use rosu_pp::Difficulty;
 use wasm_bindgen::prelude::wasm_bindgen;
+
+use crate::util;
 
 #[wasm_bindgen]
 extern "C" {
@@ -31,8 +34,8 @@ export interface DifficultyArgs extends CommonArgs {
 #[derive(Clone, Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", rename = "Object")]
 pub struct DifficultyArgs {
-    #[serde(default)]
-    pub mods: u32,
+    #[serde(default, deserialize_with = "util::deserialize_mods")]
+    pub mods: GameMods,
     pub clock_rate: Option<f64>,
     pub ar: Option<f32>,
     #[serde(default)]
@@ -51,8 +54,13 @@ pub struct DifficultyArgs {
 }
 
 impl DifficultyArgs {
-    pub fn as_difficulty(&self) -> Difficulty {
-        let mut difficulty = Difficulty::new().mods(self.mods);
+    pub fn to_difficulty(&self) -> Difficulty {
+        let mut difficulty = Difficulty::new();
+
+        difficulty = match self.mods.checked_bits() {
+            Some(bits) => difficulty.mods(bits),
+            None => difficulty.mods(self.mods.clone()),
+        };
 
         if let Some(passed_objects) = self.passed_objects {
             difficulty = difficulty.passed_objects(passed_objects);

@@ -1,7 +1,11 @@
 use std::borrow::Cow;
 
-use js_sys::{Number, Reflect, Uint8Array};
-use serde::de;
+use js_sys::{Array, Number, Object, Reflect, Uint8Array};
+use serde::de::{
+    self,
+    value::{MapDeserializer, SeqDeserializer},
+    IntoDeserializer,
+};
 use wasm_bindgen::prelude::*;
 
 use crate::{util, JsError, JsResult};
@@ -30,6 +34,12 @@ impl<'js> JsDeserializer<'js> {
 
     fn as_bytes(&self) -> Option<Vec<u8>> {
         self.value.dyn_ref().map(Uint8Array::to_vec)
+    }
+
+    fn as_object_entries(&self) -> Option<Array> {
+        self.value
+            .is_object()
+            .then(|| Object::entries(self.value.unchecked_ref()))
     }
 
     #[cold]
@@ -78,6 +88,16 @@ impl<'js> JsDeserializer<'js> {
             _ => self.invalid_type(visitor),
         }
     }
+
+    fn deserialize_from_array<'de, V: de::Visitor<'de>>(
+        &self,
+        visitor: V,
+        array: &Array,
+    ) -> JsResult<V::Value> {
+        visitor.visit_seq(SeqDeserializer::new(
+            array.iter().map(JsDeserializer::from_owned),
+        ))
+    }
 }
 
 impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
@@ -96,6 +116,10 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
             } else {
                 visitor.visit_f64(v)
             }
+        } else if Array::is_array(&self.value) {
+            self.deserialize_seq(visitor)
+        } else if self.value.is_object() {
+            self.deserialize_map(visitor)
         } else {
             self.invalid_type(visitor)
         }
@@ -212,8 +236,14 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
         unimplemented!()
     }
 
-    fn deserialize_seq<V: de::Visitor<'de>>(self, _: V) -> Result<V::Value, Self::Error> {
-        unimplemented!()
+    fn deserialize_seq<V: de::Visitor<'de>>(self, visitor: V) -> Result<V::Value, Self::Error> {
+        if let Some(arr) = self.value.dyn_ref::<Array>() {
+            self.deserialize_from_array(visitor, arr)
+        } else if let Some(iter) = js_sys::try_iter(&self.value)? {
+            visitor.visit_seq(SeqAccess { iter })
+        } else {
+            self.invalid_type(visitor)
+        }
     }
 
     fn deserialize_tuple<V: de::Visitor<'de>>(
@@ -233,8 +263,14 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
         unimplemented!()
     }
 
-    fn deserialize_map<V: de::Visitor<'de>>(self, _: V) -> Result<V::Value, Self::Error> {
-        unimplemented!()
+    fn deserialize_map<V: de::Visitor<'de>>(self, visitor: V) -> Result<V::Value, Self::Error> {
+        match js_sys::try_iter(self.value.as_ref())? {
+            Some(iter) => visitor.visit_map(MapAccess::new(iter)),
+            None => match self.as_object_entries() {
+                Some(arr) => visitor.visit_map(MapDeserializer::new(arr.iter().map(convert_pair))),
+                None => self.invalid_type(visitor),
+            },
+        }
     }
 
     fn deserialize_struct<V: de::Visitor<'de>>(
@@ -280,6 +316,76 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
 
     fn deserialize_ignored_any<V: de::Visitor<'de>>(self, _: V) -> Result<V::Value, Self::Error> {
         unimplemented!()
+    }
+}
+
+impl<'de> IntoDeserializer<'de, JsError> for JsDeserializer<'de> {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        self
+    }
+}
+
+struct SeqAccess {
+    iter: js_sys::IntoIter,
+}
+
+impl<'de> de::SeqAccess<'de> for SeqAccess {
+    type Error = JsError;
+
+    fn next_element_seed<T: de::DeserializeSeed<'de>>(
+        &mut self,
+        seed: T,
+    ) -> Result<Option<T::Value>, Self::Error> {
+        Ok(match self.iter.next().transpose()? {
+            Some(value) => Some(seed.deserialize(JsDeserializer::from_owned(value))?),
+            None => None,
+        })
+    }
+}
+
+struct MapAccess<'js> {
+    iter: js_sys::IntoIter,
+    next_value: Option<JsDeserializer<'js>>,
+}
+
+impl MapAccess<'_> {
+    const fn new(iter: js_sys::IntoIter) -> Self {
+        Self {
+            iter,
+            next_value: None,
+        }
+    }
+}
+
+impl<'de> de::MapAccess<'de> for MapAccess<'de> {
+    type Error = JsError;
+
+    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
+    where
+        K: de::DeserializeSeed<'de>,
+    {
+        debug_assert!(self.next_value.is_none());
+
+        let opt = match self.iter.next().transpose()? {
+            Some(pair) => {
+                let (key, value) = convert_pair(pair);
+                self.next_value = Some(value);
+
+                Some(seed.deserialize(key)?)
+            }
+            None => None,
+        };
+
+        Ok(opt)
+    }
+
+    fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::DeserializeSeed<'de>,
+    {
+        seed.deserialize(self.next_value.take().unwrap_throw())
     }
 }
 
@@ -330,4 +436,14 @@ impl<'de> de::MapAccess<'de> for ObjectAccess<'_> {
     fn next_value_seed<V: de::DeserializeSeed<'de>>(&mut self, seed: V) -> JsResult<V::Value> {
         seed.deserialize(self.next_value.take().unwrap_throw())
     }
+}
+
+/// Destructures a JS `[key, value]` pair into a tuple of [`JsDeserializer`]s.
+fn convert_pair<'a>(pair: JsValue) -> (JsDeserializer<'a>, JsDeserializer<'a>) {
+    let pair = pair.unchecked_into::<Array>();
+
+    (
+        JsDeserializer::from_owned(pair.get(0)),
+        JsDeserializer::from_owned(pair.get(1)),
+    )
 }
