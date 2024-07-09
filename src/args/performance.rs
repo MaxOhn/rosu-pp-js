@@ -119,6 +119,15 @@ pub enum JsHitResultPriority {
     WorstCase,
 }
 
+impl From<JsHitResultPriority> for HitResultPriority {
+    fn from(priority: JsHitResultPriority) -> Self {
+        match priority {
+            JsHitResultPriority::BestCase => Self::BestCase,
+            JsHitResultPriority::WorstCase => Self::WorstCase,
+        }
+    }
+}
+
 impl JsHitResultPriority {
     fn deserialize<'de, D: de::Deserializer<'de>>(d: D) -> Result<HitResultPriority, D::Error> {
         let priority = match <u8 as de::Deserialize>::deserialize(d) {

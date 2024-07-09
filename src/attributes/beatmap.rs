@@ -1,14 +1,23 @@
-use rosu_pp::model::beatmap::{BeatmapAttributes, BeatmapAttributesBuilder};
+use rosu_pp::model::beatmap::BeatmapAttributes;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     args::beatmap::{BeatmapAttributesArgs, JsBeatmapAttributesArgs},
-    util, JsError, JsResult,
+    beatmap::JsBeatmap,
+    deserializer::JsDeserializer,
+    mode::JsGameMode,
+    util, JsResult,
 };
 
 #[wasm_bindgen(js_name = BeatmapAttributesBuilder)]
 pub struct JsBeatmapAttributesBuilder {
-    inner: BeatmapAttributesBuilder,
+    args: BeatmapAttributesArgs,
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = Beatmap)]
+    pub type JsBeatmapType;
 }
 
 #[wasm_bindgen(js_class = BeatmapAttributesBuilder)]
@@ -16,19 +25,89 @@ impl JsBeatmapAttributesBuilder {
     /// Create a new `BeatmapAttributesBuilder`.
     #[wasm_bindgen(constructor)]
     pub fn new(args: Option<JsBeatmapAttributesArgs>) -> JsResult<JsBeatmapAttributesBuilder> {
-        let inner = if let Some(ref args) = args {
-            util::from_value::<BeatmapAttributesArgs>(args)
-                .and_then(BeatmapAttributesBuilder::try_from)?
-        } else {
-            BeatmapAttributesBuilder::new()
-        };
+        let args = args
+            .as_deref()
+            .map(util::from_value::<BeatmapAttributesArgs>)
+            .transpose()?
+            .unwrap_or_default();
 
-        Ok(Self { inner })
+        Ok(Self { args })
     }
 
     /// Calculate the `BeatmapAttributes`.
     pub fn build(&self) -> JsBeatmapAttributes {
-        self.inner.build().into()
+        self.args.as_builder().build().into()
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_mods(&mut self, mods: Option<u32>) {
+        self.args.mods = mods.unwrap_or_default();
+    }
+
+    #[wasm_bindgen(setter = clockRate)]
+    pub fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
+        self.args.clock_rate = clock_rate;
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_ar(&mut self, ar: Option<f32>) {
+        self.args.ar = ar;
+    }
+
+    #[wasm_bindgen(setter = arWithMods)]
+    pub fn set_ar_with_mods(&mut self, ar_with_mods: Option<bool>) {
+        self.args.ar_with_mods = ar_with_mods.unwrap_or_default();
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_cs(&mut self, cs: Option<f32>) {
+        self.args.cs = cs;
+    }
+
+    #[wasm_bindgen(setter = csWithMods)]
+    pub fn set_cs_with_mods(&mut self, cs_with_mods: Option<bool>) {
+        self.args.cs_with_mods = cs_with_mods.unwrap_or_default();
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_hp(&mut self, hp: Option<f32>) {
+        self.args.hp = hp;
+    }
+
+    #[wasm_bindgen(setter = hpWithMods)]
+    pub fn set_hp_with_mods(&mut self, hp_with_mods: Option<bool>) {
+        self.args.hp_with_mods = hp_with_mods.unwrap_or_default();
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_od(&mut self, od: Option<f32>) {
+        self.args.od = od;
+    }
+
+    #[wasm_bindgen(setter = odWithMods)]
+    pub fn set_od_with_mods(&mut self, od_with_mods: Option<bool>) {
+        self.args.od_with_mods = od_with_mods.unwrap_or_default();
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_mode(&mut self, mode: Option<JsGameMode>) {
+        self.args.mode = mode;
+    }
+
+    #[wasm_bindgen(setter = isConvert)]
+    pub fn set_is_convert(&mut self, is_convert: Option<bool>) {
+        self.args.is_convert = is_convert.unwrap_or_default();
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_map(&mut self, map: Option<JsBeatmapType>) -> JsResult<()> {
+        self.args.map = map
+            .as_deref()
+            .map(JsDeserializer::from_ref)
+            .map(JsBeatmap::deserialize)
+            .transpose()?;
+
+        Ok(())
     }
 }
 
@@ -69,43 +148,5 @@ impl From<BeatmapAttributes> for JsBeatmapAttributes {
             ar_hitwindow: attrs.hit_windows.ar,
             od_hitwindow: attrs.hit_windows.od,
         }
-    }
-}
-
-impl TryFrom<BeatmapAttributesArgs> for BeatmapAttributesBuilder {
-    type Error = JsError;
-
-    fn try_from(args: BeatmapAttributesArgs) -> Result<Self, Self::Error> {
-        let mut builder = Self::new();
-
-        if let Some(map) = args.map {
-            builder = builder.map(&map.inner);
-        }
-
-        if let Some(mode) = args.mode {
-            builder = builder.mode(mode.into(), args.is_convert);
-        }
-
-        if let Some(clock_rate) = args.clock_rate {
-            builder = builder.clock_rate(clock_rate);
-        }
-
-        if let Some(ar) = args.ar {
-            builder = builder.ar(ar, args.ar_with_mods);
-        }
-
-        if let Some(cs) = args.cs {
-            builder = builder.cs(cs, args.cs_with_mods);
-        }
-
-        if let Some(hp) = args.hp {
-            builder = builder.hp(hp, args.hp_with_mods);
-        }
-
-        if let Some(od) = args.od {
-            builder = builder.od(od, args.od_with_mods);
-        }
-
-        Ok(builder.mods(args.mods))
     }
 }

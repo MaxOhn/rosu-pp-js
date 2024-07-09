@@ -372,6 +372,45 @@ export class BeatmapAttributesBuilder {
 * @returns {BeatmapAttributes}
 */
   build(): BeatmapAttributes;
+/**
+*/
+  ar?: number;
+/**
+*/
+  arWithMods?: boolean;
+/**
+*/
+  clockRate?: number;
+/**
+*/
+  cs?: number;
+/**
+*/
+  csWithMods?: boolean;
+/**
+*/
+  hp?: number;
+/**
+*/
+  hpWithMods?: boolean;
+/**
+*/
+  isConvert?: boolean;
+/**
+*/
+  map?: Beatmap;
+/**
+*/
+  mode?: GameMode;
+/**
+*/
+  mods?: number;
+/**
+*/
+  od?: number;
+/**
+*/
+  odWithMods?: boolean;
 }
 /**
 * Builder for a difficulty calculation.
@@ -410,6 +449,42 @@ export class Difficulty {
 * @returns {GradualPerformance}
 */
   gradualPerformance(map: Beatmap): GradualPerformance;
+/**
+*/
+  ar?: number;
+/**
+*/
+  arWithMods?: boolean;
+/**
+*/
+  clockRate?: number;
+/**
+*/
+  cs?: number;
+/**
+*/
+  csWithMods?: boolean;
+/**
+*/
+  hardrockOffsets?: boolean;
+/**
+*/
+  hp?: number;
+/**
+*/
+  hpWithMods?: boolean;
+/**
+*/
+  mods?: number;
+/**
+*/
+  od?: number;
+/**
+*/
+  odWithMods?: boolean;
+/**
+*/
+  passedObjects?: number;
 }
 /**
 * The result of a difficulty calculation.
@@ -655,6 +730,69 @@ export class Performance {
 * @returns {PerformanceAttributes}
 */
   calculate(args: MapOrAttributes): PerformanceAttributes;
+/**
+*/
+  accuracy?: number;
+/**
+*/
+  ar?: number;
+/**
+*/
+  arWithMods?: boolean;
+/**
+*/
+  clockRate?: number;
+/**
+*/
+  combo?: number;
+/**
+*/
+  cs?: number;
+/**
+*/
+  csWithMods?: boolean;
+/**
+*/
+  hardrockOffsets?: boolean;
+/**
+*/
+  hitresultPriority?: HitResultPriority;
+/**
+*/
+  hp?: number;
+/**
+*/
+  hpWithMods?: boolean;
+/**
+*/
+  misses?: number;
+/**
+*/
+  mods?: number;
+/**
+*/
+  n100?: number;
+/**
+*/
+  n300?: number;
+/**
+*/
+  n50?: number;
+/**
+*/
+  nGeki?: number;
+/**
+*/
+  nKatu?: number;
+/**
+*/
+  od?: number;
+/**
+*/
+  odWithMods?: boolean;
+/**
+*/
+  passedObjects?: number;
 }
 /**
 * The result of a performance calculation.
