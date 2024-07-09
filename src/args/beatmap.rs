@@ -1,5 +1,6 @@
 use std::fmt::{Formatter, Result as FmtResult};
 
+use rosu_pp::model::beatmap::BeatmapAttributesBuilder;
 use serde::de;
 use wasm_bindgen::{__rt::RefMut, prelude::wasm_bindgen};
 
@@ -99,6 +100,42 @@ pub struct BeatmapAttributesArgs {
     pub is_convert: bool,
     #[serde(default, deserialize_with = "deser_maybe_map")]
     pub map: Option<RefMut<'static, JsBeatmap>>,
+}
+
+impl BeatmapAttributesArgs {
+    pub fn as_builder(&self) -> BeatmapAttributesBuilder {
+        let mut builder = BeatmapAttributesBuilder::new();
+
+        if let Some(ref map) = self.map {
+            builder = builder.map(&map.inner);
+        }
+
+        if let Some(mode) = self.mode {
+            builder = builder.mode(mode.into(), self.is_convert);
+        }
+
+        if let Some(clock_rate) = self.clock_rate {
+            builder = builder.clock_rate(clock_rate);
+        }
+
+        if let Some(ar) = self.ar {
+            builder = builder.ar(ar, self.ar_with_mods);
+        }
+
+        if let Some(cs) = self.cs {
+            builder = builder.cs(cs, self.cs_with_mods);
+        }
+
+        if let Some(hp) = self.hp {
+            builder = builder.hp(hp, self.hp_with_mods);
+        }
+
+        if let Some(od) = self.od {
+            builder = builder.od(od, self.od_with_mods);
+        }
+
+        builder.mods(self.mods)
+    }
 }
 
 fn deser_maybe_map<'de, D: de::Deserializer<'de>>(

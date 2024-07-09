@@ -28,7 +28,7 @@ export interface DifficultyArgs extends CommonArgs {
     hardrockOffsets?: boolean;
 }"#;
 
-#[derive(Default, serde::Deserialize)]
+#[derive(Clone, Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", rename = "Object")]
 pub struct DifficultyArgs {
     #[serde(default)]

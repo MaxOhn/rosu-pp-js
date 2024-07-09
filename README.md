@@ -179,7 +179,24 @@ Its constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-
 
 Its only method is `build(): BeatmapAttributes`.
 
-## Example
+## Setters
+
+For the `Difficulty`, `Performance`, and `BeatmapAttributesBuilder` classes, each field of their constructor's argument object is also available as a setter afterwards which takes either a value of the field's type or `undefined` to unset the previously set value.
+
+```js
+import * as rosu from "rosu-pp-js";
+
+// Either given in the constructor
+let difficulty = new rosu.Difficulty({ clockRate: 1.23 });
+
+// Or adjusted afterwards
+difficulty.mods = 8;
+
+// Or even reset entirely
+difficulty.clockRate = undefined;
+```
+
+## Examples
 
 ### Calculating performance
 

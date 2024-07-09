@@ -18,7 +18,7 @@ impl JsGradualPerformance {
     #[wasm_bindgen(constructor)]
     pub fn new(difficulty: &JsDifficulty, map: &JsBeatmap) -> JsGradualPerformance {
         Self {
-            inner: GradualPerformance::new(difficulty.inner.clone(), &map.inner),
+            inner: GradualPerformance::new(difficulty.args.as_difficulty(), &map.inner),
         }
     }
 
