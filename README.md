@@ -17,6 +17,10 @@ Class containing a parsed `.osu` file, ready to be passed to difficulty and perf
 The constructor takes an object of type `Uint8Array | string` representing the content of a `.osu`
 file and throws an error if decoding the beatmap fails.
 
+⚠️WARNING⚠️
+
+Due to [some current JavaScript oddities](https://github.com/rustwasm/wasm-bindgen/issues/3917), Wasm is not always able to track down objects' lifetime meaning it is possible that memory of unused instances might not get cleared automatically. Hence, to not risk leaking memory, it is recommended to free `Beatmap` instances manually when they're no longer needed with the `free(): void` method.
+
 To convert a beatmap use the `convert(GameMode): void` method.
 
 `Beatmap` provides various getters:
@@ -228,6 +232,9 @@ const currAttrs = new rosu.Performance({
 }).calculate(maxAttrs); // Re-using previous attributes to speed up the calculation.
 
 console.log(`PP: ${currAttrs.pp}/${maxAttrs.pp} | Stars: ${maxAttrs.difficulty.stars}`);
+
+// Free the beatmap manually to avoid risking memory leakage.
+map.free();
 ```
 
 ### Gradual calculation
@@ -274,6 +281,8 @@ while (gradualPerf.nRemaining > 0) {
     console.log(`PP: ${gradualPerf.next(state)?.pp}`);
     j += 1;
 }
+
+map.free();
 ```
 
 ## Installing rosu-pp-js
