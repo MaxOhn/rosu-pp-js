@@ -43,8 +43,14 @@ jobs:
         run: |
           if ! cmp --silent pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts; then
             echo ".d.ts file is not up to date"
-            cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
-            cat pkg/rosu_pp_js.d.ts
+            cmp_out=`cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts`
+            echo $cmp_out
+            line=`echo $cmp_out | sed -r 's/.*line ([0-9]+) .*/\1/'`
+            echo pkg/rosu_pp_js.d.ts:
+            sed -n ${line},$((line+1))p pkg/rosu_pp_js.d.ts
+            echo
+            echo rosu_pp_js.d.ts:
+            sed -n ${line},$((line+1))p rosu_pp_js.d.ts
             exit 1
           fi
 
