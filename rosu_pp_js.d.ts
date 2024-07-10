@@ -249,6 +249,9 @@ export interface ScoreState {
 /**
 * All beatmap data that is relevant for difficulty and performance
 * calculation.
+*
+* It is recommended to call the method `Beatmap.free` on instances that are
+* no longer in use to avoid the risk of leaking memory.
 */
 export class Beatmap {
   free(): void;
