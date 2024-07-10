@@ -22,6 +22,9 @@ use crate::{
 
 /// All beatmap data that is relevant for difficulty and performance
 /// calculation.
+///
+/// It is recommended to call the method `Beatmap.free` on instances that are
+/// no longer in use to avoid the risk of leaking memory.
 #[wasm_bindgen(js_name = Beatmap)]
 pub struct JsBeatmap {
     pub(crate) inner: Beatmap,
