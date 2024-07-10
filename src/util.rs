@@ -6,7 +6,11 @@ use std::{
 };
 
 use js_sys::JsString;
-use serde::de;
+use rosu_mods::{serde::GameModsSeed, GameMods};
+use serde::{
+    de::{self, DeserializeSeed},
+    Deserializer,
+};
 use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 
 use crate::JsResult;
@@ -91,4 +95,8 @@ impl<'de> de::Visitor<'de> for FieldVisitor {
 
         Err(de::Error::invalid_value(de::Unexpected::Str(v), &self))
     }
+}
+
+pub fn deserialize_mods<'de, 'a, D: Deserializer<'de>>(d: D) -> Result<GameMods, D::Error> {
+    DeserializeSeed::deserialize(GameModsSeed::AllowMultipleModes, d)
 }

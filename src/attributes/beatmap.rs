@@ -6,6 +6,7 @@ use crate::{
     beatmap::JsBeatmap,
     deserializer::JsDeserializer,
     mode::JsGameMode,
+    mods::JsGameMods,
     util, JsResult,
 };
 
@@ -40,8 +41,15 @@ impl JsBeatmapAttributesBuilder {
     }
 
     #[wasm_bindgen(setter)]
-    pub fn set_mods(&mut self, mods: Option<u32>) {
-        self.args.mods = mods.unwrap_or_default();
+    pub fn set_mods(&mut self, mods: Option<JsGameMods>) -> JsResult<()> {
+        self.args.mods = mods
+            .as_deref()
+            .map(JsDeserializer::from_ref)
+            .map(util::deserialize_mods)
+            .transpose()?
+            .unwrap_or_default();
+
+        Ok(())
     }
 
     #[wasm_bindgen(setter = clockRate)]

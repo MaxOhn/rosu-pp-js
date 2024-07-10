@@ -1,10 +1,11 @@
 use std::fmt::{Formatter, Result as FmtResult};
 
+use rosu_mods::GameMods;
 use rosu_pp::model::beatmap::BeatmapAttributesBuilder;
 use serde::de;
 use wasm_bindgen::{__rt::RefMut, prelude::wasm_bindgen};
 
-use crate::{beatmap::JsBeatmap, mode::JsGameMode};
+use crate::{beatmap::JsBeatmap, mode::JsGameMode, util};
 
 #[wasm_bindgen]
 extern "C" {
@@ -80,8 +81,8 @@ export interface BeatmapAttributesArgs extends CommonArgs {
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", rename = "Object")]
 pub struct BeatmapAttributesArgs {
-    #[serde(default)]
-    pub mods: u32,
+    #[serde(default, deserialize_with = "util::deserialize_mods")]
+    pub mods: GameMods,
     pub clock_rate: Option<f64>,
     pub ar: Option<f32>,
     #[serde(default)]
@@ -134,7 +135,10 @@ impl BeatmapAttributesArgs {
             builder = builder.od(od, self.od_with_mods);
         }
 
-        builder.mods(self.mods)
+        match self.mods.checked_bits() {
+            Some(bits) => builder.mods(bits),
+            None => builder.mods(self.mods.clone()),
+        }
     }
 }
 

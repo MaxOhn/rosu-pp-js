@@ -1,3 +1,4 @@
+use rosu_mods::GameMods;
 use rosu_pp::{
     any::{DifficultyAttributes, HitResultPriority},
     Performance,
@@ -80,8 +81,8 @@ export interface PerformanceArgs extends DifficultyArgs {
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", rename = "Object")]
 pub struct PerformanceArgs {
-    #[serde(default)]
-    pub mods: u32,
+    #[serde(default, deserialize_with = "util::deserialize_mods")]
+    pub mods: GameMods,
     pub clock_rate: Option<f64>,
     pub ar: Option<f32>,
     #[serde(default)]
@@ -175,7 +176,7 @@ impl PerformanceArgs {
         }
 
         let difficulty = DifficultyArgs {
-            mods: self.mods,
+            mods: self.mods.clone(),
             clock_rate: self.clock_rate,
             ar: self.ar,
             ar_with_mods: self.ar_with_mods,
@@ -190,7 +191,7 @@ impl PerformanceArgs {
         };
 
         perf.hitresult_priority(self.hitresult_priority)
-            .difficulty(difficulty.as_difficulty())
+            .difficulty(difficulty.to_difficulty())
     }
 }
 
