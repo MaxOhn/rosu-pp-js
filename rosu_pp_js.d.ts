@@ -421,7 +421,7 @@ export class BeatmapAttributesBuilder {
   mode?: GameMode;
 /**
 */
-  mods?: number;
+  mods?: Object;
 /**
 */
   od?: number;
@@ -492,7 +492,7 @@ export class Difficulty {
   hpWithMods?: boolean;
 /**
 */
-  mods?: number;
+  mods?: Object;
 /**
 */
   od?: number;
@@ -785,7 +785,7 @@ export class Performance {
   misses?: number;
 /**
 */
-  mods?: number;
+  mods?: Object;
 /**
 */
   n100?: number;
