@@ -45,6 +45,7 @@ jobs:
             echo ".d.ts file is not up to date"
             cmp_out=`cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts`
             echo $cmp_out
+            echo $cmp_out | sed -r 's/.*line ([0-9]+) .*/\1/'
             line=`echo $cmp_out | sed -r 's/.*line ([0-9]+) .*/\1/'`
             echo pkg/rosu_pp_js.d.ts:
             sed -n ${line},$((line+1))p pkg/rosu_pp_js.d.ts
