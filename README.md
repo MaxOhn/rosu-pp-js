@@ -25,6 +25,7 @@ To convert a beatmap use the `convert(GameMode): void` method.
 
 `Beatmap` provides various getters:
 - `ar: number`
+- `bpm: number`
 - `cs: number`
 - `hp: number`
 - `isConvert: boolean`
