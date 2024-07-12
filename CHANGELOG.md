@@ -1,3 +1,31 @@
+## Upcoming
+
+- Added a ⚠️WARNING⚠️ in the readme to call `Beatmap.free` whenever a `Beatmap` instance is no longer of use to avoid risking memory leakage.
+  ```js
+  const beatmap = new rosu.Beatmap(content);
+  const attrs = new rosu.Performance().calculate(beatmap);
+  beatmap.free();
+  ```
+- Updated to [rosu-pp v1.1.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v110-2024-07-10)
+- Mods can now be specified through more types than just `number` ([#16]):
+  - an integer for bitflags
+  - a string for acronyms
+  - a single mod object as described below
+  - a sequence of types that deserialize into a single mod
+
+  Types that deserialize into a single mod are
+  - an integer for bitflags
+  - a string for an acronym
+  - a mod object
+
+  A mod object must have an `acronym: string` property and an optional `settings?: Object` property.
+- For `Difficulty`, `Performance`, and `BeatmapAttributesBuilder`, all fields of their constructors' fields are now also available as setters after initialization. ([#14])
+  ```js
+  let calc = new rosu.Difficulty({ clockRate: 1.7 });
+  calc.mods = "HDDT";
+  calc.clockRate = undefined;
+  ```
+
 # v1.0.2 (2024-04-16)
 
 - Fixed the `state` field of `PerformanceAttributes` ([#9])
@@ -74,3 +102,5 @@ osu!standard, osu!taiko, and osu!mania.
 
 [#1]: https://github.com/MaxOhn/rosu-pp-js/pull/1
 [#9]: https://github.com/MaxOhn/rosu-pp-js/pull/9
+[#14]: https://github.com/MaxOhn/rosu-pp-js/pull/14
+[#16]: https://github.com/MaxOhn/rosu-pp-js/pull/16
