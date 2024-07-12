@@ -49,8 +49,20 @@ The constructor takes [an *optional* object of the form](https://github.com/MaxO
 
 ```ts
 {
-    // Mod bitflags, see <https://github.com/ppy/osu-api/wiki#mods>
-    mods?: number,
+    // The type must be either
+    //   - an integer for bitflags (see https://github.com/ppy/osu-api/wiki#mods)
+    //   - a string for acronyms
+    //   - a single mod object as described below
+    //   - a sequence of types that deserialize into a single mod
+    //
+    // Types that deserialize into a single mod are
+    //   - an integer for bitflags
+    //   - a string for an acronym
+    //   - a mod object
+    //
+    // A mod object must have an `acronym: string` property and an optional
+    // `settings?: Object` property.
+    mods?: Object,
     // Custom clock rate between 0.01 and 100
     clockRate?: number,
     // Custom approach rate between -20 and 20
@@ -168,7 +180,7 @@ Its constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-
     mode?: GameMode,
     // Whether the map is a convert, only relevant for mania
     isConvert?: boolean,
-    mods?: number,
+    mods?: Object,
     clockRate?: number,
     ar?: number,
     arWithMods?: boolean,
@@ -224,7 +236,7 @@ const maxAttrs = new rosu.Performance({ mods: 8 + 64 }).calculate(map);
 
 // Calculating performance attributes for a specific score.
 const currAttrs = new rosu.Performance({
-    mods: 8 + 64, // Must be the same as before in order to use the previous attributes!
+    mods: "HDDT", // Must be the same as before in order to use the previous attributes!
     misses: 2,
     accuracy: 98.4,
     combo: 567,
@@ -296,6 +308,8 @@ or
 ```sh
 $ npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/v1.0.2/rosu_pp_js_nodejs.tar.gz
 ```
+
+Note that apart from the `*_nodejs` version, the release page also includes `*_web` and `*_bundler` versions.
 
 ## Learn More
 - [rosu-pp]
