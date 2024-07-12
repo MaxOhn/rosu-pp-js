@@ -1,4 +1,4 @@
-## Upcoming
+# v1.1.0 (2024-07-12)
 
 - Added a ⚠️WARNING⚠️ in the readme to call `Beatmap.free` whenever a `Beatmap` instance is no longer of use to avoid risking memory leakage.
   ```js
@@ -26,16 +26,16 @@
   calc.clockRate = undefined;
   ```
 
-# v1.0.2 (2024-04-16)
+## v1.0.2 (2024-04-16)
 
 - Fixed the `state` field of `PerformanceAttributes` ([#9])
 - Removed the `wee_alloc` feature because its repository is unmaintained.
 
-# v1.0.1 (2024-04-03)
+## v1.0.1 (2024-04-03)
 
 - Fixed difficulty arguments not being considered as performance attributes
 
-# v1.0.0 (2024-04-03)
+## v1.0.0 (2024-04-03)
 
 - Updated to [rosu-pp v1.0.0](https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v100-2024-04-02)
 - The binding is no longer imported under the name `rosu-pp` but as `rosu-pp-js`
