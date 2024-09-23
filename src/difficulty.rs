@@ -23,9 +23,6 @@ impl JsDifficulty {
     /// Create a new difficulty calculator.
     #[wasm_bindgen(constructor)]
     pub fn new(args: Option<JsDifficultyArgs>) -> JsResult<JsDifficulty> {
-        #[cfg(feature = "panic_hook")]
-        console_error_panic_hook::set_once();
-
         let args = args
             .as_deref()
             .map(util::from_value::<DifficultyArgs>)

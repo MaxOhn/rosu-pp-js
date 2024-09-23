@@ -36,9 +36,6 @@ impl JsBeatmap {
     /// @throws Throws an error if decoding the map failed
     #[wasm_bindgen(constructor)]
     pub fn new(args: &JsBeatmapContent) -> JsResult<JsBeatmap> {
-        #[cfg(feature = "panic_hook")]
-        console_error_panic_hook::set_once();
-
         let content = util::from_value::<BeatmapContent>(args)?;
 
         match Beatmap::from_bytes(&content.bytes) {
