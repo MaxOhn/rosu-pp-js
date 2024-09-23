@@ -371,6 +371,6 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
             }
         }
 
-        Err(JsError::from("invalid difficulty attributes"))
+        Err(JsError::new("invalid difficulty attributes"))
     }
 }

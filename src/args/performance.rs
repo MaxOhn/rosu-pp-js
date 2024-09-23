@@ -222,7 +222,7 @@ impl MapOrAttrs {
             return Ok(Self::Map(map));
         }
 
-        Err(JsError::from(
+        Err(JsError::new(
             "Expected either previously calculated attributes or a beatmap",
         ))
     }
