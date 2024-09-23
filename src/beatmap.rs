@@ -49,7 +49,7 @@ impl JsBeatmap {
                     e = src;
                 }
 
-                Err(JsError::new(content))
+                Err(JsError::new(&content))
             }
         }
     }
@@ -60,7 +60,7 @@ impl JsBeatmap {
         let mode = GameMode::from(mode);
 
         if let ConvertStatus::Incompatible = self.inner.convert_in_place(mode) {
-            return Err(JsError::new(format!(
+            return Err(JsError::new(&format!(
                 "Cannot convert {:?} to {mode:?}",
                 self.inner.mode
             )));

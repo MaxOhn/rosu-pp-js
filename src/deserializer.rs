@@ -292,7 +292,7 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
             .is_some_and(|name| name == struct_name);
 
         if !correct_classname {
-            return Err(JsError::new(format!("Expected {struct_name}")));
+            return Err(JsError::new(&format!("Expected {struct_name}")));
         }
 
         visitor.visit_map(ObjectAccess::new(obj, fields))
