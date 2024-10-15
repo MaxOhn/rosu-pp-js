@@ -4,7 +4,7 @@ use rosu_pp::{
     Performance,
 };
 use serde::de;
-use wasm_bindgen::{__rt::RefMut, prelude::wasm_bindgen, JsValue};
+use wasm_bindgen::{__rt::RcRef, prelude::wasm_bindgen, JsValue};
 
 use crate::{
     attributes::{difficulty::JsDifficultyAttributes, performance::JsPerformanceAttributes},
@@ -202,7 +202,7 @@ const _: &'static str = r#"/**
 export type MapOrAttributes = DifficultyAttributes | PerformanceAttributes | Beatmap;"#;
 
 pub enum MapOrAttrs {
-    Map(RefMut<'static, JsBeatmap>),
+    Map(RcRef<JsBeatmap>),
     Attrs(DifficultyAttributes),
 }
 
