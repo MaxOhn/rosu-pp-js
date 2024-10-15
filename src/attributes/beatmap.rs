@@ -36,8 +36,8 @@ impl JsBeatmapAttributesBuilder {
     }
 
     /// Calculate the `BeatmapAttributes`.
-    pub fn build(&self) -> JsBeatmapAttributes {
-        self.args.as_builder().build().into()
+    pub fn build(self) -> JsBeatmapAttributes {
+        self.args.into_builder().build().into()
     }
 
     #[wasm_bindgen(setter)]
