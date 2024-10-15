@@ -1,4 +1,9 @@
-# v1.1.0 (2024-07-12)
+# v1.1.1 (2024-10-15)
+
+- Stack trace for thrown errors is now preserved ([#19])
+- Fixed occasional "recursive use of an object" error when using a `Beatmap` instance multiple times ([#21])
+
+## v1.1.0 (2024-07-12)
 
 - Added a ⚠️WARNING⚠️ in the readme to call `Beatmap.free` whenever a `Beatmap` instance is no longer of use to avoid risking memory leakage.
   ```js
@@ -104,3 +109,5 @@ osu!standard, osu!taiko, and osu!mania.
 [#9]: https://github.com/MaxOhn/rosu-pp-js/pull/9
 [#14]: https://github.com/MaxOhn/rosu-pp-js/pull/14
 [#16]: https://github.com/MaxOhn/rosu-pp-js/pull/16
+[#19]: https://github.com/MaxOhn/rosu-pp-js/pull/19
+[#21]: https://github.com/MaxOhn/rosu-pp-js/pull/21
