@@ -11,7 +11,7 @@ use rosu_pp::{
     Beatmap,
 };
 use serde::de;
-use wasm_bindgen::{__rt::RefMut, convert::RefMutFromWasmAbi, prelude::wasm_bindgen};
+use wasm_bindgen::{__rt::RcRef, convert::RefFromWasmAbi, prelude::wasm_bindgen};
 
 use crate::{
     args::beatmap::{BeatmapContent, JsBeatmapContent},
@@ -127,9 +127,7 @@ impl JsBeatmap {
 }
 
 impl JsBeatmap {
-    pub fn deserialize<'de, D: de::Deserializer<'de>>(
-        d: D,
-    ) -> Result<RefMut<'static, Self>, D::Error> {
+    pub fn deserialize<'de, D: de::Deserializer<'de>>(d: D) -> Result<RcRef<Self>, D::Error> {
         struct BeatmapField;
 
         impl BeatmapField {
@@ -146,7 +144,7 @@ impl JsBeatmap {
         struct BeatmapVisitor;
 
         impl<'de> de::Visitor<'de> for BeatmapVisitor {
-            type Value = RefMut<'static, JsBeatmap>;
+            type Value = RcRef<JsBeatmap>;
 
             fn expecting(&self, f: &mut Formatter) -> FmtResult {
                 f.write_str("a Beatmap")
@@ -156,7 +154,7 @@ impl JsBeatmap {
                 map.next_key::<BeatmapField>()?;
 
                 let ptr_u32 = map.next_value::<u32>()?;
-                let instance_ref = unsafe { JsBeatmap::ref_mut_from_abi(ptr_u32) };
+                let instance_ref = unsafe { JsBeatmap::ref_from_abi(ptr_u32) };
 
                 Ok(instance_ref)
             }

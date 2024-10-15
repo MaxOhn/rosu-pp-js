@@ -3,7 +3,7 @@ use std::fmt::{Formatter, Result as FmtResult};
 use rosu_mods::GameMods;
 use rosu_pp::model::beatmap::BeatmapAttributesBuilder;
 use serde::de;
-use wasm_bindgen::{__rt::RefMut, prelude::wasm_bindgen};
+use wasm_bindgen::{__rt::RcRef, prelude::wasm_bindgen};
 
 use crate::{beatmap::JsBeatmap, mode::JsGameMode, util};
 
@@ -100,7 +100,7 @@ pub struct BeatmapAttributesArgs {
     #[serde(default)]
     pub is_convert: bool,
     #[serde(default, deserialize_with = "deser_maybe_map")]
-    pub map: Option<RefMut<'static, JsBeatmap>>,
+    pub map: Option<RcRef<JsBeatmap>>,
 }
 
 impl BeatmapAttributesArgs {
@@ -144,11 +144,11 @@ impl BeatmapAttributesArgs {
 
 fn deser_maybe_map<'de, D: de::Deserializer<'de>>(
     d: D,
-) -> Result<Option<RefMut<'static, JsBeatmap>>, D::Error> {
+) -> Result<Option<RcRef<JsBeatmap>>, D::Error> {
     struct MaybeMapVisitor;
 
     impl<'de> de::Visitor<'de> for MaybeMapVisitor {
-        type Value = Option<RefMut<'static, JsBeatmap>>;
+        type Value = Option<RcRef<JsBeatmap>>;
 
         fn expecting(&self, f: &mut Formatter) -> FmtResult {
             f.write_str("an optional Beatmap")
