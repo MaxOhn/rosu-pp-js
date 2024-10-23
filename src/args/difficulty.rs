@@ -55,12 +55,7 @@ pub struct DifficultyArgs {
 
 impl DifficultyArgs {
     pub fn to_difficulty(&self) -> Difficulty {
-        let mut difficulty = Difficulty::new();
-
-        difficulty = match self.mods.checked_bits() {
-            Some(bits) => difficulty.mods(bits),
-            None => difficulty.mods(self.mods.clone()),
-        };
+        let mut difficulty = Difficulty::new().mods(self.mods.clone());
 
         if let Some(passed_objects) = self.passed_objects {
             difficulty = difficulty.passed_objects(passed_objects);
