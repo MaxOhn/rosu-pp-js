@@ -105,7 +105,7 @@ pub struct BeatmapAttributesArgs {
 
 impl BeatmapAttributesArgs {
     pub fn into_builder(self) -> BeatmapAttributesBuilder {
-        let mut builder = BeatmapAttributesBuilder::new();
+        let mut builder = BeatmapAttributesBuilder::new().mods(self.mods.clone());
 
         if let Some(ref map) = self.map {
             builder = builder.map(&map.inner);
@@ -135,10 +135,7 @@ impl BeatmapAttributesArgs {
             builder = builder.od(od, self.od_with_mods);
         }
 
-        match self.mods.checked_bits() {
-            Some(bits) => builder.mods(bits),
-            None => builder.mods(self.mods),
-        }
+        builder
     }
 }
 
