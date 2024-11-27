@@ -28,6 +28,26 @@ export interface ScoreState {
     * Irrelevant for osu!mania.
     */
     maxCombo?: number;
+
+    /**
+    * "Large tick" hits for osu!standard.
+    *
+    * The meaning depends on the kind of score:
+    * - if set on osu!stable, this field is irrelevant and can be `0`
+    * - if set on osu!lazer *without* `CL`, this field is the amount of hit
+    *   slider ticks and repeats
+    * - if set on osu!lazer *with* `CL`, this field is the amount of hit
+    *   slider heads, ticks, and repeats
+    */
+    osuLargeTickHits?: number;
+
+    /**
+    * Amount of successfully hit slider ends.
+    *
+    * Only relevant for osu!standard in lazer.
+    */
+    sliderEndHits?: number;
+    
     /**
     * Amount of current gekis (n320 for osu!mania).
     */
@@ -57,79 +77,76 @@ export interface ScoreState {
 
 impl JsScoreState {
     pub fn deserialize<'de, D: de::Deserializer<'de>>(d: D) -> Result<ScoreState, D::Error> {
-        enum ScoreStateField {
-            MaxCombo,
-            NGeki,
-            NKatu,
-            N300,
-            N100,
-            N50,
-            Misses,
-        }
-
-        struct ScoreStateFieldVisitor;
-
-        impl<'de> de::Visitor<'de> for ScoreStateFieldVisitor {
-            type Value = ScoreStateField;
-
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                f.write_str("field identifier")
-            }
-
-            fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
-                match v {
-                    "maxCombo" => Ok(ScoreStateField::MaxCombo),
-                    "nGeki" => Ok(ScoreStateField::NGeki),
-                    "nKatu" => Ok(ScoreStateField::NKatu),
-                    "n300" => Ok(ScoreStateField::N300),
-                    "n100" => Ok(ScoreStateField::N100),
-                    "n50" => Ok(ScoreStateField::N50),
-                    "misses" => Ok(ScoreStateField::Misses),
-                    // The deserializer only forwards specified fields
-                    _ => unreachable!(),
+        macro_rules! impl_deserialize {
+            ( $( $js_field:ident: $rs_field:ident, )* ) => {{
+                #[allow(non_camel_case_types)]
+                enum ScoreStateField {
+                    $( $js_field, )*
                 }
-            }
-        }
 
-        impl<'de> de::Deserialize<'de> for ScoreStateField {
-            fn deserialize<D: de::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-                d.deserialize_identifier(ScoreStateFieldVisitor)
-            }
-        }
+                struct ScoreStateFieldVisitor;
 
-        struct ScoreStateVisitor;
+                impl<'de> de::Visitor<'de> for ScoreStateFieldVisitor {
+                    type Value = ScoreStateField;
 
-        impl<'de> de::Visitor<'de> for ScoreStateVisitor {
-            type Value = ScoreState;
+                    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                        f.write_str("field identifier")
+                    }
 
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                f.write_str("a ScoreState")
-            }
-
-            fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
-                let mut state = ScoreState::default();
-
-                while let Some(key) = map.next_key()? {
-                    match key {
-                        ScoreStateField::MaxCombo => state.max_combo = map.next_value()?,
-                        ScoreStateField::NGeki => state.n_geki = map.next_value()?,
-                        ScoreStateField::NKatu => state.n_katu = map.next_value()?,
-                        ScoreStateField::N300 => state.n300 = map.next_value()?,
-                        ScoreStateField::N100 => state.n100 = map.next_value()?,
-                        ScoreStateField::N50 => state.n50 = map.next_value()?,
-                        ScoreStateField::Misses => state.misses = map.next_value()?,
+                    fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
+                        match v {
+                            $( stringify!($js_field) => Ok(ScoreStateField::$js_field), )*
+                            // The deserializer only forwards specified fields
+                            _ => unreachable!(),
+                        }
                     }
                 }
 
-                Ok(state)
-            }
+                impl<'de> de::Deserialize<'de> for ScoreStateField {
+                    fn deserialize<D: de::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                        d.deserialize_identifier(ScoreStateFieldVisitor)
+                    }
+                }
+
+                struct ScoreStateVisitor;
+
+                impl<'de> de::Visitor<'de> for ScoreStateVisitor {
+                    type Value = ScoreState;
+
+                    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                        f.write_str("a ScoreState")
+                    }
+
+                    fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                        let mut state = ScoreState::default();
+
+                        while let Some(key) = map.next_key()? {
+                            match key {
+                                $( ScoreStateField::$js_field => state.$rs_field = map.next_value()?, )*
+                            }
+                        }
+
+                        Ok(state)
+                    }
+                }
+
+                const FIELDS: &[&str] = &[ $( stringify!($js_field), )* ];
+
+                d.deserialize_struct("Object", FIELDS, ScoreStateVisitor)
+            }};
         }
 
-        const FIELDS: &[&str] = &[
-            "maxCombo", "nGeki", "nKatu", "n300", "n100", "n50", "misses",
-        ];
-
-        d.deserialize_struct("Object", FIELDS, ScoreStateVisitor)
+        impl_deserialize! {
+            maxCombo: max_combo,
+            osuLargeTickHits: osu_large_tick_hits,
+            sliderEndHits: slider_end_hits,
+            nGeki: n_geki,
+            nKatu: n_katu,
+            n300: n300,
+            n100: n100,
+            n50: n50,
+            misses: misses,
+        }
     }
 }
 
@@ -141,6 +158,8 @@ impl From<ScoreState> for JsScoreState {
         let set = |key, value: u32| obj_as_ext.set(util::static_str_to_js(key), value.into());
 
         set("maxCombo", state.max_combo);
+        set("osuLargeTickHits", state.osu_large_tick_hits);
+        set("sliderEndHits", state.slider_end_hits);
         set("nGeki", state.n_geki);
         set("nKatu", state.n_katu);
         set("n300", state.n300);

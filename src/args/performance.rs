@@ -40,6 +40,28 @@ export interface PerformanceArgs extends DifficultyArgs {
     */
     combo?: number;
     /**
+    * The amount of "large tick" hits.
+    *
+    * Only relevant for osu!standard.
+    *
+    * The meaning depends on the kind of score:
+    * - if set on osu!stable, this value is irrelevant and can be `0`
+    * - if set on osu!lazer *without* `CL`, this value is the amount of hit
+    *   slider ticks and repeats
+    * - if set on osu!lazer *with* `CL`, this value is the amount of hit
+    *   slider heads, ticks, and repeats
+    */
+    largeTickHits?: number;
+    /**
+    * The amount of slider end hits.
+    *
+    * Only relevant for osu!standard.
+    *
+    * osu! calls this value "slider tail hits" without the classic
+    * mod and "small tick hits" with the classic mod.
+    */
+    sliderEndHits?: number;
+    /**
     * Specify the amount of gekis of a play.
     *
     * Only relevant for osu!mania for which it repesents the amount of n320.
@@ -98,8 +120,11 @@ pub struct PerformanceArgs {
     pub od_with_mods: bool,
     pub passed_objects: Option<u32>,
     pub hardrock_offsets: Option<bool>,
+    pub lazer: Option<bool>,
     pub accuracy: Option<f64>,
     pub combo: Option<u32>,
+    pub large_tick_hits: Option<u32>,
+    pub slider_end_hits: Option<u32>,
     pub n_geki: Option<u32>,
     pub n_katu: Option<u32>,
     pub n300: Option<u32>,
@@ -151,6 +176,14 @@ impl PerformanceArgs {
             perf = perf.combo(combo);
         }
 
+        if let Some(large_tick_hits) = self.large_tick_hits {
+            perf = perf.large_tick_hits(large_tick_hits);
+        }
+
+        if let Some(slider_end_hits) = self.slider_end_hits {
+            perf = perf.n_slider_ends(slider_end_hits);
+        }
+
         if let Some(n_geki) = self.n_geki {
             perf = perf.n_geki(n_geki);
         }
@@ -188,6 +221,7 @@ impl PerformanceArgs {
             od_with_mods: self.od_with_mods,
             passed_objects: self.passed_objects,
             hardrock_offsets: self.hardrock_offsets,
+            lazer: self.lazer,
         };
 
         perf.hitresult_priority(self.hitresult_priority)

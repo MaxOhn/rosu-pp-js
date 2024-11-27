@@ -157,6 +157,13 @@ export interface DifficultyArgs extends CommonArgs {
     * Only relevant for osu!catch.
     */
     hardrockOffsets?: boolean;
+    /**
+    * Whether the calculated attributes belong to an osu!lazer or osu!stable
+    * score.
+    *
+    * Defaults to `true`.
+    */
+    lazer?: boolean;
 }
 
 /**
@@ -173,6 +180,28 @@ export interface PerformanceArgs extends DifficultyArgs {
     * Irrelevant for osu!mania.
     */
     combo?: number;
+    /**
+    * The amount of "large tick" hits.
+    *
+    * Only relevant for osu!standard.
+    *
+    * The meaning depends on the kind of score:
+    * - if set on osu!stable, this value is irrelevant and can be `0`
+    * - if set on osu!lazer *without* `CL`, this value is the amount of hit
+    *   slider ticks and repeats
+    * - if set on osu!lazer *with* `CL`, this value is the amount of hit
+    *   slider heads, ticks, and repeats
+    */
+    largeTickHits?: number;
+    /**
+    * The amount of slider end hits.
+    *
+    * Only relevant for osu!standard.
+    *
+    * osu! calls this value "slider tail hits" without the classic
+    * mod and "small tick hits" with the classic mod.
+    */
+    sliderEndHits?: number;
     /**
     * Specify the amount of gekis of a play.
     *
@@ -231,6 +260,26 @@ export interface ScoreState {
     * Irrelevant for osu!mania.
     */
     maxCombo?: number;
+
+    /**
+    * "Large tick" hits for osu!standard.
+    *
+    * The meaning depends on the kind of score:
+    * - if set on osu!stable, this field is irrelevant and can be `0`
+    * - if set on osu!lazer *without* `CL`, this field is the amount of hit
+    *   slider ticks and repeats
+    * - if set on osu!lazer *with* `CL`, this field is the amount of hit
+    *   slider heads, ticks, and repeats
+    */
+    osuLargeTickHits?: number;
+
+    /**
+    * Amount of successfully hit slider ends.
+    *
+    * Only relevant for osu!standard in lazer.
+    */
+    sliderEndHits?: number;
+    
     /**
     * Amount of current gekis (n320 for osu!mania).
     */
@@ -275,10 +324,11 @@ export class Beatmap {
   constructor(args: BeatmapContent);
   /**
    * Convert a beatmap to a specific mode.
-   * @throws Throws an error if the specified mode is incompatible with the map's mode
+   * @throws Throws an error if conversion fails or mods are invalid
    * @param {GameMode} mode
+   * @param {Object | undefined} [mods]
    */
-  convert(mode: GameMode): void;
+  convert(mode: GameMode, mods?: Object): void;
   readonly ar: number;
   readonly bpm: number;
   readonly cs: number;
@@ -335,7 +385,14 @@ export class BeatmapAttributes {
  * Hit window for overall difficulty i.e. time to hit a 300 ("Great") in
  * milliseconds.
  */
-  readonly odHitWindow: number;
+  readonly odGreatHitWindow: number;
+/**
+ * Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in
+ * milliseconds.
+ *
+ * Not available for osu!mania.
+ */
+  readonly odOkHitWindow: number | undefined;
 }
 export class BeatmapAttributesBuilder {
   free(): void;
@@ -408,6 +465,7 @@ export class Difficulty {
   hardrockOffsets?: boolean;
   hp?: number;
   hpWithMods?: boolean;
+  lazer?: boolean;
   mods?: Object;
   od?: number;
   odWithMods?: boolean;
@@ -433,6 +491,12 @@ export class DifficultyAttributes {
  */
   readonly aim: number | undefined;
 /**
+ * Weighted sum of aim strains.
+ *
+ * Only available for osu!.
+ */
+  readonly aimDifficultStrainCount: number | undefined;
+/**
  * The approach rate.
  *
  * Only available for osu! and osu!catch.
@@ -456,7 +520,7 @@ export class DifficultyAttributes {
  *
  * Only available for osu!taiko and osu!mania.
  */
-  readonly hitWindow: number | undefined;
+  readonly greatHitWindow: number | undefined;
 /**
  * The health drain rate.
  *
@@ -476,6 +540,13 @@ export class DifficultyAttributes {
  */
   readonly mode: GameMode;
 /**
+ * The ratio of stamina difficulty from mono-color (single color) streams to total
+ * stamina difficulty.
+ *
+ * Only available for osu!taiko.
+ */
+  readonly monoStaminaFactor: number | undefined;
+/**
  * The amount of circles.
  *
  * Only available for osu!.
@@ -493,6 +564,25 @@ export class DifficultyAttributes {
  * Only available for osu!catch.
  */
   readonly nFruits: number | undefined;
+/**
+ * The amount of hold notes in the map.
+ *
+ * Only available for osu!mania.
+ */
+  readonly nHoldNotes: number | undefined;
+/**
+ * The amount of "large ticks".
+ *
+ * The meaning depends on the kind of score:
+ * - if set on osu!stable, this value is irrelevant
+ * - if set on osu!lazer *without* `CL`, this value is the amount of
+ *   slider ticks and repeats
+ * - if set on osu!lazer *with* `CL`, this value is the amount of slider
+ *   heads, ticks, and repeats
+ *
+ * Only available for osu!.
+ */
+  readonly nLargeTicks: number | undefined;
 /**
  * The amount of hitobjects in the map.
  *
@@ -524,6 +614,13 @@ export class DifficultyAttributes {
  */
   readonly od: number | undefined;
 /**
+ * The perceived hit window for an n100 inclusive of rate-adjusting mods
+ * (DT/HT/etc)
+ *
+ * Only available for osu!taiko.
+ */
+  readonly okHitWindow: number | undefined;
+/**
  * The difficulty of the hardest parts of the map.
  *
  * Only available for osu!taiko.
@@ -547,6 +644,12 @@ export class DifficultyAttributes {
  * Only available for osu!.
  */
   readonly speed: number | undefined;
+/**
+ * Weighted sum of speed strains.
+ *
+ * Only available for osu!.
+ */
+  readonly speedDifficultStrainCount: number | undefined;
 /**
  * The number of clickable objects weighted by difficulty.
  *
@@ -668,6 +771,8 @@ export class Performance {
   hitresultPriority?: HitResultPriority;
   hp?: number;
   hpWithMods?: boolean;
+  largeTickHits?: number;
+  lazer?: boolean;
   misses?: number;
   mods?: Object;
   n100?: number;
@@ -678,6 +783,7 @@ export class Performance {
   od?: number;
   odWithMods?: boolean;
   passedObjects?: number;
+  sliderEndHits?: number;
 }
 /**
  * The result of a performance calculation.
@@ -702,6 +808,12 @@ export class PerformanceAttributes {
  * Only available for osu! and osu!taiko.
  */
   readonly effectiveMissCount: number | undefined;
+/**
+ * Upper bound on the player's tap deviation.
+ *
+ * Only *optionally* available for osu!taiko.
+ */
+  readonly estimatedUnstableRate: number | undefined;
 /**
  * The final performance points.
  */
@@ -790,6 +902,10 @@ export class Strains {
  * Time inbetween two strains in ms.
  */
   readonly sectionLength: number;
+/**
+ * Strain peaks of the single color stamina skill in osu!taiko.
+ */
+  readonly singleColorStamina: Float64Array | undefined;
 /**
  * Strain peaks of the speed skill in osu!.
  */

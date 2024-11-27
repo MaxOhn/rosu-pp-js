@@ -54,6 +54,11 @@ pub struct JsPerformanceAttributes {
     /// Only available for osu! and osu!taiko.
     #[wasm_bindgen(js_name = "effectiveMissCount", readonly)]
     pub effective_miss_count: Option<f64>,
+    /// Upper bound on the player's tap deviation.
+    ///
+    /// Only *optionally* available for osu!taiko.
+    #[wasm_bindgen(js_name = "estimatedUnstableRate", readonly)]
+    pub estimated_unstable_rate: Option<f64>,
     /// The strain portion of the final pp.
     ///
     /// Only available for osu!taiko and osu!mania.
@@ -136,12 +141,14 @@ impl From<PerformanceAttributes> for JsPerformanceAttributes {
                 pp_acc,
                 pp_difficulty,
                 effective_miss_count,
+                estimated_unstable_rate,
             }) => Self {
                 difficulty: difficulty.into(),
                 pp,
                 pp_acc: Some(pp_acc),
                 pp_difficulty: Some(pp_difficulty),
                 effective_miss_count: Some(effective_miss_count),
+                estimated_unstable_rate,
                 ..Self::default()
             },
             PerformanceAttributes::Catch(CatchPerformanceAttributes { difficulty, pp }) => Self {

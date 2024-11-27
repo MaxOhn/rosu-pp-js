@@ -29,6 +29,13 @@ export interface DifficultyArgs extends CommonArgs {
     * Only relevant for osu!catch.
     */
     hardrockOffsets?: boolean;
+    /**
+    * Whether the calculated attributes belong to an osu!lazer or osu!stable
+    * score.
+    *
+    * Defaults to `true`.
+    */
+    lazer?: boolean;
 }"#;
 
 #[derive(Clone, Default, serde::Deserialize)]
@@ -51,6 +58,7 @@ pub struct DifficultyArgs {
     pub od_with_mods: bool,
     pub passed_objects: Option<u32>,
     pub hardrock_offsets: Option<bool>,
+    pub lazer: Option<bool>,
 }
 
 impl DifficultyArgs {
@@ -83,6 +91,10 @@ impl DifficultyArgs {
 
         if let Some(hardrock_offsets) = self.hardrock_offsets {
             difficulty = difficulty.hardrock_offsets(hardrock_offsets);
+        }
+
+        if let Some(lazer) = self.lazer {
+            difficulty = difficulty.lazer(lazer);
         }
 
         difficulty

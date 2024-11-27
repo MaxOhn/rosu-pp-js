@@ -229,8 +229,8 @@ const bytes = fs.readFileSync("/path/to/file.osu");
 // Parse the map.
 let map = new rosu.Beatmap(bytes);
 
-// Optionally convert the beatmap to a specific mode.
-map.convert(rosu.GameMode.Taiko);
+// Optionally convert the beatmap to a specific mode for optionally given mods.
+map.convert(rosu.GameMode.Mania, "6K");
 
 // Calculating performance attributes for a HDDT SS
 const maxAttrs = new rosu.Performance({ mods: 8 + 64 }).calculate(map);

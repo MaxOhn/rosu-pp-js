@@ -73,6 +73,11 @@ impl JsPerformance {
         Ok(())
     }
 
+    #[wasm_bindgen(setter)]
+    pub fn set_lazer(&mut self, lazer: Option<bool>) {
+        self.args.lazer = lazer;
+    }
+
     #[wasm_bindgen(setter = clockRate)]
     pub fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
         self.args.clock_rate = clock_rate;
@@ -136,6 +141,16 @@ impl JsPerformance {
     #[wasm_bindgen(setter)]
     pub fn set_combo(&mut self, combo: Option<u32>) {
         self.args.combo = combo;
+    }
+
+    #[wasm_bindgen(setter = largeTickHits)]
+    pub fn set_large_ticks_hits(&mut self, large_tick_hits: Option<u32>) {
+        self.args.large_tick_hits = large_tick_hits;
+    }
+
+    #[wasm_bindgen(setter = sliderEndHits)]
+    pub fn set_slider_ends_hit(&mut self, slider_end_hits: Option<u32>) {
+        self.args.slider_end_hits = slider_end_hits;
     }
 
     #[wasm_bindgen(setter = nGeki)]
