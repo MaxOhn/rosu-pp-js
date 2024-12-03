@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use js_sys::{Array, Number, Object, Reflect, Uint8Array};
+use js_sys::{Array, Number, Object, Uint8Array};
 use serde::de::{
     self,
     value::{MapDeserializer, SeqDeserializer},
@@ -275,7 +275,7 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
 
     fn deserialize_struct<V: de::Visitor<'de>>(
         self,
-        struct_name: &'static str,
+        _struct_name: &'static str,
         fields: &'static [&'static str],
         visitor: V,
     ) -> Result<V::Value, Self::Error> {
@@ -284,16 +284,6 @@ impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
         } else {
             return self.invalid_type(visitor);
         };
-
-        let constructor = Reflect::get(&self.value, &util::static_str_to_js("constructor").into())?;
-
-        let correct_classname = Reflect::get(&constructor, &util::static_str_to_js("name").into())?
-            .as_string()
-            .is_some_and(|name| name == struct_name);
-
-        if !correct_classname {
-            return Err(JsError::new(&format!("Expected {struct_name}")));
-        }
 
         visitor.visit_map(ObjectAccess::new(obj, fields))
     }
