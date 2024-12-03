@@ -38,6 +38,9 @@ pub struct JsStrains {
     /// Strain peaks of the stamina skill in osu!taiko.
     #[wasm_bindgen(readonly)]
     pub stamina: Option<Vec<f64>>,
+    /// Strain peaks of the single color stamina skill in osu!taiko.
+    #[wasm_bindgen(js_name = "singleColorStamina", readonly)]
+    pub single_color_stamina: Option<Vec<f64>>,
     /// Strain peaks of the movement skill in osu!catch.
     #[wasm_bindgen(readonly)]
     pub movement: Option<Vec<f64>>,
@@ -67,12 +70,14 @@ impl From<Strains> for JsStrains {
                 color,
                 rhythm,
                 stamina,
+                single_color_stamina,
             }) => Self {
                 mode: JsGameMode::Taiko,
                 section_len: TaikoStrains::SECTION_LEN,
                 color: Some(color),
                 rhythm: Some(rhythm),
                 stamina: Some(stamina),
+                single_color_stamina: Some(single_color_stamina),
                 ..Self::default()
             },
             Strains::Catch(CatchStrains { movement }) => Self {

@@ -69,6 +69,11 @@ impl JsDifficulty {
         Ok(())
     }
 
+    #[wasm_bindgen(setter)]
+    pub fn set_lazer(&mut self, lazer: Option<bool>) {
+        self.args.lazer = lazer;
+    }
+
     #[wasm_bindgen(setter = clockRate)]
     pub fn set_clock_rate(&mut self, clock_rate: Option<f64>) {
         self.args.clock_rate = clock_rate;

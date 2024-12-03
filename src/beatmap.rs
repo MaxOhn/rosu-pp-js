@@ -4,10 +4,7 @@ use std::{
 };
 
 use rosu_pp::{
-    model::{
-        hit_object::HitObjectKind,
-        mode::{ConvertStatus, GameMode},
-    },
+    model::{hit_object::HitObjectKind, mode::GameMode},
     Beatmap,
 };
 use serde::de;
@@ -15,7 +12,9 @@ use wasm_bindgen::{__rt::RcRef, convert::RefFromWasmAbi, prelude::wasm_bindgen};
 
 use crate::{
     args::beatmap::{BeatmapContent, JsBeatmapContent},
+    deserializer::JsDeserializer,
     mode::JsGameMode,
+    mods::JsGameMods,
     util::{self, FieldVisitor},
     JsError, JsResult,
 };
@@ -55,15 +54,19 @@ impl JsBeatmap {
     }
 
     /// Convert a beatmap to a specific mode.
-    /// @throws Throws an error if the specified mode is incompatible with the map's mode
-    pub fn convert(&mut self, mode: JsGameMode) -> JsResult<()> {
+    /// @throws Throws an error if conversion fails or mods are invalid
+    pub fn convert(&mut self, mode: JsGameMode, mods: Option<JsGameMods>) -> JsResult<()> {
+        let mods = mods
+            .as_deref()
+            .map(JsDeserializer::from_ref)
+            .map(util::deserialize_mods)
+            .transpose()?
+            .unwrap_or_default();
+
         let mode = GameMode::from(mode);
 
-        if let ConvertStatus::Incompatible = self.inner.convert_in_place(mode) {
-            return Err(JsError::new(&format!(
-                "Cannot convert {:?} to {mode:?}",
-                self.inner.mode
-            )));
+        if let Err(err) = self.inner.convert_mut(mode, &mods.into()) {
+            return Err(JsError::new(&err.to_string()));
         }
 
         Ok(())

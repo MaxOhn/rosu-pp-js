@@ -45,6 +45,16 @@ pub struct JsDifficultyAttributes {
     /// Only available for osu!.
     #[wasm_bindgen(js_name = "speedNoteCount", readonly)]
     pub speed_note_count: Option<f64>,
+    /// Weighted sum of aim strains.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "aimDifficultStrainCount", readonly)]
+    pub aim_difficult_strain_count: Option<f64>,
+    /// Weighted sum of speed strains.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "speedDifficultStrainCount", readonly)]
+    pub speed_difficult_strain_count: Option<f64>,
     /// The overall difficulty
     ///
     /// Only available for osu!.
@@ -65,6 +75,18 @@ pub struct JsDifficultyAttributes {
     /// Only available for osu!.
     #[wasm_bindgen(js_name = "nSliders", readonly)]
     pub n_sliders: Option<u32>,
+    /// The amount of "large ticks".
+    ///
+    /// The meaning depends on the kind of score:
+    /// - if set on osu!stable, this value is irrelevant
+    /// - if set on osu!lazer *without* `CL`, this value is the amount of
+    ///   slider ticks and repeats
+    /// - if set on osu!lazer *with* `CL`, this value is the amount of slider
+    ///   heads, ticks, and repeats
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "nLargeTicks", readonly)]
+    pub n_large_ticks: Option<u32>,
     /// The amount of spinners.
     ///
     /// Only available for osu!.
@@ -110,6 +132,11 @@ pub struct JsDifficultyAttributes {
     /// Only available for osu!mania.
     #[wasm_bindgen(js_name = "nObjects", readonly)]
     pub n_objects: Option<u32>,
+    /// The amount of hold notes in the map.
+    ///
+    /// Only available for osu!mania.
+    #[wasm_bindgen(js_name = "nHoldNotes", readonly)]
+    pub n_hold_notes: Option<u32>,
     /// The approach rate.
     ///
     /// Only available for osu! and osu!catch.
@@ -119,8 +146,20 @@ pub struct JsDifficultyAttributes {
     /// (DT/HT/etc)
     ///
     /// Only available for osu!taiko and osu!mania.
-    #[wasm_bindgen(js_name = "hitWindow", readonly)]
-    pub hit_window: Option<f64>,
+    #[wasm_bindgen(js_name = "greatHitWindow", readonly)]
+    pub great_hit_window: Option<f64>,
+    /// The perceived hit window for an n100 inclusive of rate-adjusting mods
+    /// (DT/HT/etc)
+    ///
+    /// Only available for osu!taiko.
+    #[wasm_bindgen(js_name = "okHitWindow", readonly)]
+    pub ok_hit_window: Option<f64>,
+    /// The ratio of stamina difficulty from mono-color (single color) streams to total
+    /// stamina difficulty.
+    ///
+    /// Only available for osu!taiko.
+    #[wasm_bindgen(js_name = "monoStaminaFactor", readonly)]
+    pub mono_stamina_factor: Option<f64>,
     /// Return the maximum combo.
     #[wasm_bindgen(js_name = "maxCombo", readonly)]
     pub max_combo: u32,
@@ -134,11 +173,14 @@ impl From<OsuDifficultyAttributes> for JsDifficultyAttributes {
             flashlight,
             slider_factor,
             speed_note_count,
+            aim_difficult_strain_count,
+            speed_difficult_strain_count,
             ar,
             od,
             hp,
             n_circles,
             n_sliders,
+            n_large_ticks,
             n_spinners,
             stars,
             max_combo,
@@ -153,11 +195,14 @@ impl From<OsuDifficultyAttributes> for JsDifficultyAttributes {
             flashlight: Some(flashlight),
             slider_factor: Some(slider_factor),
             speed_note_count: Some(speed_note_count),
+            aim_difficult_strain_count: Some(aim_difficult_strain_count),
+            speed_difficult_strain_count: Some(speed_difficult_strain_count),
             ar: Some(ar),
             od: Some(od),
             hp: Some(hp),
             n_circles: Some(n_circles),
             n_sliders: Some(n_sliders),
+            n_large_ticks: Some(n_large_ticks),
             n_spinners: Some(n_spinners),
             max_combo,
             ..Self::default()
@@ -172,7 +217,9 @@ impl From<TaikoDifficultyAttributes> for JsDifficultyAttributes {
             rhythm,
             color,
             peak,
-            hit_window,
+            great_hit_window,
+            ok_hit_window,
+            mono_stamina_factor,
             stars,
             max_combo,
             is_convert,
@@ -186,7 +233,9 @@ impl From<TaikoDifficultyAttributes> for JsDifficultyAttributes {
             rhythm: Some(rhythm),
             color: Some(color),
             peak: Some(peak),
-            hit_window: Some(hit_window),
+            great_hit_window: Some(great_hit_window),
+            ok_hit_window: Some(ok_hit_window),
+            mono_stamina_factor: Some(mono_stamina_factor),
             max_combo,
             ..Self::default()
         }
@@ -226,6 +275,7 @@ impl From<ManiaDifficultyAttributes> for JsDifficultyAttributes {
             stars,
             hit_window,
             n_objects,
+            n_hold_notes,
             max_combo,
             is_convert,
         } = attrs;
@@ -234,8 +284,9 @@ impl From<ManiaDifficultyAttributes> for JsDifficultyAttributes {
             mode: JsGameMode::Mania,
             stars,
             is_convert,
-            hit_window: Some(hit_window),
+            great_hit_window: Some(hit_window),
             n_objects: Some(n_objects),
+            n_hold_notes: Some(n_hold_notes),
             max_combo,
             ..Self::default()
         }
@@ -266,10 +317,13 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
             flashlight,
             slider_factor,
             speed_note_count,
+            aim_difficult_strain_count,
+            speed_difficult_strain_count,
             od,
             hp,
             n_circles,
             n_sliders,
+            n_large_ticks,
             n_spinners,
             stamina,
             rhythm,
@@ -279,8 +333,11 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
             n_droplets,
             n_tiny_droplets,
             n_objects,
+            n_hold_notes,
             ar,
-            hit_window,
+            great_hit_window,
+            ok_hit_window,
+            mono_stamina_factor,
             max_combo,
         } = attrs;
 
@@ -292,11 +349,14 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                     Some(flashlight),
                     Some(slider_factor),
                     Some(speed_note_count),
+                    Some(aim_difficult_strain_count),
+                    Some(speed_difficult_strain_count),
                     Some(ar),
                     Some(od),
                     Some(hp),
                     Some(n_circles),
                     Some(n_sliders),
+                    Some(n_large_ticks),
                     Some(n_spinners),
                 ) = (
                     aim,
@@ -304,11 +364,14 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                     flashlight,
                     slider_factor,
                     speed_note_count,
+                    aim_difficult_strain_count,
+                    speed_difficult_strain_count,
                     ar,
                     od,
                     hp,
                     n_circles,
                     n_sliders,
+                    n_large_ticks,
                     n_spinners,
                 ) {
                     return Ok(Self::Osu(OsuDifficultyAttributes {
@@ -317,11 +380,14 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                         flashlight,
                         slider_factor,
                         speed_note_count,
+                        aim_difficult_strain_count,
+                        speed_difficult_strain_count,
                         ar,
                         od,
                         hp,
                         n_circles,
                         n_sliders,
+                        n_large_ticks,
                         n_spinners,
                         stars,
                         max_combo,
@@ -329,15 +395,31 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                 }
             }
             JsGameMode::Taiko => {
-                if let (Some(stamina), Some(rhythm), Some(color), Some(peak), Some(hit_window)) =
-                    (stamina, rhythm, color, peak, hit_window)
-                {
+                if let (
+                    Some(stamina),
+                    Some(rhythm),
+                    Some(color),
+                    Some(peak),
+                    Some(great_hit_window),
+                    Some(ok_hit_window),
+                    Some(mono_stamina_factor),
+                ) = (
+                    stamina,
+                    rhythm,
+                    color,
+                    peak,
+                    great_hit_window,
+                    ok_hit_window,
+                    mono_stamina_factor,
+                ) {
                     return Ok(Self::Taiko(TaikoDifficultyAttributes {
                         stamina,
                         rhythm,
                         color,
                         peak,
-                        hit_window,
+                        great_hit_window,
+                        ok_hit_window,
+                        mono_stamina_factor,
                         stars,
                         max_combo,
                         is_convert,
@@ -359,11 +441,14 @@ impl TryFrom<JsDifficultyAttributes> for DifficultyAttributes {
                 }
             }
             JsGameMode::Mania => {
-                if let (Some(hit_window), Some(n_objects)) = (hit_window, n_objects) {
+                if let (Some(hit_window), Some(n_objects), Some(n_hold_notes)) =
+                    (great_hit_window, n_objects, n_hold_notes)
+                {
                     return Ok(Self::Mania(ManiaDifficultyAttributes {
                         stars,
                         hit_window,
                         n_objects,
+                        n_hold_notes,
                         max_combo,
                         is_convert,
                     }));
