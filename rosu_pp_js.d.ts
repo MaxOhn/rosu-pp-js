@@ -194,12 +194,18 @@ export interface PerformanceArgs extends DifficultyArgs {
     */
     largeTickHits?: number;
     /**
-    * The amount of slider end hits.
+    * The amount of "small tick" hits.
+    *
+    * These are essentially the slider end hits for lazer scores without
+    * slider accuracy.
     *
     * Only relevant for osu!standard.
+    */
+    smallTickHits?: number;
+    /**
+    * The amount of slider end hits.
     *
-    * osu! calls this value "slider tail hits" without the classic
-    * mod and "small tick hits" with the classic mod.
+    * Only relevant for osu!standard in lazer.
     */
     sliderEndHits?: number;
     /**
@@ -272,6 +278,16 @@ export interface ScoreState {
     *   slider heads, ticks, and repeats
     */
     osuLargeTickHits?: number;
+
+    /**
+    * "Small tick" hits for osu!standard.
+    *
+    * These are essentially the slider end hits for lazer scores without
+    * slider accuracy.
+    *
+    * Only relevant for osu!lazer.
+    */ 
+    osuSmallTickHits?: number;
 
     /**
     * Amount of successfully hit slider ends.
@@ -784,6 +800,7 @@ export class Performance {
   odWithMods?: boolean;
   passedObjects?: number;
   sliderEndHits?: number;
+  smallTickHits?: number;
 }
 /**
  * The result of a performance calculation.

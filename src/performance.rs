@@ -148,6 +148,11 @@ impl JsPerformance {
         self.args.large_tick_hits = large_tick_hits;
     }
 
+    #[wasm_bindgen(setter = smallTickHits)]
+    pub fn set_small_ticks_hits(&mut self, small_tick_hits: Option<u32>) {
+        self.args.small_tick_hits = small_tick_hits;
+    }
+
     #[wasm_bindgen(setter = sliderEndHits)]
     pub fn set_slider_ends_hit(&mut self, slider_end_hits: Option<u32>) {
         self.args.slider_end_hits = slider_end_hits;

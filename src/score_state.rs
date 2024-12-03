@@ -42,6 +42,16 @@ export interface ScoreState {
     osuLargeTickHits?: number;
 
     /**
+    * "Small tick" hits for osu!standard.
+    *
+    * These are essentially the slider end hits for lazer scores without
+    * slider accuracy.
+    *
+    * Only relevant for osu!lazer.
+    */ 
+    osuSmallTickHits?: number;
+
+    /**
     * Amount of successfully hit slider ends.
     *
     * Only relevant for osu!standard in lazer.
@@ -139,6 +149,7 @@ impl JsScoreState {
         impl_deserialize! {
             maxCombo: max_combo,
             osuLargeTickHits: osu_large_tick_hits,
+            osuSmallTickHits: osu_small_tick_hits,
             sliderEndHits: slider_end_hits,
             nGeki: n_geki,
             nKatu: n_katu,
@@ -159,6 +170,7 @@ impl From<ScoreState> for JsScoreState {
 
         set("maxCombo", state.max_combo);
         set("osuLargeTickHits", state.osu_large_tick_hits);
+        set("osuSmallTickHits", state.osu_small_tick_hits);
         set("sliderEndHits", state.slider_end_hits);
         set("nGeki", state.n_geki);
         set("nKatu", state.n_katu);

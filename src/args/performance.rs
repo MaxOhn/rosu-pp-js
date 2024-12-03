@@ -53,12 +53,18 @@ export interface PerformanceArgs extends DifficultyArgs {
     */
     largeTickHits?: number;
     /**
-    * The amount of slider end hits.
+    * The amount of "small tick" hits.
+    *
+    * These are essentially the slider end hits for lazer scores without
+    * slider accuracy.
     *
     * Only relevant for osu!standard.
+    */
+    smallTickHits?: number;
+    /**
+    * The amount of slider end hits.
     *
-    * osu! calls this value "slider tail hits" without the classic
-    * mod and "small tick hits" with the classic mod.
+    * Only relevant for osu!standard in lazer.
     */
     sliderEndHits?: number;
     /**
@@ -124,6 +130,7 @@ pub struct PerformanceArgs {
     pub accuracy: Option<f64>,
     pub combo: Option<u32>,
     pub large_tick_hits: Option<u32>,
+    pub small_tick_hits: Option<u32>,
     pub slider_end_hits: Option<u32>,
     pub n_geki: Option<u32>,
     pub n_katu: Option<u32>,
@@ -180,8 +187,12 @@ impl PerformanceArgs {
             perf = perf.large_tick_hits(large_tick_hits);
         }
 
+        if let Some(small_tick_hits) = self.small_tick_hits {
+            perf = perf.small_tick_hits(small_tick_hits);
+        }
+
         if let Some(slider_end_hits) = self.slider_end_hits {
-            perf = perf.n_slider_ends(slider_end_hits);
+            perf = perf.slider_end_hits(slider_end_hits);
         }
 
         if let Some(n_geki) = self.n_geki {
