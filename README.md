@@ -66,6 +66,9 @@ The constructor takes [an *optional* object of the form](https://github.com/MaxO
     mods?: Object,
     // Custom clock rate between 0.01 and 100
     clockRate?: number,
+    // For osu!standard and osu!mania it's important to specify whether calculations
+    // are for lazer or stable scores.
+    lazer?: boolean,
     // Custom approach rate between -20 and 20
     ar?: number,
     // Whether given `ar` should be used as is or adjusted based on mods
@@ -118,6 +121,12 @@ Calculator of [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-js/blo
     n50?: number,
     // The amount of misses
     misses?: number,
+    // The amount of "large tick" hits.
+    largeTickHits?: number,
+    // The amount of "small tick" hits.
+    smallTickHits?: number,
+    // The amount of slider end hits.
+    sliderEndHits?: number,
     // Whether good or bad hitresults should be generated to fit the given accuracy
     hitresultPriority?: HitResultPriority,
 }
@@ -164,6 +173,9 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
   n50?: number;
   nGeki?: number;
   nKatu?: number;
+  osuLargeTickHits?: number;
+  osuSmallTickHits?: number;
+  sliderEndHits?: number;
 }
 ```
 
