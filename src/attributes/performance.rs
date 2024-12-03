@@ -100,7 +100,9 @@ impl JsPerformanceAttributes {
             }
 
             fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
-                map.next_key::<DifficultyField>()?;
+                if map.next_key::<DifficultyField>()?.is_none() {
+                    return Err(de::Error::missing_field(DifficultyField::NAME));
+                }
 
                 map.next_value::<JsDifficultyAttributes>()
             }

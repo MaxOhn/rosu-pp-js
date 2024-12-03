@@ -154,7 +154,9 @@ impl JsBeatmap {
             }
 
             fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
-                map.next_key::<BeatmapField>()?;
+                if map.next_key::<BeatmapField>()?.is_none() {
+                    return Err(de::Error::custom("expected a Beatmap"));
+                }
 
                 let ptr_u32 = map.next_value::<u32>()?;
                 let instance_ref = unsafe { JsBeatmap::ref_from_abi(ptr_u32) };
