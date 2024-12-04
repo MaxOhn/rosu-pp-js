@@ -1,3 +1,42 @@
+## Upcoming
+
+Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2024-10-28-performance-points-star-rating-updates>
+
+rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v200-2024-12-03>
+
+
+- __Breaking changes:__
+  - `BeatmapAttributesBuilder.build` *consumes* the builder, meaning its instance
+    cannot be used anymore after calling the `build` method. ([#23])
+  - Renamed the field `BeatmapAttributes.odHitWindow` to `odGreatHitWindow`
+  - Renamed the field `DifficultyAttributes.hitWindow` to `greatHitWindow`
+
+- __Additions:__
+  - `Difficulty` and `Performance` now accept the field `lazer?: bool` (defaults to `true` if unspecified);
+    Performance calculation for osu!standard and osu!mania now differs between lazer and stable so this is
+    important to specify.
+  - `Performance` now accepts the fields `largeTickHits?: number`, `smallTickHits?: number`, `sliderEndHits?: number`;
+    each of them being necessary to specify for osu!standard scores on lazer.
+  - `ScoreState` now has the additional fields
+    - `osuLargeTickHits?: number`
+    - `osuSmallTickHits?: number`
+    - `sliderEndHits?: number`
+  - The method `Beatmap.convert` now takes an optional second argument for gamemods
+  - Added the field `BeatmapAttributes.odOkHitWindow`
+  - Added fields to `DifficultyAttributes`:
+    - `aimDifficultStrainCount` (osu!standard)
+    - `speedDifficultStrainCount` (osu!standard)
+    - `monoStaminaFactor` (osu!taiko)
+    - `nHoldNotes` (osu!mania)
+    - `nLargeTicks` (osu!standard)
+    - `okHitWindow` (osu!taiko)
+  - Added the field `PerformanceAttributes.estimatedUnstableRate` (osu!taiko)
+  - Added the field `Strains.singleColorStamina` (osu!taiko)
+
+- __Fixes:__
+  - Mod settings of legacy mods are now considered correctly ([#24] & [#25])
+  - The type name is no longer checked when deserializing JS objects ([#27])
+
 # v1.1.1 (2024-10-15)
 
 - Stack trace for thrown errors is now preserved ([#19])
@@ -111,3 +150,7 @@ osu!standard, osu!taiko, and osu!mania.
 [#16]: https://github.com/MaxOhn/rosu-pp-js/pull/16
 [#19]: https://github.com/MaxOhn/rosu-pp-js/pull/19
 [#21]: https://github.com/MaxOhn/rosu-pp-js/pull/21
+[#23]: https://github.com/MaxOhn/rosu-pp-js/pull/23
+[#24]: https://github.com/MaxOhn/rosu-pp-js/pull/24
+[#25]: https://github.com/MaxOhn/rosu-pp-js/pull/25
+[#27]: https://github.com/MaxOhn/rosu-pp-js/pull/27
