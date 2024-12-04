@@ -319,7 +319,7 @@ $ npm install rosu-pp-js
 or
 
 ```sh
-$ npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/v1.1.1/rosu_pp_js_nodejs.tar.gz
+$ npm install https://github.com/MaxOhn/rosu-pp-js/releases/download/v2.0.0/rosu_pp_js_nodejs.tar.gz
 ```
 
 Note that apart from the `*_nodejs` version, the release page also includes `*_web` and `*_bundler` versions.

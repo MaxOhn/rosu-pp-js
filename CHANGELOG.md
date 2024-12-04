@@ -1,4 +1,4 @@
-## Upcoming
+# v2.0.0 (2024-12-04)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2024-10-28-performance-points-star-rating-updates>
 
@@ -37,7 +37,7 @@ rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v20
   - Mod settings of legacy mods are now considered correctly ([#24] & [#25])
   - The type name is no longer checked when deserializing JS objects ([#27])
 
-# v1.1.1 (2024-10-15)
+## v1.1.1 (2024-10-15)
 
 - Stack trace for thrown errors is now preserved ([#19])
 - Fixed occasional "recursive use of an object" error when using a `Beatmap` instance multiple times ([#21])
