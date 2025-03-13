@@ -6,12 +6,12 @@ use std::{
 };
 
 use js_sys::JsString;
-use rosu_mods::{serde::GameModsSeed, GameMods};
+use rosu_mods::{GameMods, serde::GameModsSeed};
 use serde::{
-    de::{self, DeserializeSeed},
     Deserializer,
+    de::{self, DeserializeSeed},
 };
-use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
+use wasm_bindgen::prelude::{JsValue, wasm_bindgen};
 
 use crate::JsResult;
 
@@ -81,7 +81,7 @@ impl FieldVisitor {
     }
 }
 
-impl<'de> de::Visitor<'de> for FieldVisitor {
+impl de::Visitor<'_> for FieldVisitor {
     type Value = ();
 
     fn expecting(&self, f: &mut Formatter) -> FmtResult {

@@ -2,13 +2,12 @@ use std::borrow::Cow;
 
 use js_sys::{Array, Number, Object, Uint8Array};
 use serde::de::{
-    self,
+    self, IntoDeserializer,
     value::{MapDeserializer, SeqDeserializer},
-    IntoDeserializer,
 };
 use wasm_bindgen::prelude::*;
 
-use crate::{util, JsError, JsResult};
+use crate::{JsError, JsResult, util};
 
 /// Largely references `serde_wasm_bindgen`'s deserializer.
 pub struct JsDeserializer<'js> {
@@ -100,7 +99,7 @@ impl<'js> JsDeserializer<'js> {
     }
 }
 
-impl<'de, 'js> de::Deserializer<'de> for JsDeserializer<'js> {
+impl<'de> de::Deserializer<'de> for JsDeserializer<'_> {
     type Error = JsError;
 
     fn deserialize_any<V: de::Visitor<'de>>(self, visitor: V) -> Result<V::Value, Self::Error> {

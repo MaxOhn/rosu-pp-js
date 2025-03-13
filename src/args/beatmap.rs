@@ -27,7 +27,7 @@ impl<'de> de::Deserialize<'de> for BeatmapContent {
     fn deserialize<D: de::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         struct BeatmapContentVisitor;
 
-        impl<'de> de::Visitor<'de> for BeatmapContentVisitor {
+        impl de::Visitor<'_> for BeatmapContentVisitor {
             type Value = BeatmapContent;
 
             fn expecting(&self, f: &mut Formatter) -> FmtResult {
