@@ -98,17 +98,13 @@ impl de::Visitor<'_> for FieldVisitor {
 }
 
 pub fn deserialize_mods<'de, 'a, D: Deserializer<'de>>(d: D) -> Result<GameMods, D::Error> {
-    // To add some resistance against future field changes (like for
-    // `SuddenDeathOsu::fail_on_slider_tail` which was only added later on), we
-    // want to allow unknown fields.
-    // Using `GameModsSeed::AllowMultipleModes` would then always deserialize
-    // `DA` into its osu! variant which would be incorrect for the osu!taiko
-    // version where `scroll_speed` is modified so we can't use that. Since the
-    // mode is also unknown at this point, the only option left is
-    // `SameModeForEachMod`.
+    // If `deny_unknown_fields` was set to `false`, mods like
+    // `DifficultyAdjustTaiko { scroll_speed, .. }` would generally be
+    // deserialized by ignoring the `scroll_speed` setting so we have to set
+    // it to `true` and risk breakage on future changes unfortunately.
     DeserializeSeed::deserialize(
         GameModsSeed::SameModeForEachMod {
-            deny_unknown_fields: false,
+            deny_unknown_fields: true,
         },
         d,
     )
