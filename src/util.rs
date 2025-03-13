@@ -98,5 +98,14 @@ impl de::Visitor<'_> for FieldVisitor {
 }
 
 pub fn deserialize_mods<'de, 'a, D: Deserializer<'de>>(d: D) -> Result<GameMods, D::Error> {
-    DeserializeSeed::deserialize(GameModsSeed::AllowMultipleModes, d)
+    // If `deny_unknown_fields` was set to `false`, mods like
+    // `DifficultyAdjustTaiko { scroll_speed, .. }` would generally be
+    // deserialized by ignoring the `scroll_speed` setting so we have to set
+    // it to `true` and risk breakage on future changes unfortunately.
+    DeserializeSeed::deserialize(
+        GameModsSeed::SameModeForEachMod {
+            deny_unknown_fields: true,
+        },
+        d,
+    )
 }
