@@ -1,13 +1,14 @@
-use rosu_pp::model::beatmap::BeatmapAttributes;
+use rosu_pp::model::beatmap::{BeatmapAttributes, HitWindows};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
+    JsResult,
     args::beatmap::{BeatmapAttributesArgs, JsBeatmapAttributesArgs},
     beatmap::JsBeatmap,
     deserializer::JsDeserializer,
     mode::JsGameMode,
     mods::JsGameMods,
-    util, JsResult,
+    util,
 };
 
 #[wasm_bindgen(js_name = BeatmapAttributesBuilder)]
@@ -149,19 +150,41 @@ pub struct JsBeatmapAttributes {
     /// Not available for osu!mania.
     #[wasm_bindgen(js_name = "odOkHitWindow", readonly)]
     pub od_ok_hitwindow: Option<f64>,
+    /// Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in
+    /// milliseconds.
+    ///
+    /// Only available for osu!.
+    #[wasm_bindgen(js_name = "odMehHitWindow", readonly)]
+    pub od_meh_hitwindow: Option<f64>,
 }
 
 impl From<BeatmapAttributes> for JsBeatmapAttributes {
     fn from(attrs: BeatmapAttributes) -> Self {
+        let BeatmapAttributes {
+            ar,
+            od,
+            cs,
+            hp,
+            clock_rate,
+            hit_windows:
+                HitWindows {
+                    ar: ar_hit_window,
+                    od_great: od_great_hit_window,
+                    od_ok: od_ok_hit_window,
+                    od_meh: od_meh_hit_window,
+                },
+        } = attrs;
+
         Self {
-            ar: attrs.ar,
-            od: attrs.od,
-            cs: attrs.cs,
-            hp: attrs.hp,
-            clock_rate: attrs.clock_rate,
-            ar_hitwindow: attrs.hit_windows.ar,
-            od_great_hitwindow: attrs.hit_windows.od_great,
-            od_ok_hitwindow: attrs.hit_windows.od_ok,
+            ar,
+            od,
+            cs,
+            hp,
+            clock_rate,
+            ar_hitwindow: ar_hit_window,
+            od_great_hitwindow: od_great_hit_window,
+            od_ok_hitwindow: od_ok_hit_window,
+            od_meh_hitwindow: od_meh_hit_window,
         }
     }
 }
