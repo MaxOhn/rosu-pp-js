@@ -335,35 +335,33 @@ export class Beatmap {
   /**
    * Create a new beatmap instance by parsing an `.osu` file's content.
    * @throws Throws an error if decoding the map failed
-   * @param {BeatmapContent} args
    */
   constructor(args: BeatmapContent);
   /**
    * Convert a beatmap to a specific mode.
    * @throws Throws an error if conversion fails or mods are invalid
-   * @param {GameMode} mode
-   * @param {Object | undefined} [mods]
    */
-  convert(mode: GameMode, mods?: Object): void;
-  readonly ar: number;
+  convert(mode: GameMode, mods?: Object | null): void;
   readonly bpm: number;
-  readonly cs: number;
-  readonly hp: number;
-  readonly isConvert: boolean;
   readonly mode: GameMode;
   readonly nBreaks: number;
-  readonly nCircles: number;
-  readonly nHolds: number;
   readonly nObjects: number;
+  readonly nCircles: number;
   readonly nSliders: number;
   readonly nSpinners: number;
+  readonly nHolds: number;
+  readonly version: number;
+  readonly isConvert: boolean;
+  readonly stackLeniency: number;
+  readonly ar: number;
+  readonly cs: number;
+  readonly hp: number;
   readonly od: number;
   readonly sliderMultiplier: number;
   readonly sliderTickRate: number;
-  readonly stackLeniency: number;
-  readonly version: number;
 }
 export class BeatmapAttributes {
+  private constructor();
 /**
 ** Return copy of self without private attributes.
 */
@@ -373,68 +371,73 @@ export class BeatmapAttributes {
 */
   toString(): string;
   free(): void;
-/**
- * The approach rate.
- */
+  /**
+   * The approach rate.
+   */
   readonly ar: number;
-/**
- * Hit window for approach rate i.e. TimePreempt in milliseconds.
- */
-  readonly arHitWindow: number;
-/**
- * The clock rate with respect to mods.
- */
-  readonly clockRate: number;
-/**
- * The circle size.
- */
-  readonly cs: number;
-/**
- * The health drain rate
- */
-  readonly hp: number;
-/**
- * The overall difficulty.
- */
+  /**
+   * The overall difficulty.
+   */
   readonly od: number;
-/**
- * Hit window for overall difficulty i.e. time to hit a 300 ("Great") in
- * milliseconds.
- */
+  /**
+   * The circle size.
+   */
+  readonly cs: number;
+  /**
+   * The health drain rate
+   */
+  readonly hp: number;
+  /**
+   * The clock rate with respect to mods.
+   */
+  readonly clockRate: number;
+  /**
+   * Hit window for approach rate i.e. TimePreempt in milliseconds.
+   */
+  readonly arHitWindow: number;
+  /**
+   * Hit window for overall difficulty i.e. time to hit a 300 ("Great") in
+   * milliseconds.
+   */
   readonly odGreatHitWindow: number;
-/**
- * Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in
- * milliseconds.
- *
- * Not available for osu!mania.
- */
+  /**
+   * Hit window for overall difficulty i.e. time to hit a 100 ("Ok") in
+   * milliseconds.
+   *
+   * Not available for osu!mania.
+   */
   readonly odOkHitWindow: number | undefined;
+  /**
+   * Hit window for overall difficulty i.e. time to hit a 50 ("Meh") in
+   * milliseconds.
+   *
+   * Only available for osu!.
+   */
+  readonly odMehHitWindow: number | undefined;
 }
 export class BeatmapAttributesBuilder {
   free(): void;
   /**
    * Create a new `BeatmapAttributesBuilder`.
-   * @param {BeatmapAttributesArgs | undefined} [args]
    */
-  constructor(args?: BeatmapAttributesArgs);
+  constructor(args?: BeatmapAttributesArgs | null);
   /**
    * Calculate the `BeatmapAttributes`.
-   * @returns {BeatmapAttributes}
    */
   build(): BeatmapAttributes;
-  ar?: number;
-  arWithMods?: boolean;
-  clockRate?: number;
-  cs?: number;
-  csWithMods?: boolean;
-  hp?: number;
-  hpWithMods?: boolean;
-  isConvert?: boolean;
-  map?: Beatmap;
-  mode?: GameMode;
-  mods?: Object;
-  od?: number;
-  odWithMods?: boolean;
+  set mods(value: Object | null | undefined);
+  set clockRate(value: number | null | undefined);
+  set ar(value: number | null | undefined);
+  set arWithMods(value: boolean | null | undefined);
+  set cs(value: number | null | undefined);
+  set csWithMods(value: boolean | null | undefined);
+  set hp(value: number | null | undefined);
+  set hpWithMods(value: boolean | null | undefined);
+  set od(value: number | null | undefined);
+  set odWithMods(value: boolean | null | undefined);
+  set mode(value: GameMode | null | undefined);
+  set isConvert(value: boolean | null | undefined);
+  set map(value: Beatmap | null | undefined);
 }
 /**
  * Builder for a difficulty calculation.
@@ -443,13 +446,10 @@ export class Difficulty {
   free(): void;
   /**
    * Create a new difficulty calculator.
-   * @param {DifficultyArgs | undefined} [args]
    */
-  constructor(args?: DifficultyArgs);
+  constructor(args?: DifficultyArgs | null);
   /**
    * Perform the difficulty calculation.
-   * @param {Beatmap} map
-   * @returns {DifficultyAttributes}
    */
   calculate(map: Beatmap): DifficultyAttributes;
   /**
@@ -457,40 +457,35 @@ export class Difficulty {
    * values, return them as is.
    *
    * Suitable to plot the difficulty over time.
-   * @param {Beatmap} map
-   * @returns {Strains}
    */
   strains(map: Beatmap): Strains;
   /**
    * Returns a gradual difficulty calculator for the current difficulty settings.
-   * @param {Beatmap} map
-   * @returns {GradualDifficulty}
    */
   gradualDifficulty(map: Beatmap): GradualDifficulty;
   /**
    * Returns a gradual performance calculator for the current difficulty settings.
-   * @param {Beatmap} map
-   * @returns {GradualPerformance}
    */
   gradualPerformance(map: Beatmap): GradualPerformance;
-  ar?: number;
-  arWithMods?: boolean;
-  clockRate?: number;
-  cs?: number;
-  csWithMods?: boolean;
-  hardrockOffsets?: boolean;
-  hp?: number;
-  hpWithMods?: boolean;
-  lazer?: boolean;
-  mods?: Object;
-  od?: number;
-  odWithMods?: boolean;
-  passedObjects?: number;
+  set mods(value: Object | null | undefined);
+  set lazer(value: boolean | null | undefined);
+  set clockRate(value: number | null | undefined);
+  set ar(value: number | null | undefined);
+  set arWithMods(value: boolean | null | undefined);
+  set cs(value: number | null | undefined);
+  set csWithMods(value: boolean | null | undefined);
+  set hp(value: number | null | undefined);
+  set hpWithMods(value: boolean | null | undefined);
+  set od(value: number | null | undefined);
+  set odWithMods(value: boolean | null | undefined);
+  set passedObjects(value: number | null | undefined);
+  set hardrockOffsets(value: boolean | null | undefined);
 }
 /**
  * The result of a difficulty calculation.
  */
 export class DifficultyAttributes {
+  private constructor();
 /**
 ** Return copy of self without private attributes.
 */
@@ -500,202 +495,204 @@ export class DifficultyAttributes {
 */
   toString(): string;
   free(): void;
-/**
- * The difficulty of the aim skill.
- *
- * Only available for osu!.
- */
-  readonly aim: number | undefined;
-/**
- * Weighted sum of aim strains.
- *
- * Only available for osu!.
- */
-  readonly aimDifficultStrainCount: number | undefined;
-/**
- * The approach rate.
- *
- * Only available for osu! and osu!catch.
- */
-  readonly ar: number | undefined;
-/**
- * The difficulty of the color skill.
- *
- * Only available for osu!taiko.
- */
-  readonly color: number | undefined;
-/**
- * The difficulty of the flashlight skill.
- *
- * Only available for osu!.
- */
-  readonly flashlight: number | undefined;
-/**
- * The perceived hit window for an n300 inclusive of rate-adjusting mods
- * (DT/HT/etc)
- *
- * Only available for osu!taiko and osu!mania.
- */
-  readonly greatHitWindow: number | undefined;
-/**
- * The health drain rate.
- *
- * Only available for osu!.
- */
-  readonly hp: number | undefined;
-/**
- * Whether the map was a convert i.e. an osu! map.
- */
-  readonly isConvert: boolean;
-/**
- * Return the maximum combo.
- */
-  readonly maxCombo: number;
-/**
- * The attributes' gamemode.
- */
+  /**
+   * The attributes' gamemode.
+   */
   readonly mode: GameMode;
-/**
- * The ratio of stamina difficulty from mono-color (single color) streams to total
- * stamina difficulty.
- *
- * Only available for osu!taiko.
- */
-  readonly monoStaminaFactor: number | undefined;
-/**
- * The amount of circles.
- *
- * Only available for osu!.
- */
-  readonly nCircles: number | undefined;
-/**
- * The amount of droplets.
- *
- * Only available for osu!catch.
- */
-  readonly nDroplets: number | undefined;
-/**
- * The amount of fruits.
- *
- * Only available for osu!catch.
- */
-  readonly nFruits: number | undefined;
-/**
- * The amount of hold notes in the map.
- *
- * Only available for osu!mania.
- */
-  readonly nHoldNotes: number | undefined;
-/**
- * The amount of "large ticks".
- *
- * The meaning depends on the kind of score:
- * - if set on osu!stable, this value is irrelevant
- * - if set on osu!lazer *without* `CL`, this value is the amount of
- *   slider ticks and repeats
- * - if set on osu!lazer *with* `CL`, this value is the amount of slider
- *   heads, ticks, and repeats
- *
- * Only available for osu!.
- */
-  readonly nLargeTicks: number | undefined;
-/**
- * The amount of hitobjects in the map.
- *
- * Only available for osu!mania.
- */
-  readonly nObjects: number | undefined;
-/**
- * The amount of sliders.
- *
- * Only available for osu!.
- */
-  readonly nSliders: number | undefined;
-/**
- * The amount of spinners.
- *
- * Only available for osu!.
- */
-  readonly nSpinners: number | undefined;
-/**
- * The amount of tiny droplets.
- *
- * Only available for osu!catch.
- */
-  readonly nTinyDroplets: number | undefined;
-/**
- * The overall difficulty
- *
- * Only available for osu!.
- */
-  readonly od: number | undefined;
-/**
- * The perceived hit window for an n100 inclusive of rate-adjusting mods
- * (DT/HT/etc)
- *
- * Only available for osu!taiko.
- */
-  readonly okHitWindow: number | undefined;
-/**
- * The difficulty of the hardest parts of the map.
- *
- * Only available for osu!taiko.
- */
-  readonly peak: number | undefined;
-/**
- * The difficulty of the rhythm skill.
- *
- * Only available for osu!taiko.
- */
-  readonly rhythm: number | undefined;
-/**
- * The ratio of the aim strain with and without considering sliders
- *
- * Only available for osu!.
- */
-  readonly sliderFactor: number | undefined;
-/**
- * The difficulty of the speed skill.
- *
- * Only available for osu!.
- */
-  readonly speed: number | undefined;
-/**
- * Weighted sum of speed strains.
- *
- * Only available for osu!.
- */
-  readonly speedDifficultStrainCount: number | undefined;
-/**
- * The number of clickable objects weighted by difficulty.
- *
- * Only available for osu!.
- */
-  readonly speedNoteCount: number | undefined;
-/**
- * The difficulty of the stamina skill.
- *
- * Only available for osu!taiko.
- */
-  readonly stamina: number | undefined;
-/**
- * The final star rating.
- */
+  /**
+   * The final star rating.
+   */
   readonly stars: number;
+  /**
+   * Whether the map was a convert i.e. an osu! map.
+   */
+  readonly isConvert: boolean;
+  /**
+   * The difficulty of the aim skill.
+   *
+   * Only available for osu!.
+   */
+  readonly aim: number | undefined;
+  /**
+   * The number of sliders weighted by difficulty.
+   *
+   * Only available for osu!.
+   */
+  readonly aim_difficult_slider_count: number | undefined;
+  /**
+   * The difficulty of the speed skill.
+   *
+   * Only available for osu!.
+   */
+  readonly speed: number | undefined;
+  /**
+   * The difficulty of the flashlight skill.
+   *
+   * Only available for osu!.
+   */
+  readonly flashlight: number | undefined;
+  /**
+   * The ratio of the aim strain with and without considering sliders
+   *
+   * Only available for osu!.
+   */
+  readonly sliderFactor: number | undefined;
+  /**
+   * The number of clickable objects weighted by difficulty.
+   *
+   * Only available for osu!.
+   */
+  readonly speedNoteCount: number | undefined;
+  /**
+   * Weighted sum of aim strains.
+   *
+   * Only available for osu!.
+   */
+  readonly aimDifficultStrainCount: number | undefined;
+  /**
+   * Weighted sum of speed strains.
+   *
+   * Only available for osu!.
+   */
+  readonly speedDifficultStrainCount: number | undefined;
+  /**
+   * The health drain rate.
+   *
+   * Only available for osu!.
+   */
+  readonly hp: number | undefined;
+  /**
+   * The amount of circles.
+   *
+   * Only available for osu!.
+   */
+  readonly nCircles: number | undefined;
+  /**
+   * The amount of sliders.
+   *
+   * Only available for osu!.
+   */
+  readonly nSliders: number | undefined;
+  /**
+   * The amount of "large ticks".
+   *
+   * The meaning depends on the kind of score:
+   * - if set on osu!stable, this value is irrelevant
+   * - if set on osu!lazer *with* slider accuracy, this value is the amount
+   *   of hit slider ticks and repeats
+   * - if set on osu!lazer *without* slider accuracy, this value is the
+   *   amount of hit slider heads, ticks, and repeats
+   *
+   * Only available for osu!.
+   */
+  readonly nLargeTicks: number | undefined;
+  /**
+   * The amount of spinners.
+   *
+   * Only available for osu!.
+   */
+  readonly nSpinners: number | undefined;
+  /**
+   * The difficulty of the stamina skill.
+   *
+   * Only available for osu!taiko.
+   */
+  readonly stamina: number | undefined;
+  /**
+   * The difficulty of the rhythm skill.
+   *
+   * Only available for osu!taiko.
+   */
+  readonly rhythm: number | undefined;
+  /**
+   * The difficulty of the color skill.
+   *
+   * Only available for osu!taiko.
+   */
+  readonly color: number | undefined;
+  /**
+   * The difficulty of the reading skill.
+   *
+   * Only available for osu!taiko.
+   */
+  readonly reading: number | undefined;
+  /**
+   * The amount of fruits.
+   *
+   * Only available for osu!catch.
+   */
+  readonly nFruits: number | undefined;
+  /**
+   * The amount of droplets.
+   *
+   * Only available for osu!catch.
+   */
+  readonly nDroplets: number | undefined;
+  /**
+   * The amount of tiny droplets.
+   *
+   * Only available for osu!catch.
+   */
+  readonly nTinyDroplets: number | undefined;
+  /**
+   * The amount of hitobjects in the map.
+   *
+   * Only available for osu!mania.
+   */
+  readonly nObjects: number | undefined;
+  /**
+   * The amount of hold notes in the map.
+   *
+   * Only available for osu!mania.
+   */
+  readonly nHoldNotes: number | undefined;
+  /**
+   * The approach rate.
+   *
+   * Only available for osu! and osu!catch.
+   */
+  readonly ar: number | undefined;
+  /**
+   * The perceived hit window for an n300 inclusive of rate-adjusting mods
+   * (DT/HT/etc)
+   *
+   * Only available for osu! and osu!taiko.
+   */
+  readonly greatHitWindow: number | undefined;
+  /**
+   * The perceived hit window for an n100 inclusive of rate-adjusting mods
+   * (DT/HT/etc)
+   *
+   * Only available for osu! and osu!taiko.
+   */
+  readonly okHitWindow: number | undefined;
+  /**
+   * The perceived hit window for an n50 inclusive of rate-adjusting mods
+   * (DT/HT/etc)
+   *
+   * Only available for osu!.
+   */
+  readonly mehHitWindow: number | undefined;
+  /**
+   * The ratio of stamina difficulty from mono-color (single color) streams to total
+   * stamina difficulty.
+   *
+   * Only available for osu!taiko.
+   */
+  readonly monoStaminaFactor: number | undefined;
+  /**
+   * Return the maximum combo.
+   */
+  readonly maxCombo: number;
 }
 /**
  * Gradually calculate difficulty attributes after each hitobject.
  */
 export class GradualDifficulty {
   free(): void;
-  /**
-   * @param {Difficulty} difficulty
-   * @param {Beatmap} map
-   */
   constructor(difficulty: Difficulty, map: Beatmap);
   /**
    * Advances the iterator and returns the next attributes.
-   * @returns {DifficultyAttributes | undefined}
    */
   next(): DifficultyAttributes | undefined;
   /**
@@ -703,19 +700,16 @@ export class GradualDifficulty {
    *
    * Note that the count starts from zero, so `nth(0)` returns the first
    * value, `nth(1)` the second, and so on.
-   * @param {number} n
-   * @returns {DifficultyAttributes | undefined}
    */
   nth(n: number): DifficultyAttributes | undefined;
   /**
    * Advances the iterator to the end to collect all remaining attributes
    * into a list and return them.
-   * @returns {(DifficultyAttributes)[]}
    */
-  collect(): (DifficultyAttributes)[];
-/**
- * Returns the amount of remaining items.
- */
+  collect(): DifficultyAttributes[];
+  /**
+   * Returns the amount of remaining items.
+   */
   readonly nRemaining: number;
 }
 /**
@@ -723,16 +717,10 @@ export class GradualDifficulty {
  */
 export class GradualPerformance {
   free(): void;
-  /**
-   * @param {Difficulty} difficulty
-   * @param {Beatmap} map
-   */
   constructor(difficulty: Difficulty, map: Beatmap);
   /**
    * Process the next hit object and calculate the performance attributes
    * for the resulting score state.
-   * @param {ScoreState} state
-   * @returns {PerformanceAttributes | undefined}
    */
   next(state: ScoreState): PerformanceAttributes | undefined;
   /**
@@ -741,14 +729,11 @@ export class GradualPerformance {
    *
    * Note that the count is zero-indexed, so `n=0` will process 1 object,
    * `n=1` will process 2, and so on.
-   * @param {ScoreState} state
-   * @param {number} n
-   * @returns {PerformanceAttributes | undefined}
    */
   nth(state: ScoreState, n: number): PerformanceAttributes | undefined;
-/**
- * Returns the amount of remaining items.
- */
+  /**
+   * Returns the amount of remaining items.
+   */
   readonly nRemaining: number;
 }
 /**
@@ -758,9 +743,8 @@ export class Performance {
   free(): void;
   /**
    * Create a new performance calculator.
-   * @param {PerformanceArgs | undefined} [args]
    */
-  constructor(args?: PerformanceArgs);
+  constructor(args?: PerformanceArgs | null);
   /**
    * Calculate performance attributes.
    *
@@ -772,40 +756,39 @@ export class Performance {
    * However, be careful that the passed attributes have been calculated
    * for the same difficulty settings like mods, clock rate, beatmap,
    * custom ar, ... otherwise the final attributes will be incorrect.
-   * @param {MapOrAttributes} args
-   * @returns {PerformanceAttributes}
    */
   calculate(args: MapOrAttributes): PerformanceAttributes;
-  accuracy?: number;
-  ar?: number;
-  arWithMods?: boolean;
-  clockRate?: number;
-  combo?: number;
-  cs?: number;
-  csWithMods?: boolean;
-  hardrockOffsets?: boolean;
-  hitresultPriority?: HitResultPriority;
-  hp?: number;
-  hpWithMods?: boolean;
-  largeTickHits?: number;
-  lazer?: boolean;
-  misses?: number;
-  mods?: Object;
-  n100?: number;
-  n300?: number;
-  n50?: number;
-  nGeki?: number;
-  nKatu?: number;
-  od?: number;
-  odWithMods?: boolean;
-  passedObjects?: number;
-  sliderEndHits?: number;
-  smallTickHits?: number;
+  set mods(value: Object | null | undefined);
+  set lazer(value: boolean | null | undefined);
+  set clockRate(value: number | null | undefined);
+  set ar(value: number | null | undefined);
+  set arWithMods(value: boolean | null | undefined);
+  set cs(value: number | null | undefined);
+  set csWithMods(value: boolean | null | undefined);
+  set hp(value: number | null | undefined);
+  set hpWithMods(value: boolean | null | undefined);
+  set od(value: number | null | undefined);
+  set odWithMods(value: boolean | null | undefined);
+  set passedObjects(value: number | null | undefined);
+  set hardrockOffsets(value: boolean | null | undefined);
+  set accuracy(value: number | null | undefined);
+  set combo(value: number | null | undefined);
+  set largeTickHits(value: number | null | undefined);
+  set smallTickHits(value: number | null | undefined);
+  set sliderEndHits(value: number | null | undefined);
+  set nGeki(value: number | null | undefined);
+  set nKatu(value: number | null | undefined);
+  set n300(value: number | null | undefined);
+  set n100(value: number | null | undefined);
+  set n50(value: number | null | undefined);
+  set misses(value: number | null | undefined);
+  set hitresultPriority(value: HitResultPriority | null | undefined);
 }
 /**
  * The result of a performance calculation.
  */
 export class PerformanceAttributes {
+  private constructor();
 /**
 ** Return copy of self without private attributes.
 */
@@ -815,62 +798,68 @@ export class PerformanceAttributes {
 */
   toString(): string;
   free(): void;
-/**
- * The difficulty attributes.
- */
+  /**
+   * The difficulty attributes.
+   */
   readonly difficulty: DifficultyAttributes;
-/**
- * Scaled miss count based on total hits.
- *
- * Only available for osu! and osu!taiko.
- */
-  readonly effectiveMissCount: number | undefined;
-/**
- * Upper bound on the player's tap deviation.
- *
- * Only *optionally* available for osu!taiko.
- */
-  readonly estimatedUnstableRate: number | undefined;
-/**
- * The final performance points.
- */
-  readonly pp: number;
-/**
- * The accuracy portion of the final pp.
- *
- * Only available for osu! and osu!taiko.
- */
-  readonly ppAccuracy: number | undefined;
-/**
- * The aim portion of the final pp.
- *
- * Only available for osu!.
- */
-  readonly ppAim: number | undefined;
-/**
- * The strain portion of the final pp.
- *
- * Only available for osu!taiko and osu!mania.
- */
-  readonly ppDifficulty: number | undefined;
-/**
- * The flashlight portion of the final pp.
- *
- * Only available for osu!.
- */
-  readonly ppFlashlight: number | undefined;
-/**
- * The speed portion of the final pp.
- *
- * Only available for osu!.
- */
-  readonly ppSpeed: number | undefined;
-/**
- * The hitresult score state that was used for performance calculation.
- *
- * Only available if *not* created through gradual calculation.
- */
+  /**
+   * The hitresult score state that was used for performance calculation.
+   *
+   * Only available if *not* created through gradual calculation.
+   */
   readonly state: ScoreState | undefined;
+  /**
+   * The final performance points.
+   */
+  readonly pp: number;
+  /**
+   * The aim portion of the final pp.
+   *
+   * Only available for osu!.
+   */
+  readonly ppAim: number | undefined;
+  /**
+   * The flashlight portion of the final pp.
+   *
+   * Only available for osu!.
+   */
+  readonly ppFlashlight: number | undefined;
+  /**
+   * The speed portion of the final pp.
+   *
+   * Only available for osu!.
+   */
+  readonly ppSpeed: number | undefined;
+  /**
+   * The accuracy portion of the final pp.
+   *
+   * Only available for osu! and osu!taiko.
+   */
+  readonly ppAccuracy: number | undefined;
+  /**
+   * Scaled miss count based on total hits.
+   *
+   * Only available for osu! and osu!taiko.
+   */
+  readonly effectiveMissCount: number | undefined;
+  /**
+   * Upper bound on the player's tap deviation.
+   *
+   * Only *optionally* available for osu!taiko.
+   */
+  readonly estimatedUnstableRate: number | undefined;
+  /**
+   * Approximated unstable-rate
+   *
+   * Only *optionally* available for osu!.
+   */
+  readonly speedDeviation: number | undefined;
+  /**
+   * The strain portion of the final pp.
+   *
+   * Only available for osu!taiko and osu!mania.
+   */
+  readonly ppDifficulty: number | undefined;
 }
 /**
  * The result of calculating the strains of a beatmap.
@@ -878,6 +867,7 @@ export class PerformanceAttributes {
  * Suitable to plot the difficulty over time.
  */
 export class Strains {
+  private constructor();
 /**
 ** Return copy of self without private attributes.
 */
@@ -887,52 +877,56 @@ export class Strains {
 */
   toString(): string;
   free(): void;
-/**
- * Strain peaks of the aim skill in osu!.
- */
-  readonly aim: Float64Array | undefined;
-/**
- * Strain peaks of the aim skill without sliders in osu!.
- */
-  readonly aimNoSliders: Float64Array | undefined;
-/**
- * Strain peaks of the color skill in osu!taiko.
- */
-  readonly color: Float64Array | undefined;
-/**
- * Strain peaks of the flashlight skill in osu!.
- */
-  readonly flashlight: Float64Array | undefined;
-/**
- * The strains' gamemode.
- */
+  /**
+   * The strains' gamemode.
+   */
   readonly mode: GameMode;
-/**
- * Strain peaks of the movement skill in osu!catch.
- */
-  readonly movement: Float64Array | undefined;
-/**
- * Strain peaks of the rhythm skill in osu!taiko.
- */
-  readonly rhythm: Float64Array | undefined;
-/**
- * Time inbetween two strains in ms.
- */
+  /**
+   * Time inbetween two strains in ms.
+   */
   readonly sectionLength: number;
-/**
- * Strain peaks of the single color stamina skill in osu!taiko.
- */
-  readonly singleColorStamina: Float64Array | undefined;
-/**
- * Strain peaks of the speed skill in osu!.
- */
+  /**
+   * Strain peaks of the aim skill in osu!.
+   */
+  readonly aim: Float64Array | undefined;
+  /**
+   * Strain peaks of the aim skill without sliders in osu!.
+   */
+  readonly aimNoSliders: Float64Array | undefined;
+  /**
+   * Strain peaks of the speed skill in osu!.
+   */
   readonly speed: Float64Array | undefined;
-/**
- * Strain peaks of the stamina skill in osu!taiko.
- */
+  /**
+   * Strain peaks of the flashlight skill in osu!.
+   */
+  readonly flashlight: Float64Array | undefined;
+  /**
+   * Strain peaks of the color skill in osu!taiko.
+   */
+  readonly color: Float64Array | undefined;
+  /**
+   * Strain peaks of the reading skill in osu!taiko.
+   */
+  readonly reading: Float64Array | undefined;
+  /**
+   * Strain peaks of the rhythm skill in osu!taiko.
+   */
+  readonly rhythm: Float64Array | undefined;
+  /**
+   * Strain peaks of the stamina skill in osu!taiko.
+   */
   readonly stamina: Float64Array | undefined;
-/**
- * Strain peaks of the strain skill in osu!mania.
- */
+  /**
+   * Strain peaks of the single color stamina skill in osu!taiko.
+   */
+  readonly singleColorStamina: Float64Array | undefined;
+  /**
+   * Strain peaks of the movement skill in osu!catch.
+   */
+  readonly movement: Float64Array | undefined;
+  /**
+   * Strain peaks of the strain skill in osu!mania.
+   */
   readonly strains: Float64Array | undefined;
 }

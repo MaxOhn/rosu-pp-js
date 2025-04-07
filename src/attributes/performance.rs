@@ -59,6 +59,11 @@ pub struct JsPerformanceAttributes {
     /// Only *optionally* available for osu!taiko.
     #[wasm_bindgen(js_name = "estimatedUnstableRate", readonly)]
     pub estimated_unstable_rate: Option<f64>,
+    /// Approximated unstable-rate
+    ///
+    /// Only *optionally* available for osu!.
+    #[wasm_bindgen(js_name = "speedDeviation", readonly)]
+    pub speed_deviation: Option<f64>,
     /// The strain portion of the final pp.
     ///
     /// Only available for osu!taiko and osu!mania.
@@ -127,6 +132,7 @@ impl From<PerformanceAttributes> for JsPerformanceAttributes {
                 pp_flashlight,
                 pp_speed,
                 effective_miss_count,
+                speed_deviation,
             }) => Self {
                 difficulty: difficulty.into(),
                 pp,
@@ -135,6 +141,7 @@ impl From<PerformanceAttributes> for JsPerformanceAttributes {
                 pp_flashlight: Some(pp_flashlight),
                 pp_speed: Some(pp_speed),
                 effective_miss_count: Some(effective_miss_count),
+                speed_deviation,
                 ..Self::default()
             },
             PerformanceAttributes::Taiko(TaikoPerformanceAttributes {
