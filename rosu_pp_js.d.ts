@@ -518,7 +518,7 @@ export class DifficultyAttributes {
    *
    * Only available for osu!.
    */
-  readonly aim_difficult_slider_count: number | undefined;
+  readonly aimDifficultSliderCount: number | undefined;
   /**
    * The difficulty of the speed skill.
    *

@@ -28,7 +28,7 @@ pub struct JsDifficultyAttributes {
     /// The number of sliders weighted by difficulty.
     ///
     /// Only available for osu!.
-    #[wasm_bindgen(readonly)]
+    #[wasm_bindgen(js_name = "aimDifficultSliderCount", readonly)]
     pub aim_difficult_slider_count: Option<f64>,
     /// The difficulty of the speed skill.
     ///
