@@ -1,4 +1,26 @@
-# v2.0.0 (2024-12-04)
+# v3.0.0 (2025-04-07)
+
+Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates>
+
+rosu-pp changelog: <https://github.com/MaxOhn/rosu-pp/blob/main/CHANGELOG.md#v300-2025-04-07>
+
+- Removed fields:
+  - `DifficultyAttributes.od`
+  - `DifficultyAttributes.peak`
+
+- Added fields:
+  - `DifficultyAttributes.aimDifficultSliderCount` (osu!standard)
+  - `DifficultyAttributes.reading` (osu!taiko)
+  - `DifficultyAttributes.mehHitWindow` (osu!standard)
+  - `PerformanceAttributes.speedDeviation` (osu!standard)
+  - `Strains.reading` (osu!taiko)
+  - `BeatmapAttributes.odMehHitWindow` (osu!standard)
+
+- Adjustments:
+  - The field `DifficultyAttributes.greatHitWindow` is no longer available for osu!mania but it is now available for osu!standard
+  - The field `DifficultyAttributes.okHitWindow` is now also available for osu!standard
+
+## v2.0.0 (2024-12-04)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2024-10-28-performance-points-star-rating-updates>
 
