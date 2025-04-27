@@ -1,4 +1,9 @@
-# v3.0.0 (2025-04-07)
+# v3.0.1 (2025-04-27)
+
+Fixed some mods not being deserialized correctly, specifically mods with setting fields that are
+not available for the same mods in different modes ([#29])
+
+## v3.0.0 (2025-04-07)
 
 Updated all modes' difficulty and performance calculation. See osu!'s newspost for more info: <https://osu.ppy.sh/home/news/2025-03-06-performance-points-star-rating-updates>
 
@@ -176,3 +181,4 @@ osu!standard, osu!taiko, and osu!mania.
 [#24]: https://github.com/MaxOhn/rosu-pp-js/pull/24
 [#25]: https://github.com/MaxOhn/rosu-pp-js/pull/25
 [#27]: https://github.com/MaxOhn/rosu-pp-js/pull/27
+[#29]: https://github.com/MaxOhn/rosu-pp-js/pull/29
