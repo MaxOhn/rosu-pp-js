@@ -22,12 +22,12 @@ wasm-bindgen = "0.2.95"
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
 
+# https://github.com/rustwasm/wasm-pack/issues/1501#issuecomment-2898697188
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["--enable-bulk-memory", "--enable-nontrapping-float-to-int"]
+
 [profile.release]
 lto = true
 panic = "abort"
 codegen-units = 1
 strip = true
-
-# https://github.com/rustwasm/wasm-pack/issues/1501#issuecomment-2898697188
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = ["--enable-bulk-memory", "--enable-nontrapping-float-to-int"]
