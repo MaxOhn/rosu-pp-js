@@ -10,7 +10,7 @@ Since Wasm is used as intermediate layer, Rust doesn't even need to be installed
 
 The library exposes multiple classes and interfaces:
 
-### [Beatmap](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L333-L362)
+### [Beatmap](https://github.com/MaxOhn/rosu-pp-js/blob/8cea65719510135f0cd8c338d452e89baaf4082a/rosu_pp_js.d.ts#L330-L375)
 
 Class containing a parsed `.osu` file, ready to be passed to difficulty and performance calculators.
 
