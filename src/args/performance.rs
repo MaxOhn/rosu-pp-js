@@ -1,16 +1,17 @@
 use rosu_mods::GameMods;
 use rosu_pp::{
-    any::{DifficultyAttributes, HitResultPriority},
     Performance,
+    any::{DifficultyAttributes, HitResultPriority},
 };
 use serde::de;
-use wasm_bindgen::{__rt::RcRef, prelude::wasm_bindgen, JsValue};
+use wasm_bindgen::{__rt::RcRef, JsValue, prelude::wasm_bindgen};
 
 use crate::{
+    JsError, JsResult,
     attributes::{difficulty::JsDifficultyAttributes, performance::JsPerformanceAttributes},
     beatmap::JsBeatmap,
     deserializer::JsDeserializer,
-    util, JsError, JsResult,
+    util,
 };
 
 use super::difficulty::DifficultyArgs;
@@ -150,6 +151,8 @@ pub enum JsHitResultPriority {
     BestCase,
     /// Prioritize bad hitresults over good ones
     WorstCase,
+    /// Prioritize fast hitresults generation
+    Fastest,
 }
 
 impl From<JsHitResultPriority> for HitResultPriority {
@@ -157,6 +160,7 @@ impl From<JsHitResultPriority> for HitResultPriority {
         match priority {
             JsHitResultPriority::BestCase => Self::BestCase,
             JsHitResultPriority::WorstCase => Self::WorstCase,
+            JsHitResultPriority::Fastest => Self::Fastest,
         }
     }
 }
@@ -166,6 +170,7 @@ impl JsHitResultPriority {
         let priority = match <u8 as de::Deserialize>::deserialize(d) {
             Ok(0) => HitResultPriority::BestCase,
             Ok(1) => HitResultPriority::WorstCase,
+            Ok(2) => HitResultPriority::Fastest,
             _ => return Err(de::Error::custom("invalid HitResultPriority")),
         };
 

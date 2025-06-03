@@ -18,6 +18,10 @@ export enum HitResultPriority {
    * Prioritize bad hitresults over good ones
    */
   WorstCase = 1,
+  /**
+   * Prioritize fast hitresults generation
+   */
+  Fastest = 2,
 }
 /**
 * The content of a `.osu` file either as bytes or string.
@@ -342,6 +346,15 @@ export class Beatmap {
    * @throws Throws an error if conversion fails or mods are invalid
    */
   convert(mode: GameMode, mods?: Object | null): void;
+  /**
+   * Check whether hitobjects appear too suspicious for further calculation.
+   *
+   * Sometimes a beatmap isn't created for gameplay but rather to test
+   * the limits of osu! itself. Difficulty- and/or performance calculation
+   * should likely be avoided on these maps due to potential performance
+   * issues.
+   */
+  isSuspicious(): boolean;
   readonly bpm: number;
   readonly mode: GameMode;
   readonly nBreaks: number;

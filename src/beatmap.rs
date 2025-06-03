@@ -4,19 +4,19 @@ use std::{
 };
 
 use rosu_pp::{
-    model::{hit_object::HitObjectKind, mode::GameMode},
     Beatmap,
+    model::{hit_object::HitObjectKind, mode::GameMode},
 };
 use serde::de;
 use wasm_bindgen::{__rt::RcRef, convert::RefFromWasmAbi, prelude::wasm_bindgen};
 
 use crate::{
+    JsError, JsResult,
     args::beatmap::{BeatmapContent, JsBeatmapContent},
     deserializer::JsDeserializer,
     mode::JsGameMode,
     mods::JsGameMods,
     util::{self, FieldVisitor},
-    JsError, JsResult,
 };
 
 /// All beatmap data that is relevant for difficulty and performance
@@ -70,6 +70,17 @@ impl JsBeatmap {
         }
 
         Ok(())
+    }
+
+    /// Check whether hitobjects appear too suspicious for further calculation.
+    ///
+    /// Sometimes a beatmap isn't created for gameplay but rather to test
+    /// the limits of osu! itself. Difficulty- and/or performance calculation
+    /// should likely be avoided on these maps due to potential performance
+    /// issues.
+    #[wasm_bindgen(js_name = isSuspicious)]
+    pub fn is_suspicious(&self) -> bool {
+        self.inner.check_suspicion().is_err()
     }
 
     #[wasm_bindgen(getter)]

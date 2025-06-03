@@ -22,6 +22,7 @@ file and throws an error if decoding the beatmap fails.
 Due to [current JavaScript oddities](https://github.com/rustwasm/wasm-bindgen/issues/3917), Wasm is not always able to track down objects' lifetime meaning it is possible that memory of unused instances might not get cleared automatically. Hence, to not risk leaking memory, it is recommended to free `Beatmap` instances manually when they're no longer needed with the `free(): void` method.
 
 To convert a beatmap use the `convert(GameMode): void` method.
+To check whether difficulty and/or performance calculation on a beatmap should be avoided, use the `isSuspicious(): void` method.
 
 `Beatmap` provides various getters:
 - `ar: number`
@@ -244,6 +245,13 @@ let map = new rosu.Beatmap(bytes);
 // Optionally convert the beatmap to a specific mode for optionally given mods.
 map.convert(rosu.GameMode.Mania, "6K");
 
+// Whereas osu! simply times out on malicious maps, rosu-pp does not. To
+// prevent potential performance/memory issues, it is recommended to check
+// beforehand whether a map is too suspicious for further calculation.
+if (map.isSuspicious()) {
+    process.exit();
+}
+
 // Calculating performance attributes for a HDDT SS
 const maxAttrs = new rosu.Performance({ mods: 8 + 64 }).calculate(map);
 
@@ -253,7 +261,10 @@ const currAttrs = new rosu.Performance({
     misses: 2,
     accuracy: 98.4,
     combo: 567,
-    hitresultPriority: rosu.HitResultPriority.WorstCase,
+    // If only accuracy is given but no specific hitresults, it is recommended
+    // to generate hitresults via `HitResultPriority.Fastest`. Otherwise,
+    // finding the best hitresults can be very slow.
+    hitresultPriority: rosu.HitResultPriority.Fastest,
 }).calculate(maxAttrs); // Re-using previous attributes to speed up the calculation.
 
 console.log(`PP: ${currAttrs.pp}/${maxAttrs.pp} | Stars: ${maxAttrs.difficulty.stars}`);
