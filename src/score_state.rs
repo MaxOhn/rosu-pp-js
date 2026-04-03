@@ -88,7 +88,7 @@ export interface ScoreState {
     *
     * Only relevant for osu!stable
     */
-    legacyTotalScore?: number;
+    legacyTotalScore?: number | null;
 }"#;
 
 impl JsScoreState {

@@ -35,7 +35,7 @@ export interface CommonArgs {
     * | :-----: | :-----: |
     * | 0.01    | 100     |
     */
-    clockRate?: number;
+    clockRate?: number | null;
     /**
     * Override a beatmap's approach rate.
     *
@@ -43,7 +43,7 @@ export interface CommonArgs {
     * | :-----: | :-----: |
     * | -20     | 20      |
     */
-    ar?: number;
+    ar?: number | null;
     /**
     * Determines if the given AR value should be used before or after accounting
     * for mods, e.g. on `true` the value will be used as is and on `false` it
@@ -57,7 +57,7 @@ export interface CommonArgs {
     * | :-----: | :-----: |
     * | -20     | 20      |
     */
-    cs?: number;
+    cs?: number | null;
     /**
     * Determines if the given CS value should be used before or after accounting
     * for mods, e.g. on `true` the value will be used as is and on `false` it
@@ -71,7 +71,7 @@ export interface CommonArgs {
     * | :-----: | :-----: |
     * | -20     | 20      |
     */
-    hp?: number;
+    hp?: number | null;
     /**
     * Determines if the given HP value should be used before or after accounting
     * for mods, e.g. on `true` the value will be used as is and on `false` it
@@ -85,7 +85,7 @@ export interface CommonArgs {
     * | :-----: | :-----: |
     * | -20     | 20      |
     */
-    od?: number;
+    od?: number | null;
     /**
     * Determines if the given OD value should be used before or after accounting
     * for mods, e.g. on `true` the value will be used as is and on `false` it

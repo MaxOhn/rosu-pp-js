@@ -64,18 +64,12 @@ const _: &'static str = r#"/**
 * Arguments to provide the `BeatmapAttributesBuilder` constructor.
 */
 export interface BeatmapAttributesArgs extends CommonArgs {
-    /**
-    * Specify a gamemode.
-    */
-    mode?: GameMode;
-    /**
-    * Specify whether it's a converted map.
-    */
+    /** Specify a gamemode. */
+    mode?: GameMode | null;
+    /** Specify whether it's a converted map. */
     isConvert?: boolean;
-    /**
-    * Start off with a beatmap's attributes, mode, and convert status.
-    */
-    map?: Beatmap;
+    /** Start off with a beatmap's attributes, mode, and convert status. */
+    map?: Beatmap | null;
 }"#;
 
 #[derive(Default, serde::Deserialize)]

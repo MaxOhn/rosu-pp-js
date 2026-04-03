@@ -22,20 +22,20 @@ export interface DifficultyArgs extends CommonArgs {
     * instead of using `Difficulty` multiple times with different
     * `passedObjects`, you should use `GradualDifficulty`.
     */
-    passedObjects?: number;
+    passedObjects?: number | null;
     /**
     * Adjust patterns as if the HR mod is enabled.
     *
     * Only relevant for osu!catch.
     */
-    hardrockOffsets?: boolean;
+    hardrockOffsets?: boolean | null;
     /**
     * Whether the calculated attributes belong to an osu!lazer or osu!stable
     * score.
     *
     * Defaults to `true`.
     */
-    lazer?: boolean;
+    lazer?: boolean | null;
 }"#;
 
 #[derive(Clone, Default, serde::Deserialize)]

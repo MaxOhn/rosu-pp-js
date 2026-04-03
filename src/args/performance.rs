@@ -33,16 +33,14 @@ const _: &'static str = r#"/**
 * Arguments to provide the `Performance` constructor.
 */
 export interface PerformanceArgs extends DifficultyArgs {
-    /**
-    * Set the accuracy between `0.0` and `100.0`.
-    */
-    accuracy?: number;
+    /** Set the accuracy between `0.0` and `100.0`. */
+    accuracy?: number | null;
     /**
     * Specify the max combo of the play.
     *
     * Irrelevant for osu!mania.
     */
-    combo?: number;
+    combo?: number | null;
     /**
     * The amount of "large tick" hits.
     *
@@ -55,7 +53,7 @@ export interface PerformanceArgs extends DifficultyArgs {
     * - if set on osu!lazer *with* `CL`, this value is the amount of hit
     *   slider heads, ticks, and repeats
     */
-    largeTickHits?: number;
+    largeTickHits?: number | null;
     /**
     * The amount of "small tick" hits.
     *
@@ -64,50 +62,44 @@ export interface PerformanceArgs extends DifficultyArgs {
     *
     * Only relevant for osu!.
     */
-    smallTickHits?: number;
+    smallTickHits?: number | null;
     /**
     * The amount of slider end hits.
     *
     * Only relevant for osu! in lazer.
     */
-    sliderEndHits?: number;
+    sliderEndHits?: number | null;
     /**
     * Specify the amount of gekis of a play.
     *
     * Only relevant for osu!mania for which it repesents the amount of n320.
     */
-    nGeki?: number;
+    nGeki?: number | null;
     /**
     * Specify the amount of katus of a play.
     *
     * Only relevant for osu!catch for which it represents the amount of tiny
     * droplet misses and osu!mania for which it repesents the amount of n200.
     */
-    nKatu?: number;
-    /**
-    * Specify the amount of 300s of a play.
-    */
-    n300?: number;
-    /**
-    * Specify the amount of 100s of a play.
-    */
-    n100?: number;
+    nKatu?: number | null;
+    /** Specify the amount of 300s of a play. */
+    n300?: number | null;
+    /** Specify the amount of 100s of a play. */
+    n100?: number | null;
     /**
     * Specify the amount of 50s of a play.
     *
     * Irrelevant for osu!taiko.
     */
-    n50?: number;
-    /**
-    * Specify the amount of misses of a play.
-    */
-    misses?: number;
+    n50?: number | null;
+    /** Specify the amount of misses of a play. */
+    misses?: number | null;
     /**
     * Specify the legacy total score.
     *
     * Only relevant for osu!.
     */
-    legacyTotalScore?: number;
+    legacyTotalScore?: number | null;
     /**
     * Specify how hitresults should be generated.
     *
@@ -115,7 +107,7 @@ export interface PerformanceArgs extends DifficultyArgs {
     */
     hitresultPriority?: HitResultPriority;
     /** Four optional generators; one for each mode. */
-    hitresultGenerators?: (HitResultGenerator | null)[];
+    hitresultGenerators?: Array<(HitResultGenerator | null)> | null;
 }"#;
 
 #[derive(Default, serde::Deserialize)]
