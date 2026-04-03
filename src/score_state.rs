@@ -48,7 +48,7 @@ export interface ScoreState {
     * slider accuracy.
     *
     * Only relevant for osu!lazer.
-    */ 
+    */
     osuSmallTickHits?: number;
 
     /**
@@ -57,7 +57,7 @@ export interface ScoreState {
     * Only relevant for osu!standard in lazer.
     */
     sliderEndHits?: number;
-    
+
     /**
     * Amount of current gekis (n320 for osu!mania).
     */
@@ -83,6 +83,12 @@ export interface ScoreState {
     * Amount of current misses (fruits + droplets for osu!catch).
     */
     misses?: number;
+    /**
+    * Legacy total score.
+    *
+    * Only relevant for osu!stable
+    */
+    legacyTotalScore?: number;
 }"#;
 
 impl JsScoreState {
@@ -157,27 +163,47 @@ impl JsScoreState {
             n100: n100,
             n50: n50,
             misses: misses,
+            legacyTotalScore: legacy_total_score,
         }
     }
 }
 
 impl From<ScoreState> for JsScoreState {
     fn from(state: ScoreState) -> Self {
+        let ScoreState {
+            max_combo,
+            osu_large_tick_hits,
+            osu_small_tick_hits,
+            slider_end_hits,
+            n_geki,
+            n_katu,
+            n300,
+            n100,
+            n50,
+            misses,
+            legacy_total_score,
+        } = state;
+
         let obj = js_sys::Object::new();
         let obj_as_ext = obj.unchecked_ref::<util::ObjectExt>();
 
         let set = |key, value: u32| obj_as_ext.set(util::static_str_to_js(key), value.into());
 
-        set("maxCombo", state.max_combo);
-        set("osuLargeTickHits", state.osu_large_tick_hits);
-        set("osuSmallTickHits", state.osu_small_tick_hits);
-        set("sliderEndHits", state.slider_end_hits);
-        set("nGeki", state.n_geki);
-        set("nKatu", state.n_katu);
-        set("n300", state.n300);
-        set("n100", state.n100);
-        set("n50", state.n50);
-        set("misses", state.misses);
+        set("maxCombo", max_combo);
+        set("osuLargeTickHits", osu_large_tick_hits);
+        set("osuSmallTickHits", osu_small_tick_hits);
+        set("sliderEndHits", slider_end_hits);
+        set("nGeki", n_geki);
+        set("nKatu", n_katu);
+        set("n300", n300);
+        set("n100", n100);
+        set("n50", n50);
+        set("misses", misses);
+
+        obj_as_ext.set(
+            util::static_str_to_js("legacyScoreState"),
+            legacy_total_score.into(),
+        );
 
         JsValue::from(obj).into()
     }

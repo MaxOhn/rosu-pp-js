@@ -4,10 +4,12 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use crate::{
     JsResult,
     args::performance::{
-        JsHitResultPriority, JsMapOrAttributes, JsPerformanceArgs, MapOrAttrs, PerformanceArgs,
+        JsHitResultGenerator, JsHitResultPriority, JsMapOrAttributes, JsPerformanceArgs,
+        MapOrAttrs, PerformanceArgs,
     },
     attributes::performance::JsPerformanceAttributes,
     deserializer::JsDeserializer,
+    mode::JsGameMode,
     mods::JsGameMods,
     util,
 };
@@ -189,8 +191,26 @@ impl JsPerformance {
         self.args.misses = misses;
     }
 
+    #[wasm_bindgen(setter)]
+    pub fn set_legacy_total_score(&mut self, legacy_total_score: Option<u32>) {
+        self.args.legacy_total_score = legacy_total_score;
+    }
+
     #[wasm_bindgen(setter = hitresultPriority)]
     pub fn set_hitresult_priority(&mut self, hitresult_priority: Option<JsHitResultPriority>) {
         self.args.hitresult_priority = hitresult_priority.map_or_else(Default::default, From::from);
+    }
+
+    #[wasm_bindgen(setter = hitresultGenerator)]
+    pub fn set_hitresult_generator(
+        &mut self,
+        hitresult_generator: Option<JsHitResultGenerator>,
+        mode: Option<JsGameMode>,
+    ) {
+        if let Some(mode) = mode {
+            self.args.hitresult_generators[mode as usize] = hitresult_generator;
+        } else {
+            self.args.hitresult_generators = [hitresult_generator; 4]
+        }
     }
 }

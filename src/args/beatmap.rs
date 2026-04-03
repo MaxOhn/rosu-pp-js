@@ -1,7 +1,7 @@
 use std::fmt::{Formatter, Result as FmtResult};
 
 use rosu_mods::GameMods;
-use rosu_pp::model::beatmap::BeatmapAttributesBuilder;
+use rosu_pp::model::beatmap::{BeatmapAttributes, BeatmapAttributesBuilder};
 use serde::de;
 use wasm_bindgen::{__rt::RcRef, prelude::wasm_bindgen};
 
@@ -105,34 +105,35 @@ pub struct BeatmapAttributesArgs {
 
 impl BeatmapAttributesArgs {
     pub fn into_builder(self) -> BeatmapAttributesBuilder {
-        let mut builder = BeatmapAttributesBuilder::new().mods(self.mods.clone());
+        let mut builder = BeatmapAttributes::builder();
+        builder.mods(self.mods.clone());
 
         if let Some(ref map) = self.map {
-            builder = builder.map(&map.inner);
+            builder.map(&map.inner);
         }
 
         if let Some(mode) = self.mode {
-            builder = builder.mode(mode.into(), self.is_convert);
+            builder.mode(mode.into(), self.is_convert);
         }
 
         if let Some(clock_rate) = self.clock_rate {
-            builder = builder.clock_rate(clock_rate);
+            builder.clock_rate(clock_rate);
         }
 
         if let Some(ar) = self.ar {
-            builder = builder.ar(ar, self.fixed_ar);
+            builder.ar(ar, self.fixed_ar);
         }
 
         if let Some(cs) = self.cs {
-            builder = builder.cs(cs, self.fixed_cs);
+            builder.cs(cs, self.fixed_cs);
         }
 
         if let Some(hp) = self.hp {
-            builder = builder.hp(hp, self.fixed_hp);
+            builder.hp(hp, self.fixed_hp);
         }
 
         if let Some(od) = self.od {
-            builder = builder.od(od, self.fixed_od);
+            builder.od(od, self.fixed_od);
         }
 
         builder
