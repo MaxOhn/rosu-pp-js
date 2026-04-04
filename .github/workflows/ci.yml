@@ -39,15 +39,6 @@ jobs:
       - name: Build
         run: wasm-pack build --target nodejs --out-dir pkg
 
-      - name: Check .d.ts file
-        run: |
-          if ! cmp --silent pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts; then
-            echo ".d.ts file is not up to date"
-            cmp --print-bytes pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
-            cat pkg/rosu_pp_js.d.ts
-            exit 1
-          fi
-
   sync-dts:
     name: Sync .d.ts file
     # Only auto-commit on branch pushes, not tags or PRs
