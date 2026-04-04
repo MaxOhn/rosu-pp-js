@@ -6,7 +6,7 @@ on:
       - main
       - next
     tags:
-      - '**'
+      - "**"
   pull_request:
   workflow_dispatch:
 
@@ -47,6 +47,71 @@ jobs:
             cat pkg/rosu_pp_js.d.ts
             exit 1
           fi
+
+  sync-dts:
+    name: Sync .d.ts file
+    # Only auto-commit on branch pushes, not tags or PRs
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    outputs:
+      updated: ${{ steps.commit.outputs.changes_detected }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build
+        run: wasm-pack build --target nodejs --out-dir pkg
+
+      - name: Copy .d.ts to project root
+        run: cp pkg/rosu_pp_js.d.ts rosu_pp_js.d.ts
+
+      - name: Commit if changed
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update rosu_pp_js.d.ts"
+          file_pattern: rosu_pp_js.d.ts
+
+  update-readme:
+    name: Update README links
+    needs: sync-dts
+    # Only run if sync-dts actually committed a new .d.ts
+    if: needs.sync-dts.outputs.updated == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout project
+        # Use the commit that sync-dts just pushed, not the original trigger commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Update README
+        run: python scripts/update_readme.py
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update README links to latest commit"
+          file_pattern: README.md
 
   build:
     name: Build
