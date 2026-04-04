@@ -47,7 +47,7 @@ To check whether difficulty and/or performance calculation on a beatmap should b
 
 Class to calculate [`DifficultyAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L487-L687), [`Strains`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L869-L932), or create gradual calculators.
 
-The constructor takes [an *optional* object of the form](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L145-L167)
+The constructor takes *optional* [`DifficultyArgs`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L145-L167)
 
 ```ts
 {
@@ -74,16 +74,16 @@ The constructor takes [an *optional* object of the form](https://github.com/MaxO
     ar?: number,
     // Whether given `ar` should be used as is or adjusted based on mods
     // i.e. `true` means "given ar already considers mods".
-    arWithMods?: boolean,
+    fixedAr?: boolean,
     // Custom circle size between -20 and 20
     cs?: number,
-    csWithMods?: boolean,
+    fixedCs?: boolean,
     // Custom drain rate between -20 and 20
     hp?: number,
-    hpWithMods?: boolean,
+    fixedHp?: boolean,
     // Custom overall difficulty between -20 and 20
     od?: number,
-    odWithMods?: boolean,
+    fixedOd?: boolean,
     // Amount of passed objects for partial plays, e.g. a fail
     passedObjects?: number,
     // Adjust patterns as if the HR mod is enabled on osu!catch maps
@@ -100,7 +100,7 @@ The following methods are available:
 
 ### [Performance](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L742-L786)
 
-Calculator of [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L790-L863) whose constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L172-L248)
+Calculator of [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L790-L863) whose constructor takes [`PerformanceArgs`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L172-L248)
 
 ```ts
 {
@@ -122,6 +122,8 @@ Calculator of [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-js/blo
     n50?: number,
     // The amount of misses
     misses?: number,
+    // Legacy total score for osu! scores on stable
+    legacyTotalScore?: number,
     // The amount of "large tick" hits.
     largeTickHits?: number,
     // The amount of "small tick" hits.
@@ -133,7 +135,10 @@ Calculator of [`PerformanceAttributes`](https://github.com/MaxOhn/rosu-pp-js/blo
 }
 ```
 
-Its only method `calculate(DifficultyAttributes | PerformanceAttributes | Beatmap): PerformanceAttributes`
+Its method `setHitresultGenerator` takes a [`HitResultGenerator`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L691-L714) and [`GameMode`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L691-L714) and
+defines what the focus of hitresult generation should be, e.g. performance or speed.
+
+Its only other method `calculate(DifficultyAttributes | PerformanceAttributes | Beatmap): PerformanceAttributes`
 produces the performance attributes. The method's argument must be either the attributes of a
 previous calculation or a beatmap.
 
@@ -167,16 +172,17 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
 
 ```ts
 {
-  maxCombo?: number;
-  misses?: number;
-  n100?: number;
-  n300?: number;
-  n50?: number;
-  nGeki?: number;
-  nKatu?: number;
-  osuLargeTickHits?: number;
-  osuSmallTickHits?: number;
-  sliderEndHits?: number;
+  maxCombo?: number,
+  misses?: number,
+  n100?: number,
+  n300?: number,
+  n50?: number,
+  nGeki?: number,
+  nKatu?: number,
+  osuLargeTickHits?: number,
+  osuSmallTickHits?: number,
+  sliderEndHits?: number,
+  legacyTotalScore?: number | null,
 }
 ```
 
@@ -184,7 +190,7 @@ Its constructor takes a `Difficulty` and a `Beatmap`, it has a getter `nRemainin
 
 Class to calculate [`BeatmapAttributes`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L363-L417) for various custom parameters.
 
-Its constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L30-L43)
+Its constructor takes [`BeatmapAttributeArgs`](https://github.com/MaxOhn/rosu-pp-js/blob/33426064e050d3545e2998b08aa340b19c591f0e/rosu_pp_js.d.ts#L30-L43)
 
 ```ts
 {
@@ -197,13 +203,13 @@ Its constructor takes [an object of the form](https://github.com/MaxOhn/rosu-pp-
     mods?: Object,
     clockRate?: number,
     ar?: number,
-    arWithMods?: boolean,
+    fixedAr?: boolean,
     cs?: number,
-    csWithMods?: boolean,
+    fixedCs?: boolean,
     hp?: number,
-    hpWithMods?: boolean,
+    fixedHp?: boolean,
     od?: number,
-    odWithMods?: boolean,
+    fixedOd?: boolean,
 }
 ```
 
@@ -242,7 +248,7 @@ const bytes = fs.readFileSync("/path/to/file.osu");
 // Parse the map.
 let map = new rosu.Beatmap(bytes);
 
-// Optionally convert the beatmap to a specific mode for optionally given mods.
+// Convert the beatmap to a specific mode for optionally given mods.
 map.convert(rosu.GameMode.Mania, "6K");
 
 // Whereas osu! simply times out on malicious maps, rosu-pp does not. To
@@ -255,17 +261,24 @@ if (map.isSuspicious()) {
 // Calculating performance attributes for a HDDT SS
 const maxAttrs = new rosu.Performance({ mods: 8 + 64 }).calculate(map);
 
-// Calculating performance attributes for a specific score.
-const currAttrs = new rosu.Performance({
+const perf = new rosu.Performance({
     mods: "HDDT", // Must be the same as before in order to use the previous attributes!
     misses: 2,
     accuracy: 98.4,
     combo: 567,
-    // If only accuracy is given but no specific hitresults, it is recommended
-    // to generate hitresults via `HitResultPriority.Fastest`. Otherwise,
-    // finding the best hitresults can be very slow.
-    hitresultPriority: rosu.HitResultPriority.Fastest,
-}).calculate(maxAttrs); // Re-using previous attributes to speed up the calculation.
+    hitresultPriority: rosu.HitResultPriority.BestCase,
+});
+
+// For hitresult generation, use the `setHitresultGenerator` method.
+// The 'Closest' hitresult generation may be significantly slower but provides
+// hitresults that match the given accuracy as close as possible.
+perf.setHitresultGenerator(rosu.HitresultGenerator.Closest, rosu.GameMode.Osu);
+// Especially for mania, 'Closest' might be too slow in general so let's use
+// 'Fast' instead (which is the default anyway for all modes if unspecified).
+perf.setHitresultGenerator(rosu.HitresultGenerator.Fast, rosu.GameMode.Mania);
+
+// Calculating performance attributes for a specific score.
+const currAttrs = perf.calculate(maxAttrs); // Re-using previous attributes to speed up the calculation.
 
 console.log(`PP: ${currAttrs.pp}/${maxAttrs.pp} | Stars: ${maxAttrs.difficulty.stars}`);
 
@@ -287,9 +300,9 @@ const difficulty = new rosu.Difficulty({
     mods: 16 + 64, // HRDT
     clockRate: 1.1,
     ar: 10.2,
-    arWithMods: true,
+    fixedAr: true,
     od: 4,
-    odWithMods: false,
+    fixedOd: false,
 });
 
 // Gradually calculating *difficulty* attributes

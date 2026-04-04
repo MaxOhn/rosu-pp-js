@@ -838,6 +838,10 @@ export class GradualPerformance {
  */
 export class Performance {
   free(): void;
+  setHitresultGenerator(
+    hitresult_generator?: HitResultGenerator | null,
+    mode?: GameMode | null,
+  ): void;
   /**
    * Create a new performance calculator.
    */
@@ -871,7 +875,6 @@ export class Performance {
   set smallTickHits(value: number | null | undefined);
   set hitresultPriority(value: HitResultPriority | null | undefined);
   set legacy_total_score(value: number | null | undefined);
-  set hitresultGenerator(value: HitResultGenerator | null);
   set ar(value: number | null | undefined);
   set cs(value: number | null | undefined);
   set hp(value: number | null | undefined);

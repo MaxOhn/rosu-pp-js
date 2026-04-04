@@ -201,7 +201,7 @@ impl JsPerformance {
         self.args.hitresult_priority = hitresult_priority.map_or_else(Default::default, From::from);
     }
 
-    #[wasm_bindgen(setter = hitresultGenerator)]
+    #[wasm_bindgen(js_name = setHitresultGenerator)]
     pub fn set_hitresult_generator(
         &mut self,
         hitresult_generator: Option<JsHitResultGenerator>,
